@@ -1,0 +1,2 @@
+*.pkl.gz !text !filter !merge !diff
+*.npy !text !filter !merge !diff
