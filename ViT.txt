@@ -1,54 +1,7 @@
-/var/spool/slurm/slurmd/state/job42509672/slurm_script: line 13: c: command not found
 Many modules are hidden in this stack. Use "module --show_hidden spider SOFTWARE" if you are not able to find the required software
-E0911 15:37:47.210997  135524 cuda_executor.cc:1276] INTERNAL: CUDA Runtime error: Failed call to cudaGetRuntimeVersion: Error loading CUDA libraries. GPU will not be used.: Error loading CUDA libraries. GPU will not be used.
-E0911 15:37:47.276339  135324 cuda_executor.cc:1276] INTERNAL: CUDA Runtime error: Failed call to cudaGetRuntimeVersion: Error loading CUDA libraries. GPU will not be used.: Error loading CUDA libraries. GPU will not be used.
-E0911 15:37:47.286401  135324 cuda_dnn.cc:502] There was an error before creating cudnn handle (302): Error loading CUDA libraries. GPU will not be used. : Error loading CUDA libraries. GPU will not be used.
-E0911 15:37:47.295848  135324 cuda_dnn.cc:502] There was an error before creating cudnn handle (302): Error loading CUDA libraries. GPU will not be used. : Error loading CUDA libraries. GPU will not be used.
-E0911 15:37:49.148999  135324 cuda_dnn.cc:502] There was an error before creating cudnn handle (302): Error loading CUDA libraries. GPU will not be used. : Error loading CUDA libraries. GPU will not be used.
-E0911 15:37:49.354974  135324 cuda_dnn.cc:502] There was an error before creating cudnn handle (302): Error loading CUDA libraries. GPU will not be used. : Error loading CUDA libraries. GPU will not be used.
 Traceback (most recent call last):
-  File "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/ground_state.py", line 14, in <module>
-    from ViT import ViT_sym
-  File "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/ViT.py", line 11, in <module>
-    key = jax.random.key(seed)
-          ^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/random.py", line 218, in key
-    return _key('key', seed, impl)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/random.py", line 198, in _key
-    return prng.random_seed(seed, impl=impl)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/prng.py", line 532, in random_seed
-    seeds_arr = jnp.asarray(np.int64(seeds))
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/numpy/lax_numpy.py", line 5721, in asarray
-    return array(a, dtype=dtype, copy=bool(copy), order=order, device=device)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/numpy/lax_numpy.py", line 5555, in array
-    out_array: Array = lax_internal._convert_element_type(
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 1614, in _convert_element_type
-    return convert_element_type_p.bind(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/core.py", line 502, in bind
-    return self._true_bind(*args, **params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/core.py", line 520, in _true_bind
-    return self.bind_with_trace(prev_trace, args, params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 4701, in _convert_element_type_bind_with_trace
-    operand = core.Primitive.bind_with_trace(convert_element_type_p, trace, args, params)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/core.py", line 525, in bind_with_trace
-    return trace.process_primitive(self, args, params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/core.py", line 1029, in process_primitive
-    return primitive.impl(*args, **params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/cluster/home/fconoscenti/gpu_netket_venv/lib/python3.11/site-packages/jax/_src/dispatch.py", line 88, in apply_primitive
-    outs = fun(*args)
-           ^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: FAILED_PRECONDITION: DNN library initialization failed. Look at the errors above for more details.
---------------------
-For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
-srun: error: eu-lo-g3-007: task 0: Exited with exit code 1
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run.py", line 149, in <module>
+    with open(filename+".mpack", 'rb') as file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results_sym/energy_4x4_pbcxpbc_Nup=5_Ndn=5J2=1.0_lr=0.02_nlayers=1_nfeatures=32_nhid=10_nsamples=8192_hidden_Fermi_real.mpack'
+srun: error: eu-g5-039-1: task 0: Exited with exit code 1

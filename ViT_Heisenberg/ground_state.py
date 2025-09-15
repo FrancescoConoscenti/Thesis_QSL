@@ -1,3 +1,4 @@
+#%%
 import matplotlib.pyplot as plt
 import netket as nk
 import jax
@@ -11,12 +12,12 @@ from netket.operator.spin import sigmax, sigmaz, sigmay
 import sys
 import os
 
-from ViT import ViT_sym
+from ViT_model import ViT_sym
  
 
 model_name = "layers1_d16_heads2_patch2_sample1024_iter200"
 lattice_name = "J=0,8_L=4"
-folder = f'plot_ViT_J2/{model_name}/{lattice_name}'
+folder = f'ViT_Heisenberg/plot/{model_name}/{lattice_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
@@ -102,7 +103,8 @@ log = nk.logging.RuntimeLog()
 N_opt = 5
 vmc.run(n_iter=N_opt, out=log)
 
-
+##############################################################################################################
+#%%
 energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 
 E_vs = energy_per_site[-1]
