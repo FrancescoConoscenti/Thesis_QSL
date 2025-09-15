@@ -8,9 +8,17 @@ import flax
 from flax import linen as nn
 from einops import rearrange
 from netket.operator.spin import sigmax, sigmaz, sigmay
+import sys
+import os
 
 from ViT import ViT_sym
+ 
 
+model_name = "layers1_d16_heads2_patch2_sample1024_iter200"
+lattice_name = "J=0,8_L=4"
+folder = f'plot_ViT_J2/{model_name}/{lattice_name}'
+os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
+sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
 seed = 0
 key = jax.random.key(seed)
@@ -36,7 +44,7 @@ hamiltonian = nk.operator.Heisenberg(
 ).to_jax_operator()  # No Marshall sign rule
 
 """
-#Ising Hamiltonia
+#Ising Hamiltonian
 hamiltonian = nk.operator.LocalOperator(hilbert)
 for u, v in lattice.edges():
     hamiltonian += sigmaz(hilbert, u) * sigmaz(hilbert, v) 
@@ -105,10 +113,8 @@ plt.plot(energy_per_site)
 plt.xlabel("Iterations")
 plt.ylabel("Energy per site")
 
-import os
 if(save):
-    os.makedirs('plot_ViT_J2/layers1_d16_heads2_patch2_sample1024_iter200/J=0,8_L=4', exist_ok=True)
-    plt.savefig('plot_ViT_J2/layers1_d16_heads2_patch2_sample1024_iter200/J=0,8_L=4/Energy.png')
+    plt.savefig(f'{folder}/Energy.png')
 plt.show()
 
 
@@ -149,7 +155,7 @@ plt.xticks(np.arange(L))  # integer ticks for x-axis
 plt.yticks(np.arange(L)) 
 
 if(save):
-    plt.savefig('plot_ViT_J2/layers1_d16_heads2_patch2_sample1024_iter200/J=0,8_L=4/Corr.png')
+    plt.savefig(f'{folder}/Corr.png')
 plt.show()
 
 
@@ -175,7 +181,7 @@ plt.xticks([0, 1/2*L, L], ['0', 'π', '2π'])
 plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
 
 if(save):
-    plt.savefig('plot_ViT_J2/layers1_d16_heads2_patch2_sample1024_iter200/J=0,8_L=4/Struct.png')
+    plt.savefig(f'{folder}/Struct.png')
 plt.show()
 
 E_gs, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
@@ -261,3 +267,6 @@ print(f"Variance = {variance}")
 #Vscore
 v_score = L*L*variance/(E_vs*L*L*4)
 print(f"V-score = {v_score}")
+
+
+sys.stdout.close()
