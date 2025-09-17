@@ -19,12 +19,11 @@ class HiddenFermion(nn.Module):
   Ly: int
   layers: int
   features: int
-  double_occupancy_bool: bool
   MFinit: str
   hilbert: HomogeneousHilbert
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
-  bounds: str="OBC"
+  bounds: str="PBC"
   dtype: type = jnp.float64
   U: float=8.0
 
@@ -32,22 +31,11 @@ class HiddenFermion(nn.Module):
     self.n_modes = 2*self.Lx*self.Ly
     self.key = jax.random.PRNGKey(0)
     self.orbitals = Orbitals(self.n_elecs,self.n_hid,self.Lx, self.Ly, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
-    if self.network=="MorenoFFNN":
-        self.hidden = [nn.Dense(features=self.features, use_bias=False, param_dtype=self.dtype) for i in range(self.n_hid)]
-        self.output = [nn.Dense(features=(self.n_elecs + self.n_hid), use_bias=True, param_dtype=self.dtype) for i in range(self.n_hid)]
-    elif self.network=="FFNN":
+    if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
         self.output = nn.Dense(features=self.n_hid*(self.n_elecs + self.n_hid),use_bias=True,param_dtype=self.dtype)
     else:
         raise NotImplementedError()
-
-    if self.MFinit!="random": 
-        self.a = self.param('a', zeros, (1,), self.dtype)
-        self.b = self.param('b', zeros, (3,), self.dtype) #needed if we couple two GPUs
-  def double_occupancy(self,x):
-    x = x[:,:x.shape[-1]//2] + x[:,x.shape[-1]//2:]
-
-    return jnp.where(jnp.any(x > 1.5,axis=-1),True,False)
 
 
   def selu(self,x):
@@ -58,54 +46,27 @@ class HiddenFermion(nn.Module):
 
 
   def calc_psi(self,x,return_orbs=False):
-    orbitals = self.orbitals(x)
-    if self.network=="MorenoFFNN":
-        outputs = [self.output[l](self.selu(self.hidden[l](x))) for l in range(len(self.hidden))]
-        x_ = jnp.stack([o.reshape(x.shape[0],self.n_elecs + self.n_hid) for o in outputs], axis=1).reshape(x.shape[0],self.n_hid,self.n_elecs + self.n_hid)
-    elif self.network=="FFNN":
-        for i in range(self.layers):
-            x = self.selu(self.hidden[i](x))
-        x_ = self.output(x).reshape(x.shape[0],self.n_hid,self.n_elecs + self.n_hid)
-    else:
-        raise NotImplementedError()
 
-    if self.MFinit!="random": x_ = self.a*x_
-    if self.stop_grad_lower_block:
-        x_ = jax.lax.stop_gradient(x_)
-    x_ += jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), jnp.repeat(jnp.expand_dims(jnp.eye(self.n_hid), axis=0),x.shape[0],axis=0)), axis=2)
+    orbitals = self.orbitals(x)
+
+
+    for i in range(self.layers):
+        x = self.selu(self.hidden[i](x))
+    x_ = self.output(x).reshape(x.shape[0],self.n_hid,self.n_elecs + self.n_hid)
+
+    x_2 = jnp.repeat(jnp.expand_dims(jnp.eye(self.n_hid), axis=0),x.shape[0],axis=0)
+    x_ += jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)
+    
     x = jnp.concatenate((orbitals,x_),axis=1)
     sign, logx = jnp.linalg.slogdet(x)
-    if return_orbs:
-      return logx, jnp.log(sign + 0j), x
-    else:
-      return logx, jnp.log(sign + 0j)
+    return logx, jnp.log(sign + 0j)
 
-
-  def gen_reflected_samples(self,x):
-    assert self.n_elecs%2==0
-    x1 = x[:,:x.shape[1]//2].copy()
-    x2 = x[:,(x.shape[1]//2):].copy()
-    x_ = jnp.concatenate([x2,x1],axis=-1)
-    return x_
-
-
+    
   def __call__(self,x):
-    do = self.double_occupancy(x)
-    batch = x.shape[0]
-    if self.n_elecs%2==0:
-      x_refl    = self.gen_reflected_samples(x)
-      log_psi, sign = self.calc_psi(jnp.concatenate([x,x_refl]))
-      psi       = jnp.exp(log_psi)
-      psi0      = psi[0:batch] 
-      psi_refl  = psi[batch:] 
-      log_psi = jnp.log(1/2*(psi0+psi_refl))+sign[0:batch]
-    else:
-      log_psi, sign = self.calc_psi(x)
-      log_psi += sign
-    if self.double_occupancy_bool:
-      return log_psi
-    else:
-      return log_psi - 1e12*do
+
+    log_psi, sign = self.calc_psi(x)
+    log_psi += sign
+    return log_psi
 
 class Orbitals(nn.Module):
   n_elecs: int
@@ -134,59 +95,8 @@ class Orbitals(nn.Module):
       return res
 
 
-    def Hk(t):
-      # define single particle Hamiltonian: literally have hopping from site to site
-      N = self.Lx*self.Ly # number of sites
-      H = jnp.zeros([N,N], dtype=self.dtype)
-      for x in range(self.Lx):
-        for y in range(self.Ly):
-          i = x*self.Ly + y # map 1D to 2D
-          # hopping
-          if x<self.Lx-1:
-            ix = (x+1)*self.Ly+y
-            H = H.at[i,ix].add(-t)
-            H = H.at[ix,i].add(-t)
-          if y<self.Ly-1:
-            iy = x*self.Ly + (y+1)
-            H = H.at[i,iy].add(-t)
-            H = H.at[iy,i].add(-t)
-      en, us = jnp.linalg.eigh(H)
-      return en, us
-
-
-    def initialize_obc(num_particles,sigmaz):
-      # 'orbitals' are now just eigenstates of single particle Hamiltonian (run from 0 to mX*mY-1) 
-      ks = range(self.Lx*self.Ly)
-      # find possible r-states
-      rs = [[x,y] for y in range(self.Ly) for x in range(self.Lx)]
-
-      mat = jnp.zeros([num_particles,len(rs)], dtype=self.dtype)
-      # get single particle eigenenergies and states
-      en, us = Hk(1)
-      for i in range(num_particles):
-        rcnt=0
-        for r in rs:
-          psi = us[rcnt,i] # wave function coefficient for this eigenstate + position r
-          if self.dtype!=jnp.complex128: 
-              assert np.isclose(jnp.imag(psi),0,1e-15)
-              mat = mat.at[i, rcnt].set(np.real(psi)) 
-          else:
-              mat = mat.at[i, rcnt].set(psi) 
-          rcnt+=1
-      return mat
-
-
     def ft(k_arr, max_val,sigmaz):
-      if "OBC" in self.bounds:
-        try:
-          matrix = initialize_obc(max_val,sigmaz)
-        except AssertionError:
-          jax.debug.print("Fall back to PBC")
-          matrix = []
-          for idx,(kx, ky) in enumerate(k_arr[:max_val]):
-            kstate = [ft_local_pbc(x,y,kx,ky) for y in range(self.Ly) for x in range(self.Lx)]
-            matrix.append(kstate)
-      elif self.bounds=="PBC":
+      if self.bounds=="PBC":
         matrix = []
         for idx,(kx, ky) in enumerate(k_arr[:max_val]):
           kstate = [ft_local_pbc(x,y,kx,ky) for y in range(self.Ly) for x in range(self.Lx)]
@@ -208,27 +118,49 @@ class Orbitals(nn.Module):
     return dtype(mf)
 
 
-  def _init_orbitals_hartree(self, key, shape, dtype):
-    mf = np.load("/project/th-scratch/h/Hannah.Lange/PhD/ML/HiddenFermions/src/orbs_8.0_16_14.npy")
-    mf = jnp.array(mf)
-    #jax.debug.print("mf={x}",x=mf)
-    return dtype(mf)
-
-
   @nn.compact
   def __call__(self,x):
+
+    n_samples, N_sites = x.shape
+
+    # Convert {-1,+1} → 0/1 occupancy for spin-up, spin-down orbitals
+    spin_up = (x == 1).astype(self.dtype)
+    spin_dn = (x == -1).astype(self.dtype)
+    x_flat = jnp.concatenate([spin_up, spin_dn], axis=1) 
+
     if self.MFinit=="Fermi":
-        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
-    elif self.MFinit=="Hartree":
-        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_hartree,(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
-    elif self.MFinit=="random":
-        orbitals_mfmf = self.param('orbitals_mf', normal(0.1),(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
-    else:
-        raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
+        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(self.Lx*self.Ly,self.n_elecs), self.dtype)
+    
     orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
-    if self.stop_grad_mf: 
-        orbitals_mfmf = jax.lax.stop_gradient(orbitals_mfmf)
-    orbitals = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
-    ind1, ind2 = jnp.nonzero(x,size=x.shape[0]*self.n_elecs)
-    x = jnp.repeat(jnp.expand_dims(orbitals,0),x.shape[0],axis=0)[ind1,ind2]
-    return x.reshape(-1,self.n_elecs,x.shape[1])
+
+    orbitals_full = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
+    n_orbs = orbitals_full.shape[1]
+
+        
+    # x_flat: (n_samples, 2*N_sites), with 0/1 occupancy
+    mask = x_flat.astype(bool)  # (n_samples, 2*N_sites)
+    # Get indices of the 1s using top_k
+    # Since entries are 0/1, top_k will pick exactly the N_sites "1"s
+    _, idx = jax.lax.top_k(mask, k=N_sites)   # shape (n_samples, N_sites)
+    x_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
+
+    return x_selected  # shape: (n_samples, n_elecs, n_orbitals)
+    
+
+
+    """    # Select first n_elecs occupied orbitals per sample using argsort
+    idx_sort = jnp.argsort(-x_flat, axis=1)  # occupied first
+    orbitals_full_batched = jnp.broadcast_to(orbitals_full[None, :, :], (n_samples, 2*N_sites, n_orbs))
+    x_selected = jax.vmap(lambda mat, idx: mat[idx[:self.n_elecs], :])(orbitals_full_batched, idx_sort)
+
+    return x_selected  # shape: (n_samples, n_elecs, n_orbitals)
+    """
+
+
+    """
+    ind1, ind2 = jnp.nonzero(x_flat, size=n_samples*self.n_elecs)
+    orbitals_removed = jnp.repeat(jnp.expand_dims(orbitals_full,0),n_samples,axis=0)[ind1,ind2]
+    orbitals_removed = jnp.expand_dims(orbitals_removed, axis=0).reshape(n_samples, self.n_elecs, self.n_hid + self.n_elecs)
+    
+    return orbitals_removed
+    """
