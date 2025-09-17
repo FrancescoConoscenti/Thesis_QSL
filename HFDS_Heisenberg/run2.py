@@ -13,7 +13,6 @@ from netket.operator.fermion import destroy as c
 from netket.operator.fermion import create as cdag
 from netket.operator.fermion import number as nc
 
-from extra import tJExchangeRule
 
 # Variational monte carlo driver
 from netket.experimental.driver import VMC_SR
