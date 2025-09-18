@@ -1,0 +1,9 @@
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+Traceback (most recent call last):
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/ground_state.py", line 99, in <module>
+    from netket.experimental.driver import VMC_SR
+ImportError: cannot import name 'VMC_SR' from 'netket.experimental.driver' (/scratch/f/F.Conoscenti/netket_venv/lib64/python3.9/site-packages/netket/experimental/driver/__init__.py)
+[CpuDevice(id=0)]
+[CpuDevice(id=0)]
+srun: error: cip-ws-101: task 0: Exited with exit code 1
+srun: Terminating StepId=9544791.0

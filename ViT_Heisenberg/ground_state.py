@@ -7,19 +7,12 @@ import jax.numpy as jnp
 print(jax.devices())
 import flax
 from flax import linen as nn
-from einops import rearrange
 from netket.operator.spin import sigmax, sigmaz, sigmay
 import sys
 import os
 
 from ViT_model import ViT_sym
  
-
-model_name = "layers1_d16_heads2_patch2_sample1024_iter200"
-lattice_name = "J=0,8_L=4"
-folder = f'ViT_Heisenberg/plot/{model_name}/{lattice_name}'
-os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
 seed = 0
 key = jax.random.key(seed)
@@ -31,7 +24,24 @@ seed = 0
 key = jax.random.key(seed)
 
 n_dim = 2
-J2 = 0.1
+J2 = 0
+
+num_layers      = 2     # number of Tranformer layers
+d_model         = 16     # dimensionality of the embedding space
+n_heads         = 2     # number of heads
+patch_size      = 2     # lenght of the input sequence
+lr              = 0.0075
+
+N_samples       = 1024
+N_opt           = 100
+
+
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}"
+lattice_name = f"J={J2}_L={L}"
+folder = f'ViT_Heisenberg/plot/{model_name}/{lattice_name}'
+os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
+sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+
 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 
@@ -53,7 +63,7 @@ for u, v in lattice.edges():
 
 # Intiialize the ViT variational wave function
 vit_module = ViT_sym(
-    num_layers=2, d_model=2, n_heads=2, patch_size=2, transl_invariant=True, parity=True
+    num_layers=num_layers, d_model=d_model, n_heads=n_heads, patch_size=patch_size, transl_invariant=True, parity=True
 )
 
 key, subkey = jax.random.split(key)
@@ -61,7 +71,6 @@ spin_configs = jax.random.randint(subkey, shape=(M, L * L), minval=0, maxval=1) 
 params = vit_module.init(subkey, spin_configs)
 
 # Metropolis Local Sampling
-N_samples = 512
 sampler = nk.sampler.MetropolisExchange(
     hilbert=hilbert,
     graph=lattice,
@@ -70,7 +79,7 @@ sampler = nk.sampler.MetropolisExchange(
     sweep_size=lattice.n_nodes,
 )
 
-optimizer = nk.optimizer.Sgd(learning_rate=0.0075)
+optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 key, subkey = jax.random.split(key, 2)
 vstate = nk.vqs.MCState(
@@ -78,7 +87,7 @@ vstate = nk.vqs.MCState(
     model=vit_module,
     sampler_seed=subkey,
     n_samples=N_samples,
-    n_discard_per_chain=0,
+    n_discard_per_chain=16,
     variables=params,
     chunk_size=512,
 )
@@ -87,23 +96,22 @@ N_params = nk.jax.tree_size(vstate.parameters)
 print("Number of parameters = ", N_params, flush=True)
 
 # Variational monte carlo driver
-from netket.experimental.driver import VMC_SR
+from netket.experimental.driver import VMC_SRt
 
-vmc = VMC_SR(
+vmc = VMC_SRt(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    mode="complex",
+    #mode="complex",
 ) 
 
 # Optimization
 log = nk.logging.RuntimeLog()
 
-N_opt = 5
 vmc.run(n_iter=N_opt, out=log)
 
-##############################################################################################################
+
 #%%
 energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 
@@ -241,19 +249,18 @@ print(f"Fidelity = {fidelity_val[0].real}")
 # Apply the spin parity operator to the variational state and check if it remain invariant,
 # Checking that the fidelity is 1
 
+"""
 vstate_array = vstate.to_array()
-
 X_tensor = op.spin.sigmax(hilbert, 0)
 for i in range(1, lattice.n_nodes):
     X_tensor = X_tensor @ op.spin.sigmax(hilbert, i)
-
 vstate_flip = X_tensor @ vstate_array
 vstate_sym = (vstate_array + vstate_flip) / (np.linalg.norm(vstate_array + vstate_flip))
-
 overlap_val = vstate_sym.conj() @ vstate_array
 fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_sym, vstate_sym) * np.vdot(vstate_array, vstate_array))
 
 print(f"Fidelity = {fidelity_val}")
+"""
 
 
 #construct the observable total magnetization
