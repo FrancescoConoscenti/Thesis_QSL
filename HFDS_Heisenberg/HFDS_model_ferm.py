@@ -43,6 +43,7 @@ class HiddenFermion(nn.Module):
     if self.MFinit!="random": 
         self.a = self.param('a', zeros, (1,), self.dtype)
         self.b = self.param('b', zeros, (3,), self.dtype) #needed if we couple two GPUs
+
   def double_occupancy(self,x):
     x = x[:,:x.shape[-1]//2] + x[:,x.shape[-1]//2:]
 
@@ -91,6 +92,9 @@ class HiddenFermion(nn.Module):
   def __call__(self,x):
   
     batch = x.shape[0]
+
+    do = self.double_occupancy(x)
+
     if self.n_elecs%2==0:
       x_refl    = self.gen_reflected_samples(x)
       log_psi, sign = self.calc_psi(jnp.concatenate([x,x_refl]))
@@ -102,7 +106,9 @@ class HiddenFermion(nn.Module):
       log_psi, sign = self.calc_psi(x)
       log_psi += sign
     
-    return log_psi
+    log_psi_no_double = log_psi - 0*do
+
+    return log_psi_no_double
 
 class Orbitals(nn.Module):
   n_elecs: int

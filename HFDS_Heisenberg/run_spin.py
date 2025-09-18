@@ -52,11 +52,11 @@ save = True
 
 #Network param
 n_hid_ferm       = 16
-features         = 8
-hid_layers       = 2
-lr               = 0.0075
-n_samples        = 1024
-N_opt            = 10
+features         = 16
+hid_layers       = 3
+lr               = 0.005
+n_samples        = 2048
+N_opt            = 150
 
 n_chains         = n_samples//2
 n_steps          = 10
@@ -67,16 +67,17 @@ n_dim            = 2
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}"
 lattice_name = f"J={J2}_L={L}"
-folder = f'HFDS_Heisenberg/plot/spin/{model_name}/{lattice_name}'
+folder = f'HFDS_Heisenberg/plot/spin/{lattice_name}/{model_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
+print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
 # --------------- define the network  -------------------
 boundary_conditions = 'pbc' 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 #hi = nk.hi.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
-hi = nk.hi.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
+hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
 print(hi.size)
 
 
@@ -91,7 +92,7 @@ model = HiddenFermion(n_elecs=n_elecs,
                    layers=hid_layers,
                    features=features,
                    MFinit=MFinitialization,
-                   hi=hi,
+                   hilbert=hi,
                    stop_grad_mf=False,
                    stop_grad_lower_block=False,
                    bounds=bounds,
@@ -102,13 +103,13 @@ model = HiddenFermion(n_elecs=n_elecs,
 # ------------- define Hamiltonian ------------------------
 # Heisenberg J1-J2 spin ha
 ha = nk.operator.Heisenberg(
-    hi=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
+    hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
 ).to_jax_operator()  # No Marshall sign rule
 
 
 # ---------- define sampler ------------------------
 sampler = nk.sampler.MetropolisExchange(
-    hi=hi,
+    hilbert=hi,
     graph=lattice,
     d_max=1,
     n_chains=n_samples,
@@ -137,7 +138,7 @@ print("Initial energy:", obs)
 optimizer = nk.optimizer.Sgd(learning_rate=0.01)
 
 vmc = VMC_SRt(
-    ha=ha,
+    hamiltonian=ha,
     optimizer=optimizer,
     diag_shift=0.1,
     variational_state=vstate,
@@ -178,7 +179,7 @@ for i in range(N_tot):
         corr_r[r0, r1] += exp.mean.real
         counts[r0, r1] += 1
 corr_r /= counts 
-corr_r[0, 0] = 0  # set C(0) = 0
+#corr_r[0, 0] = 0  # set C(0) = 0
 
 plt.figure(figsize=(6,5))
 plt.imshow(corr_r, origin='lower', cmap='viridis')

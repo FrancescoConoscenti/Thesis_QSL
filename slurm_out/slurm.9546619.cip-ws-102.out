@@ -1,0 +1,2 @@
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:31<?, ?it/s, Energy=-1.67+0.00j ± 0.15 [σ²=24.14]]  0%|          | 0/2 [00:29<?, ?it/s, Energy=-1.46+0.00j ± 0.21 [σ²=43.75]] 50%|█████     | 1/2 [00:29<00:29, 29.82s/it, Energy=-1.46+0.00j ± 0.21 [σ²=43.75]]100%|██████████| 2/2 [00:29<00:00, 14.91s/it, Energy=-1.46+0.00j ± 0.21 [σ²=43.75]]
