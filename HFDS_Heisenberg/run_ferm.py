@@ -48,14 +48,14 @@ MFinitialization = "Fermi"
 determinant_type = "hidden"
 bounds  ="PBC"
 double_occupancy = False
-save = True
+save = False
 
 #Network param
 n_hid_ferm       = 16
 features         = 8
 hid_layers       = 2
 
-n_samples        = 2048
+n_samples        = 4096
 lr               = 0.0075
 N_opt            = 100
 
@@ -67,17 +67,20 @@ n_dim           = 2
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}"
 lattice_name = f"J={J2}_L={L}"
-folder = f'HFDS_Heisenberg/plot/ferm/{model_name}/{lattice_name}'
+folder = f'HFDS_Heisenberg/plot/ferm/{lattice_name}/{model_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
+print(f"HFDS_ferm, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
 # Lattice and Hilbert space
 boundary_conditions = 'pbc' 
 g = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
+exchange_g = nk.graph.disjoint_union(g, g)
+print("Exchange graph size:", exchange_g.n_nodes)
 
-hi = nkx.hi.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
-print(hi.size)
+hi = nkx.hilbert.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
+print("Hilbert space size",hi.size)
 
 
 if dtype=="real": dtype_ = jnp.float64
@@ -91,7 +94,7 @@ ma = HiddenFermion(n_elecs=n_elecs,
                    layers=hid_layers,
                    features=features,
                    MFinit=MFinitialization,
-                   hi=hi,
+                   hilbert=hi,
                    stop_grad_mf=False,
                    stop_grad_lower_block=False,
                    bounds=bounds,
@@ -100,12 +103,9 @@ ma = HiddenFermion(n_elecs=n_elecs,
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
-    hi=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
+    hilbert=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
 
 #sampler
-exchange_g = nk.graph.disjoint_union(g, g)
-print("Exchange graph size:", exchange_g.n_nodes)
-
 sampler = nk.sampler.MetropolisExchange(hi, graph=exchange_g, d_max=1)
 
 #vstate
@@ -140,7 +140,8 @@ plt.plot(energy_per_site)
 
 plt.xlabel("Iterations")
 plt.ylabel("Energy per site")
-plt.savefig(f'{folder}/Energy.png')
+if(save):
+    plt.savefig(f'{folder}/Energy.png')
 plt.show()
 
 #Correlation function
@@ -159,7 +160,7 @@ for i in range(N_tot):
         corr_r[r0, r1] += exp.mean.real
         counts[r0, r1] += 1
 corr_r /= counts 
-corr_r[0, 0] = 0  # set C(0) = 0
+#corr_r[0, 0] = 0  # set C(0) = 0
 
 plt.figure(figsize=(6,5))
 plt.imshow(corr_r, origin='lower', cmap='viridis')

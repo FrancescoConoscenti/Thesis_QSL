@@ -1,0 +1,7 @@
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+Traceback (most recent call last):
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 110, in <module>
+    sampler = nk.sampler.MetropolisExchange(
+TypeError: MetropolisExchange() missing 1 required positional argument: 'hilbert'
+srun: error: cip-ws-104: task 0: Exited with exit code 1
+srun: Terminating StepId=9545957.0
