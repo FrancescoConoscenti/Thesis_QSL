@@ -178,7 +178,7 @@ class Orbitals(nn.Module):
         try:
           matrix = initialize_obc(max_val,sigmaz)
         except AssertionError:
-          jax.debug.print("Fall back to PBC")
+          #jax.debug.print("Fall back to PBC")
           matrix = []
           for idx,(kx, ky) in enumerate(k_arr[:max_val]):
             kstate = [ft_local_pbc(x,y,kx,ky) for y in range(self.Ly) for x in range(self.Lx)]
@@ -201,7 +201,7 @@ class Orbitals(nn.Module):
     upmatrix = ft(k_arr, (n_elecs+1)//2,+1)
     dnmatrix = ft(k_arr, n_elecs//2,-1)
     mf = jnp.block([[upmatrix, jnp.zeros(upmatrix.shape)], [jnp.zeros(dnmatrix.shape),dnmatrix]]).T
-    jax.debug.print("mf={x}",x=mf)
+    #jax.debug.print("mf={x}",x=mf)
     #jax.debug.print("mf={x}",x=mf)
     return dtype(mf)
 
@@ -209,7 +209,7 @@ class Orbitals(nn.Module):
   def _init_orbitals_hartree(self, key, shape, dtype):
     mf = np.load("/project/th-scratch/h/Hannah.Lange/PhD/ML/HiddenFermions/src/orbs_8.0_16_14.npy")
     mf = jnp.array(mf)
-    jax.debug.print("mf={x}",x=mf)
+    #jax.debug.print("mf={x}",x=mf)
     return dtype(mf)
 
 
