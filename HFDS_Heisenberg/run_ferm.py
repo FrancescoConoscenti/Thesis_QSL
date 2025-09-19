@@ -160,7 +160,7 @@ for i in range(N_tot):
         corr_r[r0, r1] += exp.mean.real
         counts[r0, r1] += 1
 corr_r /= counts 
-#corr_r[0, 0] = 0  # set C(0) = 0
+corr_r[0, 0] = 0  # set C(0) = 0
 
 plt.figure(figsize=(6,5))
 plt.imshow(corr_r, origin='lower', cmap='viridis')
@@ -201,6 +201,12 @@ E_gs, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
 print(f"Exact ground state energy = {E_gs[0]:.3f}")
 E_exact = E_gs[0]/(L*L*4)
 print(f"Exact ground state energy per site= {E_exact}")
+
+# Fidelity vstate, exact state
+vstate_array = vstate.to_array()
+overlap_val = vstate_array.conj() @ ket_gs
+fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+print(f"Fidelity <vstate|exact> = {fidelity_val}")
 
 #Relative Error
 e = np.abs((E_vs - E_exact)/E_exact)

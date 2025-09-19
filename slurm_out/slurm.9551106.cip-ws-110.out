@@ -1,0 +1,3 @@
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+  0%|          | 0/500 [00:00<?, ?it/s]slurmstepd: error: *** STEP 9551106.0 ON cip-ws-110 CANCELLED AT 2025-09-19T14:59:30 ***
+slurmstepd: error: *** JOB 9551106 ON cip-ws-110 CANCELLED AT 2025-09-19T14:59:30 ***

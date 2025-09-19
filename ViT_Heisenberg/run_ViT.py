@@ -30,10 +30,10 @@ num_layers      = 3     # number of Tranformer layers
 d_model         = 16     # dimensionality of the embedding space
 n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.004
+lr              = 0.001
 
 N_samples       = 2048
-N_opt           = 200
+N_opt           = 500
 
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}"
@@ -44,12 +44,9 @@ sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file 
 
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
-
-lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
-
 # Hilbert space of spins on the graph
+lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
-
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
@@ -65,7 +62,12 @@ for u, v in lattice.edges():
 
 # Intiialize the ViT variational wave function
 vit_module = ViT_sym(
-    num_layers=num_layers, d_model=d_model, n_heads=n_heads, patch_size=patch_size, transl_invariant=True, parity=True
+    num_layers=num_layers, 
+    d_model=d_model, 
+    n_heads=n_heads, 
+    patch_size=patch_size, 
+    transl_invariant=True, 
+    parity=True
 )
 
 key, subkey = jax.random.split(key)
@@ -96,6 +98,7 @@ vstate = nk.vqs.MCState(
 
 N_params = nk.jax.tree_size(vstate.parameters)
 print("Number of parameters = ", N_params, flush=True)
+
 
 # Variational monte carlo driver
 from netket.experimental.driver import VMC_SRt
@@ -154,7 +157,7 @@ for i in range(N_tot):
         counts[r0, r1] += 1
 
 corr_r /= counts 
-#corr_r[0, 0] = 0  # set C(0) = 0
+corr_r[0, 0] = 0  # set C(0) = 0
 
 
 plt.figure(figsize=(6,5))
@@ -264,6 +267,12 @@ fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_sym, vstate_sym) * np.
 print(f"Fidelity = {fidelity_val}")
 """
 
+# Fidelity vstate, exact state
+vstate_array = vstate.to_array()
+overlap_val = vstate_array.conj() @ ket_gs
+fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+print(f"Fidelity <vstate|exact> = {fidelity_val}")
+
 
 #construct the observable total magnetization
 tot_magn = sum([sigmaz(hilbert, i) for i in lattice.nodes()])
@@ -278,6 +287,39 @@ print(f"Variance = {variance}")
 #Vscore
 v_score = L*L*variance/(E_vs*L*L*4)
 print(f"V-score = {v_score}")
+
+#Count parameters
+def vit_param_count(num_heads, num_layers, patch_size, d_model, Ns):
+    """
+    Returns (total_params, breakdown_dict).
+    Provide either Ns (total input sites) OR n_patches directly.
+    """
+
+    n_patches = Ns // (patch_size**2)
+
+    # Embed layer (Dense with bias)
+    embed_params = (patch_size**2) * d_model + d_model  # kernel + bias
+    # FMHA
+    alpha_params = num_heads * n_patches
+    v_params = d_model * d_model + d_model  # kernel + bias
+    W_params = d_model * d_model + d_model  # kernel + bias
+    fmha_params = v_params + W_params + alpha_params  # = 2*(d^2 + d) + alpha
+    # FFN (two Dense layers with biases) -- corrected
+    ff_dense1 = d_model * (4 * d_model) + (4 * d_model)   # weights + bias
+    ff_dense2 = (4 * d_model) * d_model + d_model         # weights + bias
+    ffn_params = ff_dense1 + ff_dense2                   # = 8*d^2 + 5*d
+    # LayerNorms in EncoderBlock (2 LNs per block, each has scale+bias)
+    norm_block = 4 * d_model
+    block_params = fmha_params + ffn_params + norm_block
+    encoder_params = num_layers * block_params
+    # OutputHead: 3 LayerNorms + 2 Dense(d_model -> d_model)
+    output_params = 3 * (2 * d_model) + 2 * (d_model * d_model + d_model)
+    total = embed_params + encoder_params + output_params
+
+    return total
+
+count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
+print(f"params={count_params}")
 
 
 sys.stdout.close()

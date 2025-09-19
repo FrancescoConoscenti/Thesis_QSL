@@ -7,7 +7,7 @@
 ##SBATCH --partition=cip,inter
 
 #SBATCH --mem=16G
-#SBATCH --time=1:00:00
+#SBATCH --time=12:00:00
 
 
 source /scratch/f/F.Conoscenti/netket_venv/bin/activate

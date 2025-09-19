@@ -36,12 +36,12 @@ from HFDS_model_spin import HiddenFermion
 
 #Physical param
 L      = 4
-n_elecs = 16 # L*L should be half filling
+n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
 N_dn    = n_elecs//2
 n_dim = 2
-J2 = 0
+J2 = 1
 
 dtype   = "real"
 MFinitialization = "Fermi"
@@ -50,13 +50,15 @@ bounds  = "PBC"
 save = True
 
 
+#Varaitional state param
+n_hid_ferm       = 2
+features         = 2
+hid_layers       = 1
+
 #Network param
-n_hid_ferm       = 16
-features         = 16
-hid_layers       = 3
-lr               = 0.005
-n_samples        = 2048
-N_opt            = 150
+lr               = 0.001
+n_samples        = 256
+N_opt            = 3
 
 n_chains         = n_samples//2
 n_steps          = 10
@@ -179,7 +181,7 @@ for i in range(N_tot):
         corr_r[r0, r1] += exp.mean.real
         counts[r0, r1] += 1
 corr_r /= counts 
-#corr_r[0, 0] = 0  # set C(0) = 0
+corr_r[0, 0] = 0  # set C(0) = 0
 
 plt.figure(figsize=(6,5))
 plt.imshow(corr_r, origin='lower', cmap='viridis')
@@ -221,6 +223,12 @@ print(f"Exact ground state energy = {E_gs[0]:.3f}")
 E_exact = E_gs[0]/(L*L*4)
 print(f"Exact ground state energy per site= {E_exact}")
 
+# Fidelity vstate, exact state
+vstate_array = vstate.to_array()
+overlap_val = vstate_array.conj() @ ket_gs
+fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+print(f"Fidelity <vstate|exact> = {fidelity_val}")
+
 #Relative Error
 e = np.abs((E_vs - E_exact)/E_exact)
 print(f"Relative error = {e}")
@@ -240,6 +248,33 @@ print(f"Variance = {variance}")
 #Vscore
 v_score = L*L*variance/(E_vs*L*L*4)
 print(f"V-score = {v_score}")
+
+
+#Count Parameters
+def hidden_fermion_param_count(n_elecs, n_hid, Lx, Ly, layers, features):
+    """
+    Total trainable parameters for HiddenFermion (FFNN version)
+    matching NetKet counting.
+    """
+    # Orbitals: sum of MF + HF
+    orbitals_params = (Lx*Ly)*n_elecs + (2*Lx*Ly)*n_hid
+
+    # Hidden FFNN:
+    # Input dimension is flattened orbitals per electron = n_elecs*(n_hid + 1)
+    hidden_input_dim = n_elecs * (n_hid + 1)
+    hidden_params = layers * hidden_input_dim * features
+
+    # Output layer
+    output_features = n_hid * (n_elecs + n_hid)
+    output_params = features * output_features + output_features  # include bias
+
+    total_params = orbitals_params + hidden_params + output_params
+
+    return total_params
+
+
+count_params = hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
+print(f"params={count_params}")
 
 
 sys.stdout.close()
