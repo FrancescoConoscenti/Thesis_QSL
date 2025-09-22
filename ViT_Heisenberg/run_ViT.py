@@ -18,27 +18,27 @@ seed = 0
 key = jax.random.key(seed)
 M = 10  # Number of spin configurations to initialize the parameters
 L = 4  # Linear size of the lattice
+symm = True
 
-save = True
 seed = 0
 key = jax.random.key(seed)
 
 n_dim = 2
-J2 = 1
+J2 = 0.5
 
-num_layers      = 3     # number of Tranformer layers
+num_layers      = 2     # number of Tranformer layers
 d_model         = 16     # dimensionality of the embedding space
 n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.001
+lr              = 0.005
 
-N_samples       = 2048
-N_opt           = 500
+N_samples       = 256
+N_opt           = 1
 
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}"
 lattice_name = f"J={J2}_L={L}"
-folder = f'ViT_Heisenberg/plot/{lattice_name}/{model_name}'
+folder = f'ViT_Heisenberg/plot/{model_name}/{lattice_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
@@ -67,7 +67,7 @@ vit_module = ViT_sym(
     n_heads=n_heads, 
     patch_size=patch_size, 
     transl_invariant=True, 
-    parity=True
+    parity=symm
 )
 
 key, subkey = jax.random.split(key)
@@ -101,14 +101,14 @@ print("Number of parameters = ", N_params, flush=True)
 
 
 # Variational monte carlo driver
-from netket.experimental.driver import VMC_SRt
+from netket.experimental.driver import VMC_SR
 
-vmc = VMC_SRt(
+vmc = VMC_SR(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    #mode="complex",
+    mode="complex",
 ) 
 
 # Optimization
@@ -118,22 +118,28 @@ vmc.run(n_iter=N_opt, out=log)
 
 
 #%%
-energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 
+#Save log, vstate
+import pickle
+with open(f"{folder}/log.pkl", "wb") as f:
+    pickle.dump(log, f)
+
+params = vstate.parameters  # dictionary of model parameters
+np.savez(f"{folder}/vstate_params.npz", **params)
+
+
+#Energy
+energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 E_vs = energy_per_site[-1]
 print("Last value: ", energy_per_site[-1])
-
 plt.plot(energy_per_site)
-
 plt.xlabel("Iterations")
 plt.ylabel("Energy per site")
-
-if(save):
-    plt.savefig(f'{folder}/Energy.png')
+plt.savefig(f'{folder}/Energy.png')
 plt.show()
 
 
-
+#Correlation function
 vstate.n_samples = 1024
 N_tot = lattice.n_nodes
 
@@ -143,22 +149,16 @@ counts = np.zeros((L, L))
 
 for i in range(N_tot):
     for j in range(N_tot):
-        
         r = lattice.positions[i] - lattice.positions[j]
-
         corr_ij = 0.25 * (sigmaz(hilbert, i) * sigmaz(hilbert, j) + sigmax(hilbert, i) * sigmax(hilbert, j) + sigmay(hilbert, i) * sigmay(hilbert, j))
-
         exp = vstate.expect(corr_ij)
-
         #PBC
         r0, r1 = int(r[0]) % L , int(r[1]) % L
-
         corr_r[r0, r1] += exp.mean.real
         counts[r0, r1] += 1
 
 corr_r /= counts 
 corr_r[0, 0] = 0  # set C(0) = 0
-
 
 plt.figure(figsize=(6,5))
 plt.imshow(corr_r, origin='lower', cmap='viridis')
@@ -168,44 +168,35 @@ plt.ylabel('dy')
 plt.title('Spin-Spin Correlation Function C(r) in 2D')
 plt.xticks(np.arange(L))  # integer ticks for x-axis
 plt.yticks(np.arange(L)) 
-
-if(save):
-    plt.savefig(f'{folder}/Corr.png')
+plt.savefig(f'{folder}/Corr.png')
 plt.show()
 
 
-# Compute the 2D Fourier transform of corr_r
+# Structure factor
 S_q = np.fft.fft2(corr_r)
-
-# Account for periodicity
 S_q_periodic = np.zeros((L+1, L+1), dtype=S_q.dtype)
 S_q_periodic[:L, :L] = S_q  
 S_q_periodic[L, :] = S_q_periodic[0, :]    
 S_q_periodic[:, L] = S_q_periodic[:, 0]    
 
-#plot
 plt.figure(figsize=(6,5))
 plt.imshow(np.abs(S_q_periodic), origin='lower', cmap='viridis')
 plt.colorbar(label='|S(q)|')
 plt.xlabel('q_x')
 plt.ylabel('q_y')
 plt.title('Structure Factor S(q)')
-
-# Set integer ticks for axes
 plt.xticks([0, 1/2*L, L], ['0', 'π', '2π'])
 plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
-
-if(save):
-    plt.savefig(f'{folder}/Struct.png')
+plt.savefig(f'{folder}/Struct.png')
 plt.show()
 
+#Exact gs
 E_gs, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
-
 print(f"Exact ground state energy = {E_gs[0]:.3f}")
 E_exact = E_gs[0]/(L*L*4)
 print(f"Exact ground state energy per site= {E_exact}")
 
-
+#Relative error
 e = np.abs((E_vs - E_exact)/E_exact)
 print(f"Relative error = {e}")
 
@@ -320,6 +311,28 @@ def vit_param_count(num_heads, num_layers, patch_size, d_model, Ns):
 
 count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
 print(f"params={count_params}")
+
+
+# Build staggered operator
+ops = {}
+for i in lattice.nodes():  # just node indices
+    x, y = lattice.positions[i]  # get coordinates
+    staggered_sign = (-1) ** (x + y)
+    ops[f"sz_{i}"] = staggered_sign * nk.operator.spin.sigmaz(hilbert, i)
+M_stag = sum(ops.values()) / lattice.n_nodes
+
+Staggered_Magnetization = vstate.expect(M_stag) 
+print(f"Staggered Magnetization = {Staggered_Magnetization.mean.real}")
+
+ops = {}
+for i in lattice.nodes():  # just node indices
+    x, y = lattice.positions[i]  # get coordinates
+    stripe_sign = (-1) ** x  # change to (-1)**y for y-stripes
+    ops[f"sz_{i}"] = stripe_sign * nk.operator.spin.sigmaz(hilbert, i)
+M_stripe = sum(ops.values()) / lattice.n_nodes
+
+Striped_Magnetization = vstate.expect(M_stripe) 
+print(f"Striped Magnetization = {Striped_Magnetization.mean.real}")
 
 
 sys.stdout.close()
