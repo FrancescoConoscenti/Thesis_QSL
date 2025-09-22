@@ -9,10 +9,13 @@
 #SBATCH --mem=16G
 #SBATCH --time=12:00:00
 
+sleep 10
+export JAX_PLATFORMS=cpu
+source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
-source /scratch/f/F.Conoscenti/netket_venv/bin/activate
-
+J_VALUES=(0.0 0.2 0.5 0.7 1.0)
+J=${J_VALUES[$SLURM_ARRAY_TASK_ID]}
 
 #srun python HFDS_Heisenberg/run_ferm.py
-#srun python HFDS_Heisenberg/run_spin.py
-srun python ViT_Heisenberg/run_ViT.py
+srun python HFDS_Heisenberg/run_spin.py --J2 $J
+#srun python ViT_Heisenberg/run_ViT.py

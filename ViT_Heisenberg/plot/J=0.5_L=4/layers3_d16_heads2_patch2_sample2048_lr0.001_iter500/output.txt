@@ -1,2 +1,11 @@
 ViT, J=0.5, L=4, layers3_d16_heads2_patch2_sample2048_lr0.001_iter500
 Number of parameters =  8952
+Last value:  -0.5045796820969158
+Exact ground state energy = -33.832
+Exact ground state energy per site= -0.5286202094621771
+Relative error = 0.04547788172858609
+Fidelity <vstate|exact> = [0.71530529+0.j]
+Magnetization = 0.0
+Variance = 11.912182556726437
+V-score = -5.9020324139995965
+params=8952

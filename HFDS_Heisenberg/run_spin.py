@@ -14,6 +14,7 @@ try:
 except:
   pass
 
+import argparse
 import sys
 #sys.path.insert(1, '/project/th-scratch/h/Hannah.Lange/PhD/ML/HiddenFermions/src')
 import argparse
@@ -28,37 +29,41 @@ import numpy as np
 
 from netket.operator.spin import sigmax, sigmaz, sigmay
 # Variational monte carlo driver
-from netket.experimental.driver import VMC_SRt
+from netket.experimental.driver import VMC_SR
 
 from HFDS_model_spin import Orbitals
 from HFDS_model_spin import HiddenFermion
 #%%
 
+
+parser = argparse.ArgumentParser(description="Example script with parameters")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+args = parser.parse_args()
+
 #Physical param
-L      = 4
+L       = 4
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
 N_dn    = n_elecs//2
 n_dim = 2
-J2 = 1
+J2 = args.J2
 
 dtype   = "real"
 MFinitialization = "Fermi"
 determinant_type = "hidden"
 bounds  = "PBC"
-save = True
-
+symmetry = True  #True or False
 
 #Varaitional state param
-n_hid_ferm       = 2
-features         = 2
+n_hid_ferm       = 16
+features         = 32
 hid_layers       = 1
 
 #Network param
-lr               = 0.001
-n_samples        = 256
-N_opt            = 3
+lr               = 0.02
+n_samples        = 4096
+N_opt            = 200
 
 n_chains         = n_samples//2
 n_steps          = 10
@@ -67,9 +72,9 @@ cs               = n_samples
 n_dim            = 2
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}"
 lattice_name = f"J={J2}_L={L}"
-folder = f'HFDS_Heisenberg/plot/spin/{lattice_name}/{model_name}'
+folder = f'HFDS_Heisenberg/plot/spin/{model_name}/{lattice_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
@@ -98,6 +103,7 @@ model = HiddenFermion(n_elecs=n_elecs,
                    stop_grad_mf=False,
                    stop_grad_lower_block=False,
                    bounds=bounds,
+                   parity=symmetry,
                    dtype=dtype_)
 
 #model = nk.models.RBM(alpha=1)
@@ -139,12 +145,12 @@ print("Initial energy:", obs)
 
 optimizer = nk.optimizer.Sgd(learning_rate=0.01)
 
-vmc = VMC_SRt(
+vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
     diag_shift=0.1,
     variational_state=vstate,
-    #mode = 'real'
+    mode = 'real'
 ) 
 
 log = nk.logging.RuntimeLog()
@@ -153,6 +159,15 @@ vmc.run(n_iter=N_opt, out=log)
 
 
 #%%
+
+#Save log, vstate
+import pickle
+with open(f"{folder}/log.pkl", "wb") as f:
+    pickle.dump(log, f)
+
+params = vstate.parameters  # dictionary of model parameters
+np.savez(f"{folder}/vstate_params.npz", **params)
+
 #Energy
 energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 E_vs = energy_per_site[-1]
@@ -191,8 +206,7 @@ plt.ylabel('dy')
 plt.title('Spin-Spin Correlation Function C(r) in 2D')
 plt.xticks(np.arange(L))  # integer ticks for x-axis
 plt.yticks(np.arange(L)) 
-if(save):
-    plt.savefig(f'{folder}/Corr.png')
+plt.savefig(f'{folder}/Corr.png')
 plt.show()
 
 
@@ -212,8 +226,7 @@ plt.ylabel('q_y')
 plt.title('Structure Factor S(q)')
 plt.xticks([0, 1/2*L, L], ['0', 'π', '2π'])
 plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
-if(save):
-    plt.savefig(f'{folder}/Struct.png')
+plt.savefig(f'{folder}/Struct.png')
 plt.show()
 
 #Exact gs
@@ -252,30 +265,50 @@ print(f"V-score = {v_score}")
 
 #Count Parameters
 def hidden_fermion_param_count(n_elecs, n_hid, Lx, Ly, layers, features):
-    """
-    Total trainable parameters for HiddenFermion (FFNN version)
-    matching NetKet counting.
-    """
-    # Orbitals: sum of MF + HF
-    orbitals_params = (Lx*Ly)*n_elecs + (2*Lx*Ly)*n_hid
-
-    # Hidden FFNN:
-    # Input dimension is flattened orbitals per electron = n_elecs*(n_hid + 1)
-    hidden_input_dim = n_elecs * (n_hid + 1)
-    hidden_params = layers * hidden_input_dim * features
-
-    # Output layer
-    output_features = n_hid * (n_elecs + n_hid)
-    output_params = features * output_features + output_features  # include bias
-
-    total_params = orbitals_params + hidden_params + output_params
-
+    # Parameters in Orbitals module
+    n_sites = Lx * Ly
+    orbitals_mf_params = 2 * n_sites * n_elecs  # orbitals_mf shape (2*Lx*Ly, n_elecs)
+    orbitals_hf_params = 2 * n_sites * n_hid    # orbitals_hf shape (2*Lx*Ly, n_hid)
+    
+    # Parameters in FFNN part of HiddenFermion
+    input_dim = n_sites  # Input dimension Lx*Ly
+    # Hidden layers (all without bias)
+    hidden_params = input_dim * features  # First hidden layer
+    hidden_params += (layers - 1) * (features * features)  # Subsequent hidden layers
+    
+    # Output layer (with bias)
+    output_dim = n_hid * (n_elecs + n_hid)
+    output_params = features * output_dim + output_dim  # Weights + biases
+    
+    total_params = orbitals_mf_params + orbitals_hf_params + hidden_params + output_params
     return total_params
 
 
 count_params = hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 print(f"params={count_params}")
 
+
+
+# Staggered and Striped Magnetization
+ops = {}
+for i in lattice.nodes():  # just node indices
+    x, y = lattice.positions[i]  # get coordinates
+    staggered_sign = (-1) ** (x + y)
+    ops[f"sz_{i}"] = staggered_sign * nk.operator.spin.sigmaz(hi, i)
+M_stag = sum(ops.values()) / lattice.n_nodes
+
+Staggered_Magnetization = vstate.expect(M_stag) 
+print(f"Staggered Magnetization = {Staggered_Magnetization.mean.real}")
+
+ops = {}
+for i in lattice.nodes():  # just node indices
+    x, y = lattice.positions[i]  # get coordinates
+    stripe_sign = (-1) ** x  # change to (-1)**y for y-stripes
+    ops[f"sz_{i}"] = stripe_sign * nk.operator.spin.sigmaz(hi, i)
+M_stripe = sum(ops.values()) / lattice.n_nodes
+
+Striped_Magnetization = vstate.expect(M_stripe) 
+print(f"Striped Magnetization = {Striped_Magnetization.mean.real}")
 
 sys.stdout.close()
 

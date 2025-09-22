@@ -24,6 +24,7 @@ class HiddenFermion(nn.Module):
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
   bounds: str="PBC"
+  parity: bool = False
   dtype: type = jnp.float64
   U: float=8.0
 
@@ -61,11 +62,29 @@ class HiddenFermion(nn.Module):
     sign, logx = jnp.linalg.slogdet(x)
     return logx, jnp.log(sign + 0j)
 
-    
-  def __call__(self,x):
 
-    log_psi, sign = self.calc_psi(x)
-    log_psi += sign
+  def gen_reflected_samples(self,x):
+    assert self.n_elecs%2==0
+    x1 = x[:,:x.shape[1]//2].copy()
+    x2 = x[:,(x.shape[1]//2):].copy()
+    x_ = jnp.concatenate([x2,x1],axis=-1)
+    return x_
+    
+
+  def __call__(self,x):
+    batch = x.shape[0]
+
+    if self.parity:
+      x_refl    = self.gen_reflected_samples(x)
+      log_psi, sign = self.calc_psi(jnp.concatenate([x,x_refl]))
+      psi       = jnp.exp(log_psi)
+      psi0      = psi[0:batch] 
+      psi_refl  = psi[batch:] 
+      log_psi = jnp.log(1/2*(psi0+psi_refl))+sign[0:batch]
+    else:
+      log_psi, sign = self.calc_psi(x)
+      log_psi += sign
+
     return log_psi
 
 class Orbitals(nn.Module):
