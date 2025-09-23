@@ -1,9 +1,0 @@
-An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
-Traceback (most recent call last):
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/ground_state.py", line 101, in <module>
-    vmc = VMC_SRt(
-TypeError: __init__() got an unexpected keyword argument 'mode'
-[CpuDevice(id=0)]
-[CpuDevice(id=0)]
-srun: error: cip-ws-101: task 0: Exited with exit code 1
-srun: Terminating StepId=9544796.0

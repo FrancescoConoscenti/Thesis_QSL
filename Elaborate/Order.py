@@ -3,16 +3,15 @@ import re
 import matplotlib.pyplot as plt
 
 
-model_ViT = f"/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin/layers1_hidd1_feat1_sample20_lr0.02_iter2_symmTrue"
+model_ViT = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d16_heads1_patch2_sample2048_lr0.0075_iter200_symmFalse"
 model_HFDS = f"/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin/layers1_hidd1_feat1_sample20_lr0.02_iter2_symmTrue"
 
 keywords = ["Staggered Magnetization", "Striped Magnetization"]
-#lattice_names = ["J=0_L=4", "J=0.2_L=4", "J=0.7_L=4", "J=1_L=4"]
-lattice_names = [ "J=1_L=4"]
+lattice_names = ["J=0.0_L=4", "J=0.2_L=4", "J=0.5_L=4", "J=0.7_L=4", "J=1.0_L=4"]
 values = {key: [] for key in keywords}
+models = [model_ViT]#, model_HFDS]
 
-
-for model_name in [model_ViT, model_HFDS]:
+for model_name in models:
     for key in keywords:
         for lattice_name in lattice_names:
             # Extract the J value from the lattice_name
@@ -26,6 +25,8 @@ for model_name in [model_ViT, model_HFDS]:
                         val = float(match.group(1))
                         values[key].append((J_value, val))
 
+    for key in values:
+        values[key] = [(j_val, abs(v_val)) for j_val, v_val in values[key]]
 
     # --- Plot with 2 y-axes ---
     fig, ax1 = plt.subplots()

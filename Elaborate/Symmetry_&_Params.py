@@ -2,20 +2,20 @@ import re
 import matplotlib.pyplot as plt
 
 
-ViT_lessparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
-ViT_moreparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
-ViT_moreparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
+ViT_lessparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d8_heads1_patch2_sample1024_lr0.0075_iter100_symmFalse"
+ViT_lessparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d8_heads2_patch2_sample1024_lr0.0075_iter100_symmTrue"
+ViT_moreparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d16_heads2_patch2_sample1024_lr0.0075_iter100_symmTrue"
 
-HFDS_lessparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
-HFDS_moreparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
-HFDS_moreparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d16_heads2_patch2_sample1024_lr0.0075_iter100"
+HFDS_lessparam_nosymm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d8_heads1_patch2_sample1024_lr0.0075_iter100_symmFalse"
+HFDS_lessparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d8_heads2_patch2_sample1024_lr0.0075_iter100_symmTrue"
+HFDS_moreparam_symm = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d16_heads2_patch2_sample1024_lr0.0075_iter100_symmTrue"
 
-J = 0
+J = 0.5
 
 models = {
-    "less param, no_symm": (ViT_lessparam_nosymm, HFDS_lessparam_nosymm),
-    "more param, no_symm": (ViT_moreparam_nosymm, HFDS_moreparam_nosymm),
-    "more param, symm":    (ViT_moreparam_symm, HFDS_moreparam_symm),
+    "964 param, no_symm": (ViT_lessparam_nosymm, HFDS_lessparam_nosymm),
+    "968 param, symm": (ViT_lessparam_symm, HFDS_lessparam_symm),
+    "3464 param, symm":    (ViT_moreparam_symm, HFDS_moreparam_symm),
 }
 
 # Collect values
@@ -49,7 +49,7 @@ for i, label in enumerate(x_labels):
 ax.set_xticks(x_pos)
 ax.set_xticklabels(x_labels, rotation=20)
 ax.set_ylabel("Last value")
-ax.set_title(f"Comparison at J={J}")
+ax.set_title(f"Comparison at J={J} (sample1024_lr0.0075_iter100)")
 ax.legend()
 ax.grid(True, linestyle="--", alpha=0.6)
 

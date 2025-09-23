@@ -27,10 +27,12 @@ os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
 import numpy as np
 
 from netket.operator.spin import sigmax, sigmaz, sigmay
-from netket.experimental.driver import VMC_SRt
+from netket.experimental.driver import VMC_SR
 
 from HFDS_model_ferm import Orbitals
 from HFDS_model_ferm import HiddenFermion
+
+from Exchange_sampler import *
 
 
 
@@ -38,7 +40,7 @@ from HFDS_model_ferm import HiddenFermion
 L = 4
 n_elecs = L*L
 N_sites = L*L
-N_up    = (n_elecs+1)//2
+N_up    = n_elecs//2
 N_dn    = n_elecs//2
 n_dim = 2
 J2 = 0
@@ -51,15 +53,15 @@ double_occupancy = False
 save = False
 
 #Network param
-n_hid_ferm       = 16
-features         = 8
-hid_layers       = 2
+n_hid_ferm       = 8
+features         = 32
+hid_layers       = 1
 
-n_samples        = 4096
-lr               = 0.0075
+n_samples        = 1024
+lr               = 0.02
 N_opt            = 100
 
-n_chains         = n_samples//2
+n_chains         = n_samples
 n_steps          = 10
 n_modes          = 2*L*L
 cs               = n_samples
@@ -79,12 +81,16 @@ g = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
 exchange_g = nk.graph.disjoint_union(g, g)
 print("Exchange graph size:", exchange_g.n_nodes)
 
-hi = nkx.hilbert.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
+# put some costraint of the hilbert space
+hi = nk.hilbert.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
 print("Hilbert space size",hi.size)
 
-
+"""
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
+"""
+
+dtype_ = jnp.float64
 
 # Model
 ma = HiddenFermion(n_elecs=n_elecs,
@@ -100,26 +106,41 @@ ma = HiddenFermion(n_elecs=n_elecs,
                    bounds=bounds,
                    dtype=dtype_)
 
+#ma = nk.models.RBM(alpha=1, param_dtype=complex)
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
     hilbert=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
 
 #sampler
-sampler = nk.sampler.MetropolisExchange(hi, graph=exchange_g, d_max=1)
+sampler = nk.sampler.MetropolisSampler(hi, n_chains=n_chains, rule=tJExchangeRule(graph=g))
 
 #vstate
 vstate = nk.vqs.MCState(sampler, ma, n_samples=n_samples, chunk_size=cs, n_discard_per_chain=32) #defines the variational state object
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
+"""
+# Draw a sample and compute log amplitude to debug
+for s in range(n_samples):
+    sample = vstate.samples[s]
+    print(sample)
+    val = vstate.log_value(sample)
+    print("Initial log amplitude:", val)
+    print(" ")
+
+# calculate observable
+obs = vstate.expect(hamiltonian)
+print("Initial energy:", obs)
+"""
+
 #optimization
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
-vmc = VMC_SRt(
+vmc = VMC_SR(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
-    diag_shift=1e-2,
+    diag_shift=1e-3,
     variational_state=vstate,
     #mode="real",
 ) 

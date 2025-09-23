@@ -10,9 +10,13 @@ from flax import linen as nn
 from netket.operator.spin import sigmax, sigmaz, sigmay
 import sys
 import os
+import argparse
 
 from ViT_model import ViT_sym
  
+parser = argparse.ArgumentParser(description="Example script with parameters")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+args = parser.parse_args()
 
 seed = 0
 key = jax.random.key(seed)
@@ -24,16 +28,16 @@ seed = 0
 key = jax.random.key(seed)
 
 n_dim = 2
-J2 = 0.5
+J2 = args.J2
 
-num_layers      = 2     # number of Tranformer layers
-d_model         = 16     # dimensionality of the embedding space
+num_layers      = 1     # number of Tranformer layers
+d_model         = 16    # dimensionality of the embedding space
 n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.005
+lr              = 0.0075
 
-N_samples       = 256
-N_opt           = 1
+N_samples       = 1024
+N_opt           = 100
 
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}"

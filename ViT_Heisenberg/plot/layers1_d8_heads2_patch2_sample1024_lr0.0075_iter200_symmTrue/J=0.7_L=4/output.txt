@@ -1,0 +1,14 @@
+ViT, J=0.7, L=4, layers1_d8_heads2_patch2_sample1024_lr0.0075_iter200
+Number of parameters =  968
+Automatic SR implementation choice:  QGT
+Last value:  -0.5582854682355487
+Exact ground state energy = -36.087
+Exact ground state energy per site= -0.5638581160226857
+Relative error = 0.009883067439810956
+Fidelity <vstate|exact> = [0.55549601+0.j]
+Magnetization = 0.0
+Variance = 3.029287955816416
+V-score = -1.3565138841023512
+params=968
+Staggered Magnetization = -0.006103515625
+Striped Magnetization = -0.001953125
