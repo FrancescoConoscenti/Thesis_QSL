@@ -293,7 +293,7 @@ class ViT_sym(nn.Module):
     n_heads: int  # number of heads
     patch_size: int  # linear patch size
     transl_invariant: bool = False
-    parity: bool = False   # parity symmetry operation
+    parity: bool = True  # parity symmetry operation
 
     @nn.compact
     def __call__(self, spins):
@@ -302,10 +302,13 @@ class ViT_sym(nn.Module):
                     self.d_model,
                     self.n_heads,
                     self.patch_size,
-                    transl_invariant=self.transl_invariant,)
+                    transl_invariant=self.transl_invariant)
+        
         
         if self.parity:
             z_plus = vit(spins)
             z_minus =  vit((-1.)*spins)   
             return logsumexp_cplx(jnp.array([z_plus, z_minus]), axis=0)
+        else:
+            return vit(spins)
 

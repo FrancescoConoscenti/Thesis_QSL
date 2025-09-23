@@ -56,23 +56,23 @@ bounds  = "PBC"
 symmetry = True  #True or False
 
 #Varaitional state param
-n_hid_ferm       = 16
-features         = 32
+n_hid_ferm       = 8
+features         = 32 #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
-n_samples        = 4096
-N_opt            = 200
+lr               = 0.01
+n_samples        = 1024
+N_opt            = 100
 
 n_chains         = n_samples//2
-n_steps          = 10
+n_steps          = 100
 n_modes          = 2*L*L
-cs               = n_samples
+cs               =  n_samples#//4   #chunk size for the sampling
 n_dim            = 2
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Ising"
 lattice_name = f"J={J2}_L={L}"
 folder = f'HFDS_Heisenberg/plot/spin/{model_name}/{lattice_name}'
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
@@ -84,8 +84,10 @@ print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{featu
 boundary_conditions = 'pbc' 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 #hi = nk.hi.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
-hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
-print(hi.size)
+
+hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
+
+print(f"hilbert space size = ",hi.size)
 
 
 if dtype=="real": dtype_ = jnp.float64
@@ -106,21 +108,22 @@ model = HiddenFermion(n_elecs=n_elecs,
                    parity=symmetry,
                    dtype=dtype_)
 
-#model = nk.models.RBM(alpha=1)
 
 # ------------- define Hamiltonian ------------------------
 # Heisenberg J1-J2 spin ha
-ha = nk.operator.Heisenberg(
+"""ha = nk.operator.Heisenberg(
     hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
-).to_jax_operator()  # No Marshall sign rule
+).to_jax_operator()  # No Marshall sign rule"""
 
+#ising hamiltonian
+ha = nk.operator.Ising(hilbert=hi, graph=lattice, h=0.0, J=1.0, dtype=jnp.float64).to_jax_operator()
 
 # ---------- define sampler ------------------------
 sampler = nk.sampler.MetropolisExchange(
     hilbert=hi,
     graph=lattice,
-    d_max=1,
-    n_chains=n_samples,
+    d_max=2,
+    n_chains=n_chains,
     sweep_size=lattice.n_nodes,
 )
 
@@ -129,26 +132,14 @@ vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, chunk_size=cs, n_di
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
-"""
-# Draw a sample and compute log amplitude to debug
-sample = vstate.samples[0]
-print(sample)
-val = vstate.log_value(sample)
-print("Initial log amplitude:", val)
-
-# calculate observable
-obs = vstate.expect(ha)
-print("Initial energy:", obs)
-"""
-
 #%%
 
-optimizer = nk.optimizer.Sgd(learning_rate=0.01)
+optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=0.1,
+    diag_shift=1e-4,
     variational_state=vstate,
     mode = 'real'
 ) 
@@ -230,7 +221,14 @@ plt.savefig(f'{folder}/Struct.png')
 plt.show()
 
 #Exact gs
-E_gs, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+#E_gs, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+#E_gs, ket_gs = nk.exact.full_ed(ha, compute_eigenvectors=True)
+
+import scipy.sparse.linalg as linalg
+sparse = ha.to_sparse(jax_=False).tocsc()   # scipy.sparse matrix
+dense = sparse.todense()
+E_gs, vecs = linalg.eigsh(sparse, k=10)  # full diagonalization
+ket_gs = vecs[:, 0]
 
 print(f"Exact ground state energy = {E_gs[0]:.3f}")
 E_exact = E_gs[0]/(L*L*4)

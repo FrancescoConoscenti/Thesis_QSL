@@ -1,7 +1,0 @@
-An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
-Traceback (most recent call last):
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 79, in <module>
-    hi = nk.hi.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
-AttributeError: module 'netket' has no attribute 'hi'
-srun: error: cip-ws-105: task 0: Exited with exit code 1
-srun: Terminating StepId=9545942.0

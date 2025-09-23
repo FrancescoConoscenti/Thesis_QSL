@@ -48,9 +48,10 @@ class HiddenFermion(nn.Module):
 
   def calc_psi(self,x,return_orbs=False):
 
+    #1, 2, 3.
     orbitals = self.orbitals(x)
 
-
+    # 4. Forward pass through the NN, create x_
     for i in range(self.layers):
         x = self.selu(self.hidden[i](x))
     x_ = self.output(x).reshape(x.shape[0],self.n_hid,self.n_elecs + self.n_hid)
@@ -58,6 +59,7 @@ class HiddenFermion(nn.Module):
     x_2 = jnp.repeat(jnp.expand_dims(jnp.eye(self.n_hid), axis=0),x.shape[0],axis=0)
     x_ += jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)
     
+    # 5. Concatenate the MF orbitals and the NN outputs
     x = jnp.concatenate((orbitals,x_),axis=1)
     sign, logx = jnp.linalg.slogdet(x)
     return logx, jnp.log(sign + 0j)
@@ -142,11 +144,6 @@ class Orbitals(nn.Module):
 
     n_samples, N_sites = x.shape
 
-    # Convert {-1,+1} → 0/1 occupancy for spin-up, spin-down orbitals
-    spin_up = (x == 1).astype(self.dtype)
-    spin_dn = (x == -1).astype(self.dtype)
-    x_flat = jnp.concatenate([spin_up, spin_dn], axis=1) 
-
     if self.MFinit=="Fermi":
         orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(self.Lx*self.Ly,self.n_elecs), self.dtype)
     
@@ -155,7 +152,13 @@ class Orbitals(nn.Module):
     orbitals_full = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
     n_orbs = orbitals_full.shape[1]
 
-        
+    
+    #1.  Convert {-1,+1} → 0/1 occupancy for spin-up, spin-down orbitals
+    spin_up = (x == 1).astype(self.dtype)
+    spin_dn = (x == -1).astype(self.dtype)
+    x_flat = jnp.concatenate([spin_up, spin_dn], axis=1) 
+
+    #2 & 3. Select occupied orbitals using advanced indexing
     # x_flat: (n_samples, 2*N_sites), with 0/1 occupancy
     mask = x_flat.astype(bool)  # (n_samples, 2*N_sites)
     # Get indices of the 1s using top_k
@@ -163,8 +166,7 @@ class Orbitals(nn.Module):
     _, idx = jax.lax.top_k(mask, k=N_sites)   # shape (n_samples, N_sites)
     x_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
 
-    return x_selected  # shape: (n_samples, n_elecs, n_orbitals)
-    
+    return x_selected # shape: (n_samples, n_elecs, n_orbitals)
 
 
     """    # Select first n_elecs occupied orbitals per sample using argsort
@@ -182,4 +184,16 @@ class Orbitals(nn.Module):
     orbitals_removed = jnp.expand_dims(orbitals_removed, axis=0).reshape(n_samples, self.n_elecs, self.n_hid + self.n_elecs)
     
     return orbitals_removed
+    """
+
+
+    """
+    # x_flat: (n_samples, 2*N_sites), with 0/1 occupancy
+    mask = x_flat.astype(bool)  # (n_samples, 2*N_sites)
+    # Get indices of the 1s using top_k
+    # Since entries are 0/1, top_k will pick exactly the N_sites "1"s
+    _, idx = jax.lax.top_k(mask, k=N_sites)   # shape (n_samples, N_sites)
+    x_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
+
+    return x_selected # shape: (n_samples, n_elecs, n_orbitals)
     """

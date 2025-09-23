@@ -17,5 +17,5 @@ J_VALUES=(0.0 0.2 0.5 0.7 1.0)
 J=${J_VALUES[$SLURM_ARRAY_TASK_ID]}
 
 #srun python HFDS_Heisenberg/run_ferm.py
-srun python HFDS_Heisenberg/run_spin.py --J2 $J
-#srun python ViT_Heisenberg/run_ViT.py
+#srun python HFDS_Heisenberg/run_spin.py --J2 $J
+srun python ViT_Heisenberg/run_ViT.py --J2 $J
