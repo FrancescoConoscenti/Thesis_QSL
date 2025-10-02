@@ -25,16 +25,31 @@ import os
 import flax
 os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
 import numpy as np
+from scipy.sparse.linalg import eigsh
 
 from netket.operator.spin import sigmax, sigmaz, sigmay
 from netket.experimental.driver import VMC_SR
+import netket.operator as op
 
-from HFDS_model_ferm import Orbitals
-from HFDS_model_ferm import HiddenFermion
+from HFDS_Heisenberg.HFDS_model_ferm import Orbitals
+from HFDS_Heisenberg.HFDS_model_ferm import HiddenFermion
 
-from Exchange_sampler import *
+from Elaborate.Energy import *
+from Elaborate.Corr_Struct import *
+from Elaborate.Error_Stat import *
+from Elaborate.count_params import *
+from Elaborate.order_param import *
+from Elaborate.Sign_obs import MarshallSignOperator
+
+from HFDS_Heisenberg.Exchange_sampler import *
 
 
+parser = argparse.ArgumentParser(description="Example script with parameters")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+args = parser.parse_args()
+
+J1J2 = False
+spin = False
 
 #Physical param
 L = 4
@@ -43,7 +58,9 @@ N_sites = L*L
 N_up    = n_elecs//2
 N_dn    = n_elecs//2
 n_dim = 2
-J2 = 0
+
+J2 = args.J2
+
 
 dtype   = "real"
 MFinitialization = "Fermi"
@@ -53,26 +70,31 @@ double_occupancy = False
 save = False
 
 #Network param
-n_hid_ferm       = 8
-features         = 32
+n_hid_ferm       = 4
+features         = 64
 hid_layers       = 1
 
-n_samples        = 1024
+n_samples        = 2048
 lr               = 0.02
-N_opt            = 100
+N_opt            = 400
 
 n_chains         = n_samples
-n_steps          = 10
+n_steps          = 100
 n_modes          = 2*L*L
 cs               = n_samples
 n_dim           = 2
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}"
 lattice_name = f"J={J2}_L={L}"
-folder = f'HFDS_Heisenberg/plot/ferm/{lattice_name}/{model_name}'
+if J1J2==True:
+    folder = f'HFDS_Heisenberg/plot/J1J2/ferm/{model_name}/{lattice_name}'
+    save_model = f"HFDS_Heisenberg/plot/J1J2/spin/{model_name}/{lattice_name}/models"
+else:
+    folder = f'HFDS_Heisenberg/plot/Ising/ferm/{model_name}/{lattice_name}'
+    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}/models"
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
+os.makedirs(save_model, exist_ok=True)
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
-
 print(f"HFDS_ferm, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
 # Lattice and Hilbert space
@@ -85,12 +107,9 @@ print("Exchange graph size:", exchange_g.n_nodes)
 hi = nk.hilbert.SpinOrbitalFermions(N_sites, s = 1/2, n_fermions_per_spin = (N_up, N_dn))
 print("Hilbert space size",hi.size)
 
-"""
+
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
-"""
-
-dtype_ = jnp.float64
 
 # Model
 ma = HiddenFermion(n_elecs=n_elecs,
@@ -108,12 +127,20 @@ ma = HiddenFermion(n_elecs=n_elecs,
 
 #ma = nk.models.RBM(alpha=1, param_dtype=complex)
 
+if J1J2==True:
 # Heisenberg J1-J2 spin hamiltonian
-hamiltonian = nk.operator.Heisenberg(
-    hilbert=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
+    hamiltonian = nk.operator.Heisenberg(hilbert=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
+else:
+    #ising hamiltonian
+    #hamiltonian = nk.operator.Ising(hilbert=hi, graph=g, h = h, J = 1.0, dtype=jnp.float64).to_jax_operator()
+    hamiltonian = op.LocalOperator(hi)
+    for i, j in g.edges():
+        hamiltonian += -1 * op.spin.sigmaz(hi, i) * op.spin.sigmaz(hi, j)
+    for i in range(L*L):
+        hamiltonian += -J2 * op.spin.sigmax(hi, i)
 
 #sampler
-sampler = nk.sampler.MetropolisSampler(hi, n_chains=n_chains, rule=tJExchangeRule(graph=g))
+sampler = nk.sampler.MetropolisSampler(hi, n_chains=n_chains, rule=tJExchangeRule(graph=exchange_g))
 
 #vstate
 vstate = nk.vqs.MCState(sampler, ma, n_samples=n_samples, chunk_size=cs, n_discard_per_chain=32) #defines the variational state object
@@ -140,29 +167,67 @@ optimizer = nk.optimizer.Sgd(learning_rate=lr)
 vmc = VMC_SR(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
-    diag_shift=1e-3,
+    diag_shift=1e-4,
     variational_state=vstate,
-    #mode="real",
+    mode="real",
 ) 
 
 log = nk.logging.RuntimeLog()
 
 vmc.run(n_iter=N_opt, out=log)
 
+"""
+# --- Saving ---
+with open(filename + ".mpack", "wb") as f:
+    bytes_out = flax.serialization.to_bytes(vstate.variables)
+    f.write(bytes_out)
+
+# --- Loading ---
+with open(filename + ".mpack", "rb") as f:
+    print("load vstate parameters")
+    vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+"""
 
 #%%
+
+#Energy
+E_vs = Energy(log, L, folder)
+
+#Correlation function
+vstate.n_samples = 1024
+Corr_Struct(g, vstate, L, folder, hi)
+
+
+E_exact = Exact_gs(L, J2, hamiltonian, J1J2, spin=False)
+
+
+#Fidelity(vstate, ket_gs)
+
+
+Relative_Error(E_vs, E_exact)
+
+Magnetization(vstate, g, hi)
+
+variance = Variance(log)
+
+Vscore(L, variance, E_vs)
+
+
+hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
+
+
+Staggered_and_Striped_Magnetization(vstate, g, hi)
+
+
+"""
 #Energy
 energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
-
 E_vs = energy_per_site[-1]
 print("Last value: ", energy_per_site[-1])
-
 plt.plot(energy_per_site)
-
 plt.xlabel("Iterations")
 plt.ylabel("Energy per site")
-if(save):
-    plt.savefig(f'{folder}/Energy.png')
+plt.savefig(f'{folder}/Energy.png')
 plt.show()
 
 #Correlation function
@@ -191,8 +256,7 @@ plt.ylabel('dy')
 plt.title('Spin-Spin Correlation Function C(r) in 2D')
 plt.xticks(np.arange(L))  # integer ticks for x-axis
 plt.yticks(np.arange(L)) 
-if(save):
-    plt.savefig(f'{folder}/Corr.png')
+plt.savefig(f'{folder}/Corr.png')
 plt.show()
 
 
@@ -212,18 +276,25 @@ plt.ylabel('q_y')
 plt.title('Structure Factor S(q)')
 plt.xticks([0, 1/2*L, L], ['0', 'π', '2π'])
 plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
-if(save):
-    plt.savefig(f'{folder}/Struct.png')
+plt.savefig(f'{folder}/Struct.png')
 plt.show()
 
 #Exact gs
-E_gs, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
-
-print(f"Exact ground state energy = {E_gs[0]:.3f}")
+#Define a different hilbert space and hamiltonian for the exact calculation, that is equivalent to the other
+#graph_scaled = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
+graph_scaled = nk.graph.Hypercube(length=L, n_dim=2, pbc=True)
+hi_scaled = nk.hilbert.Spin(s=0.5, N=graph_scaled.n_nodes)
+H = nk.operator.Ising(hilbert=hi_scaled, graph=graph_scaled, h=h, J=1.0)
+#H = nk.operator.Heisenberg(hilbert=hi_scaled, graph=graph_scaled, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()
+H_sparse = H.to_sparse(jax_=False).tocsc()
+E_gs, vecs = eigsh(H_sparse, k=1, which="SA")
 E_exact = E_gs[0]/(L*L*4)
 print(f"Exact ground state energy per site= {E_exact}")
 
+
 # Fidelity vstate, exact state
+#vstate is too big to be converted in a matrix
+
 vstate_array = vstate.to_array()
 overlap_val = vstate_array.conj() @ ket_gs
 fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
@@ -249,6 +320,6 @@ print(f"Variance = {variance}")
 v_score = L*L*variance/(E_vs*L*L*4)
 print(f"V-score = {v_score}")
 
-
+"""
 sys.stdout.close()
 

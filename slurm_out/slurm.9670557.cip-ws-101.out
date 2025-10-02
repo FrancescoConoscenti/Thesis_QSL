@@ -1,0 +1,39 @@
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:06<?, ?it/s, Energy=-4.25+0.00j ± 0.40 [σ²=1.3e+01, R̂=1.225]]  0%|          | 0/2 [00:02<?, ?it/s, Energy=-5.12+0.00j ± 0.46 [σ²=1.6e+01, R̂=1.225]] 50%|█████     | 1/2 [00:02<00:02,  2.29s/it, Energy=-5.12+0.00j ± 0.46 [σ²=1.6e+01, R̂=1.225]]100%|██████████| 2/2 [00:02<00:00,  1.15s/it, Energy=-5.12+0.00j ± 0.46 [σ²=1.6e+01, R̂=1.225]]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 188, in <module>
+    E_exact, ket_gs = Exact_gs(L, h, ha)
+                      ^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Error_Stat.py", line 13, in Exact_gs
+    H = nk.operator.Ising(hilbert=hi_scaled, graph=graph, h=h, J=1.0)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/operator/_ising/jax.py", line 62, in __init__
+    super().__init__(hilbert, graph=graph, h=h, J=J, dtype=dtype)
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/operator/_ising/base.py", line 72, in __init__
+    dtype = canonicalize_dtypes(float, h, J, dtype=dtype)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/jax/_utils_dtype.py", line 108, in canonicalize_dtypes
+    dtype = jnp.result_type(*[_dtype(x) for x in values])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/numpy/lax_numpy.py", line 557, in result_type
+    return dtypes.result_type(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dtypes.py", line 905, in result_type
+    dtype, weak_type = _lattice_result_type(*(float_ if arg is None else arg for arg in args))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dtypes.py", line 858, in _lattice_result_type
+    dtypes, weak_types = zip(*(_dtype_and_weaktype(arg) for arg in args))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dtypes.py", line 858, in <genexpr>
+    dtypes, weak_types = zip(*(_dtype_and_weaktype(arg) for arg in args))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dtypes.py", line 617, in _dtype_and_weaktype
+    return dtype(value), any(value is typ for typ in _weak_types) or is_weakly_typed(value)
+           ^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dtypes.py", line 848, in dtype
+    dt = np.result_type(x)
+         ^^^^^^^^^^^^^^^^^
+ValueError: dtype attribute is not a valid dtype instance
+srun: error: cip-ws-101: task 0: Exited with exit code 1
+srun: Terminating StepId=9670557.0

@@ -1,0 +1,14 @@
+HFDS_ferm, J=0.2, L=4, layers1_hidd4_feat64_sample1024_lr0.01_iter700
+Exchange graph size: 32
+Hilbert space size 32
+Total number of parameters: 7892
+Automatic SR implementation choice:  NTK
+Last value:  -0.12394997189772095
+Exact ground state energy per site= -0.5012502605801181
+Relative error = 0.752718389105138
+Magnetization = 0.0
+Variance = 0.6249720309605766
+V-score = -1.2605328210083844
+params=6864
+Staggered Magnetization = -0.01171875
+Striped Magnetization = 0.000244140625

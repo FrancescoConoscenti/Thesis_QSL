@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_ferm.py", line 93, in <module>
+    sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'HFDS_Heisenberg/plot/Ising/ferm/layers1_hidd8_feat64_sample128_lr0.02_iter2/J=0.2_L=4/output.txt'
+srun: error: cip-ws-102: task 0: Exited with exit code 1
+srun: Terminating StepId=9677695.0

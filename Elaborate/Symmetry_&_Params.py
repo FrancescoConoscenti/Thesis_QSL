@@ -48,7 +48,7 @@ for i, label in enumerate(x_labels):
 
 ax.set_xticks(x_pos)
 ax.set_xticklabels(x_labels, rotation=20)
-ax.set_ylabel("Last value")
+ax.set_ylabel("Final Energy")
 ax.set_title(f"Comparison at J={J} (sample1024_lr0.0075_iter100)")
 ax.legend()
 ax.grid(True, linestyle="--", alpha=0.6)
