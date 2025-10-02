@@ -164,17 +164,17 @@ class Orbitals(nn.Module):
     # Get indices of the 1s using top_k
     # Since entries are 0/1, top_k will pick exactly the N_sites "1"s
     _, idx = jax.lax.top_k(mask, k=N_sites)   # shape (n_samples, N_sites)
-    x_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
+    orbitals_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
 
-    return x_selected # shape: (n_samples, n_elecs, n_orbitals)
+    return orbitals_selected # shape: (n_samples, n_elecs, n_orbitals)
 
 
     """    # Select first n_elecs occupied orbitals per sample using argsort
     idx_sort = jnp.argsort(-x_flat, axis=1)  # occupied first
     orbitals_full_batched = jnp.broadcast_to(orbitals_full[None, :, :], (n_samples, 2*N_sites, n_orbs))
-    x_selected = jax.vmap(lambda mat, idx: mat[idx[:self.n_elecs], :])(orbitals_full_batched, idx_sort)
+    orbitals_selected = jax.vmap(lambda mat, idx: mat[idx[:self.n_elecs], :])(orbitals_full_batched, idx_sort)
 
-    return x_selected  # shape: (n_samples, n_elecs, n_orbitals)
+    return orbitals_selected  # shape: (n_samples, n_elecs, n_orbitals)
     """
 
 

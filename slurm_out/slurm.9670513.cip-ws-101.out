@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 38, in <module>
+    from HFDS_Heisenberg.HFDS_model_spin import Orbitals
+ModuleNotFoundError: No module named 'HFDS_Heisenberg'
+srun: error: cip-ws-101: task 0: Exited with exit code 1
+srun: Terminating StepId=9670513.0

@@ -1,0 +1,4 @@
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:06<?, ?it/s, Energy=-5.88+0.00j ± 0.37 [σ²=9.5e+00, R̂=1.225]]  0%|          | 0/2 [00:02<?, ?it/s, Energy=-6.60+0.00j ± 0.27 [σ²=5.9e+00, R̂=1.225]] 50%|█████     | 1/2 [00:02<00:02,  2.29s/it, Energy=-6.60+0.00j ± 0.27 [σ²=5.9e+00, R̂=1.225]]100%|██████████| 2/2 [00:02<00:00,  1.15s/it, Energy=-6.60+0.00j ± 0.27 [σ²=5.9e+00, R̂=1.225]]
+/scratch/f/F.Conoscenti/netket_venv1/bin/python: Error while finding module specification for 'HFDS_Heisenberg.run_spin.py' (ModuleNotFoundError: __path__ attribute not found on 'HFDS_Heisenberg.run_spin' while trying to find 'HFDS_Heisenberg.run_spin.py'). Try using 'HFDS_Heisenberg.run_spin' instead of 'HFDS_Heisenberg.run_spin.py' as the module name.
+srun: error: cip-ws-102: task 0: Exited with exit code 1
+srun: Terminating StepId=9670520.0

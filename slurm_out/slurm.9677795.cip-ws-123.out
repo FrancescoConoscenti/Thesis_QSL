@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 187, in <module>
+    E_vs = Energy(log, L, folder)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Energy.py", line 4, in Energy
+    energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
+                      ~~~~~~~~^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/utils/history/history_dict.py", line 91, in __getitem__
+    val = self._data[key]
+          ~~~~~~~~~~^^^^^
+KeyError: 'Energy'
+srun: error: cip-ws-123: task 0: Exited with exit code 1
+srun: Terminating StepId=9677795.0

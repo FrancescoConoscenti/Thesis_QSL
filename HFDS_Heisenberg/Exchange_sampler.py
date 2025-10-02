@@ -105,7 +105,7 @@ class ParticleExchangeRule(ExchangeRule):
           probs = apply_machine(params, x).real
           neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
           num_trues = jnp.sum(neg_inf_mask)
-          jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
+          #jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
 
           neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
           rng = rng + sampler.n_batches*2
@@ -122,7 +122,7 @@ class ParticleExchangeRule(ExchangeRule):
       x = self.random_state_(sampler, rng)
       
       probs = apply_machine(params, x).real
-      jax.debug.print("inital probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
+      #jax.debug.print("inital probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       initial_val = (0, x, neg_inf_mask, params, rng, sampler)
@@ -130,14 +130,14 @@ class ParticleExchangeRule(ExchangeRule):
       # Execute the while loop
       final_val = jax.lax.while_loop(loop_cond, loop_body, initial_val)
       _, x, neg_inf_mask, _, _, _ = final_val
-      jax.debug.print('sum={x}', x=neg_inf_mask.shape)
-      jax.debug.print('batches={x}', x=sampler.n_batches)
+      #jax.debug.print('sum={x}', x=neg_inf_mask.shape)
+      #jax.debug.print('batches={x}', x=sampler.n_batches)
 
       # replace all -infs by first non -inf sample (loop through more rows if not converged)
       probs = apply_machine(params, x).real
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35)
       sorted_indices = jnp.argsort(probs)
-      jax.debug.print('sorted={x}', x=(neg_inf_mask[sorted_indices[-1]],probs[sorted_indices[-1]]))
+      #jax.debug.print('sorted={x}', x=(neg_inf_mask[sorted_indices[-1]],probs[sorted_indices[-1]]))
       x_rep = x[sorted_indices[-1]]
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       x = jnp.where(neg_inf_mask, x_rep, x)      
@@ -146,10 +146,10 @@ class ParticleExchangeRule(ExchangeRule):
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       num_trues = jnp.sum(neg_inf_mask)
-      jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
-      jax.debug.print("unique samples: {sam}", sam=jnp.sum(jnp.unique(x, fill_value=0, size=sampler.n_batches, axis=0))/sampler.hilbert.n_fermions)
-      jax.debug.print("nans={x}", x=jnp.sum(jnp.isnan(probs)))
-      jax.debug.print("final probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
+      #jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
+      #jax.debug.print("unique samples: {sam}", sam=jnp.sum(jnp.unique(x, fill_value=0, size=sampler.n_batches, axis=0))/sampler.hilbert.n_fermions)
+      #jax.debug.print("nans={x}", x=jnp.sum(jnp.isnan(probs)))
+      #jax.debug.print("final probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
       
       return x.astype(jnp.float64)
 
@@ -287,7 +287,7 @@ class tJExchangeRule_(MetropolisRule):
           probs = apply_machine(params, x).real
           neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
           num_trues = jnp.sum(neg_inf_mask)
-          jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
+          #jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
 
           neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
           rng = rng + sampler.n_batches*2
@@ -304,7 +304,7 @@ class tJExchangeRule_(MetropolisRule):
       x = self.random_state_(sampler, rng)
       
       probs = apply_machine(params, x).real
-      jax.debug.print("inital probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
+      #jax.debug.print("inital probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       initial_val = (0, x, neg_inf_mask, params, rng, sampler)
@@ -312,14 +312,14 @@ class tJExchangeRule_(MetropolisRule):
       # Execute the while loop
       final_val = jax.lax.while_loop(loop_cond, loop_body, initial_val)
       _, x, neg_inf_mask, _, _, _ = final_val
-      jax.debug.print('sum={x}', x=neg_inf_mask.shape)
-      jax.debug.print('batches={x}', x=sampler.n_batches)
+      #jax.debug.print('sum={x}', x=neg_inf_mask.shape)
+      #jax.debug.print('batches={x}', x=sampler.n_batches)
 
       # replace all -infs by first non -inf sample (loop through more rows if not converged)
       probs = apply_machine(params, x).real
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35)
       sorted_indices = jnp.argsort(probs)
-      jax.debug.print('sorted={x}', x=(neg_inf_mask[sorted_indices[-1]],probs[sorted_indices[-1]]))
+      #jax.debug.print('sorted={x}', x=(neg_inf_mask[sorted_indices[-1]],probs[sorted_indices[-1]]))
       x_rep = x[sorted_indices[-1]]
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       x = jnp.where(neg_inf_mask, x_rep, x)      
@@ -328,10 +328,10 @@ class tJExchangeRule_(MetropolisRule):
       neg_inf_mask = jnp.isneginf(probs) | jnp.isnan(probs) #| (jnp.abs(probs) >= 35) 
       neg_inf_mask = jnp.repeat(jnp.expand_dims(neg_inf_mask, 1), x.shape[1], 1)
       num_trues = jnp.sum(neg_inf_mask)
-      jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
-      jax.debug.print("unique samples: {sam}", sam=jnp.sum(jnp.unique(x, fill_value=0, size=sampler.n_batches, axis=0))/sampler.hilbert.n_fermions)
-      jax.debug.print("nans={x}", x=jnp.sum(jnp.isnan(probs)))
-      jax.debug.print("final probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
+      #jax.debug.print("Number of inf values: {num}", num=(num_trues, jnp.sum(jnp.isnan(probs))))
+      #jax.debug.print("unique samples: {sam}", sam=jnp.sum(jnp.unique(x, fill_value=0, size=sampler.n_batches, axis=0))/sampler.hilbert.n_fermions)
+      #jax.debug.print("nans={x}", x=jnp.sum(jnp.isnan(probs)))
+      #jax.debug.print("final probs={z}",z=(probs, jnp.max(probs), jnp.min(probs)))
       
       return x.astype(sampler.dtype)
 

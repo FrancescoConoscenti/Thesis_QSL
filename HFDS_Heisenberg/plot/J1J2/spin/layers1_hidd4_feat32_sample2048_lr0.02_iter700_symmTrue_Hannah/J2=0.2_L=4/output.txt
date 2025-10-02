@@ -1,0 +1,14 @@
+HFDS_spin, J=0.2, L=4, layers1_hidd4_feat32_sample2048_lr0.02_iter700
+hilbert space size =  16
+Total number of parameters: 3792
+Automatic SR implementation choice:  NTK
+Last value:  -0.6198436367377954
+Exact ground state energy per site= -0.619873941529909
+Fidelity <vstate|exact> = [0.99973389+0.j]
+Relative error = 4.888863700067516e-05
+Magnetization = 0.0
+Variance = 0.1541995155314893
+V-score = -0.062192908982269014
+params=3792
+Staggered Magnetization = 0.02490234375
+Striped Magnetization = -0.000732421875

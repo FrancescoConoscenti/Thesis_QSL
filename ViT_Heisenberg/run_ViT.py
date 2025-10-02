@@ -12,7 +12,16 @@ import sys
 import os
 import argparse
 
-from ViT_model import ViT_sym
+from ViT_Heisenberg.ViT_model import ViT_sym
+
+
+from Elaborate.Energy import *
+from Elaborate.Corr_Struct import *
+from Elaborate.Error_Stat import *
+from Elaborate.count_params import *
+from Elaborate.order_param import *
+from Elaborate.Sign_obs import MarshallSignOperator
+
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
@@ -37,7 +46,7 @@ patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 
 N_samples       = 1024
-N_opt           = 100
+N_opt           = 2
 
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}"
@@ -128,10 +137,34 @@ import pickle
 with open(f"{folder}/log.pkl", "wb") as f:
     pickle.dump(log, f)
 
-params = vstate.parameters  # dictionary of model parameters
-np.savez(f"{folder}/vstate_params.npz", **params)
 
+#Energy
+E_vs = Energy(log, L, folder)
 
+#Correlation function
+vstate.n_samples = 1024
+Corr_Struct(lattice, vstate, L, folder, hilbert)
+
+#change to lanczos for Heisenberg
+E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
+
+#comment for ising
+Fidelity(vstate, ket_gs)
+
+Relative_Error(E_vs, E_exact)
+
+Magnetization(vstate, lattice, hilbert)
+
+variance = Variance(log)
+
+Vscore(L, variance, E_vs)
+
+count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
+print(f"params={count_params}")
+
+Staggered_and_Striped_Magnetization(vstate, lattice, hilbert)
+
+"""
 #Energy
 energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
 E_vs = energy_per_site[-1]
@@ -208,17 +241,16 @@ import netket.experimental.observable as obs
 import netket.operator as op
 
 # I can compute infidelity like this only if I have 2 variational states
-""" 
 
-infidelity_op = obs.InfidelityOperator(target_state= vstate)
-infidelity = vstate.expect(infidelity_op).mean.real
-print(f"Infidelity = {infidelity}")
 
-"""
+#infidelity_op = obs.InfidelityOperator(target_state= vstate)
+#infidelity = vstate.expect(infidelity_op).mean.real
+#print(f"Infidelity = {infidelity}")
+
 #Compute fidelity between variational state and exact ground state in case of symmetrical degenaracy
 # Create a state superposition of ground state and the all spins flipped ground state, 
 # so it become symmetrical in the 2 degenerate gs, and I can apply the fidelity reliably
-"""
+
 vstate_array = vstate.to_array()
 
 if J2==0: # degenerate ground state
@@ -243,13 +275,11 @@ fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_sym, vstate_sym) * np.
 
 print(f"Fidelity = {fidelity_val[0].real}")
 
-"""
-
 # Check the spin parity symmetry of the variational state
 # Apply the spin parity operator to the variational state and check if it remain invariant,
 # Checking that the fidelity is 1
 
-"""
+
 vstate_array = vstate.to_array()
 X_tensor = op.spin.sigmax(hilbert, 0)
 for i in range(1, lattice.n_nodes):
@@ -260,7 +290,7 @@ overlap_val = vstate_sym.conj() @ vstate_array
 fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_sym, vstate_sym) * np.vdot(vstate_array, vstate_array))
 
 print(f"Fidelity = {fidelity_val}")
-"""
+
 
 # Fidelity vstate, exact state
 vstate_array = vstate.to_array()
@@ -283,38 +313,7 @@ print(f"Variance = {variance}")
 v_score = L*L*variance/(E_vs*L*L*4)
 print(f"V-score = {v_score}")
 
-#Count parameters
-def vit_param_count(num_heads, num_layers, patch_size, d_model, Ns):
-    """
-    Returns (total_params, breakdown_dict).
-    Provide either Ns (total input sites) OR n_patches directly.
-    """
 
-    n_patches = Ns // (patch_size**2)
-
-    # Embed layer (Dense with bias)
-    embed_params = (patch_size**2) * d_model + d_model  # kernel + bias
-    # FMHA
-    alpha_params = num_heads * n_patches
-    v_params = d_model * d_model + d_model  # kernel + bias
-    W_params = d_model * d_model + d_model  # kernel + bias
-    fmha_params = v_params + W_params + alpha_params  # = 2*(d^2 + d) + alpha
-    # FFN (two Dense layers with biases) -- corrected
-    ff_dense1 = d_model * (4 * d_model) + (4 * d_model)   # weights + bias
-    ff_dense2 = (4 * d_model) * d_model + d_model         # weights + bias
-    ffn_params = ff_dense1 + ff_dense2                   # = 8*d^2 + 5*d
-    # LayerNorms in EncoderBlock (2 LNs per block, each has scale+bias)
-    norm_block = 4 * d_model
-    block_params = fmha_params + ffn_params + norm_block
-    encoder_params = num_layers * block_params
-    # OutputHead: 3 LayerNorms + 2 Dense(d_model -> d_model)
-    output_params = 3 * (2 * d_model) + 2 * (d_model * d_model + d_model)
-    total = embed_params + encoder_params + output_params
-
-    return total
-
-count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
-print(f"params={count_params}")
 
 
 # Build staggered operator
@@ -337,6 +336,6 @@ M_stripe = sum(ops.values()) / lattice.n_nodes
 
 Striped_Magnetization = vstate.expect(M_stripe) 
 print(f"Striped Magnetization = {Striped_Magnetization.mean.real}")
-
+"""
 
 sys.stdout.close()
