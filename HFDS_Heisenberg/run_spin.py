@@ -42,8 +42,8 @@ from Elaborate.Energy import *
 from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
 from Elaborate.count_params import *
-from Elaborate.order_param import *
-from Elaborate.Sign_obs import MarshallSignOperator
+from Elaborate.Sign_vs_iteration import *
+from Elaborate.Sign_Obs import *
 
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
@@ -71,19 +71,18 @@ symmetry = True  #True or False
 
 #Varaitional state param
 n_hid_ferm       = 4
-features         = 16 #hidden units per layer
+features         = 64 #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
 n_samples        = 1024
-N_opt            = 700
+N_opt            = 1500
+save_every       = 20
+block_iter = N_opt//save_every
 
 n_chains         = n_samples//2
-n_steps          = 100
-n_modes          = 2*L*L
-cs               =  n_samples#//4   #chunk size for the sampling
-n_dim            = 2
+chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Hannah"
@@ -93,7 +92,7 @@ if J1J2==True:
    save_model = f"HFDS_Heisenberg/plot/J1J2/spin/{model_name}/{lattice_name}/models"
 else:
     folder = f'HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}'
-    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}"
+    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}/models"
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 os.makedirs(save_model, exist_ok=True)
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
@@ -151,7 +150,7 @@ sampler = nk.sampler.MetropolisExchange(
 )
 
 
-vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, chunk_size=cs, n_discard_per_chain=128) #defines the variational state object
+vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
@@ -161,21 +160,17 @@ optimizer = nk.optimizer.Sgd(learning_rate=lr)
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-4,
+    diag_shift=1e-3,
     variational_state=vstate,
     mode = 'real'
 ) 
 
 log = nk.logging.RuntimeLog()
 
-save_every = 50
-block_iter = N_opt//save_every
 
 for i in range(block_iter):
-
     vmc.run(n_iter=save_every, out=log)
-
-    # --- Saving ---
+    #Save
     with open(save_model +"/model_"+ f"{i} "+ ".mpack", "wb") as f:
         bytes_out = flax.serialization.to_bytes(vstate.variables)
         f.write(bytes_out)
@@ -192,8 +187,10 @@ Corr_Struct(lattice, vstate, L, folder, hi)
 
 E_exact, ket_gs = Exact_gs(L, J2, ha, J1J2, spin)
 
-if J1J2 ==True:
-    Fidelity(vstate, ket_gs)
+
+if J1J2 == True:
+    fidelity = Fidelity(vstate, ket_gs)
+    print(f"Fidelity <vstate|exact> = {fidelity}")
 
 Relative_Error(E_vs, E_exact)
 
@@ -205,10 +202,12 @@ Vscore(L, variance, E_vs)
 
 hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 
-Staggered_and_Striped_Magnetization(vstate, lattice, hi)
+#Staggered_and_Striped_Magnetization(vstate, lattice, hi)
 
-
-
+n_sample = 2048
+marshall_op = MarshallSignOperator(hi)
+plot_Sign_full_MCMC(marshall_op, vstate, folder, n_samples)
+plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder)
 
 sys.stdout.close()
 

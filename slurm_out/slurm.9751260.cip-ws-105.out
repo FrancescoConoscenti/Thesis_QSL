@@ -1,0 +1,3 @@
+/scratch/f/F.Conoscenti/netket_venv1/bin/python: Error while finding module specification for 'ViT_Heisenberg/run_ViT.py' (ModuleNotFoundError: No module named 'ViT_Heisenberg/run_ViT'). Try using 'ViT_Heisenberg/run_ViT' instead of 'ViT_Heisenberg/run_ViT.py' as the module name.
+srun: error: cip-ws-105: task 0: Exited with exit code 1
+srun: Terminating StepId=9751260.0

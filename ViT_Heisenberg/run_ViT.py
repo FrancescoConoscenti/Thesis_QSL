@@ -19,8 +19,7 @@ from Elaborate.Energy import *
 from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
 from Elaborate.count_params import *
-from Elaborate.order_param import *
-from Elaborate.Sign_obs import MarshallSignOperator
+from Elaborate.Sign_vs_iteration import *
 
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
@@ -39,19 +38,23 @@ key = jax.random.key(seed)
 n_dim = 2
 J2 = args.J2
 
-num_layers      = 1     # number of Tranformer layers
-d_model         = 16    # dimensionality of the embedding space
-n_heads         = 2     # number of heads
+num_layers      = 3     # number of Tranformer layers
+d_model         = 32    # dimensionality of the embedding space
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.0075
+lr              = 0.01
 
 N_samples       = 1024
-N_opt           = 2
+N_opt           = 3000
+save_every       = 20
+block_iter = N_opt//save_every
 
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}"
 lattice_name = f"J={J2}_L={L}"
 folder = f'ViT_Heisenberg/plot/{model_name}/{lattice_name}'
+save_model = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/{model_name}/{lattice_name}/models"
+os.makedirs(save_model, exist_ok=True)
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
@@ -126,8 +129,14 @@ vmc = VMC_SR(
 
 # Optimization
 log = nk.logging.RuntimeLog()
+print(block_iter)
 
-vmc.run(n_iter=N_opt, out=log)
+for i in range(block_iter):
+    vmc.run(n_iter=save_every, out=log)
+    #Save
+    with open(save_model +"/model_"+ f"{i} "+ ".mpack", "wb") as f:
+        bytes_out = flax.serialization.to_bytes(vstate.variables)
+        f.write(bytes_out)
 
 
 #%%
@@ -149,7 +158,8 @@ Corr_Struct(lattice, vstate, L, folder, hilbert)
 E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
 
 #comment for ising
-Fidelity(vstate, ket_gs)
+fidelity = Fidelity(vstate, ket_gs)
+print(f"Fidelity <vstate|exact> = {fidelity}")
 
 Relative_Error(E_vs, E_exact)
 
@@ -163,6 +173,11 @@ count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
 print(f"params={count_params}")
 
 Staggered_and_Striped_Magnetization(vstate, lattice, hilbert)
+
+marshall_op = MarshallSignOperator(hilbert)
+#Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
+Marshall_sign_Fidelity(marshall_op, ket_gs, vstate, folder )
+
 
 """
 #Energy

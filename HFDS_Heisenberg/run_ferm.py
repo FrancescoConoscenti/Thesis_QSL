@@ -39,7 +39,7 @@ from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
 from Elaborate.count_params import *
 from Elaborate.order_param import *
-from Elaborate.Sign_obs import MarshallSignOperator
+from Elaborate.Sign_vs_iteration import MarshallSignOperator
 
 from HFDS_Heisenberg.Exchange_sampler import *
 
