@@ -70,15 +70,15 @@ bounds  = "PBC"
 symmetry = True  #True or False
 
 #Varaitional state param
-n_hid_ferm       = 4
-features         = 64 #hidden units per layer
+n_hid_ferm       = 1
+features         = 4 #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
 n_samples        = 1024
-N_opt            = 1500
-save_every       = 20
+N_opt            = 110
+save_every       = 1
 block_iter = N_opt//save_every
 
 n_chains         = n_samples//2
@@ -160,7 +160,7 @@ optimizer = nk.optimizer.Sgd(learning_rate=lr)
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-3,
+    diag_shift=1e-4,
     variational_state=vstate,
     mode = 'real'
 ) 
@@ -206,8 +206,9 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 
 n_sample = 2048
 marshall_op = MarshallSignOperator(hi)
-plot_Sign_full_MCMC(marshall_op, vstate, folder, n_samples)
+#plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
 plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder)
+Sign_gs(ket_gs, hi)
 
 sys.stdout.close()
 

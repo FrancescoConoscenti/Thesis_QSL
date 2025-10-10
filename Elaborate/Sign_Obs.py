@@ -8,6 +8,18 @@ import flax
 import os
 from Elaborate.Error_Stat import Fidelity
 
+def sublattice_sites(N_sites):
+
+    L = np.sqrt(N_sites)
+
+    A_sites = []
+    for idx in range(N_sites):
+        x = idx % L
+        y = idx // L
+        if (x + y) % 2 == 0:
+            A_sites.append(idx)
+    A_sites = jnp.array(A_sites)
+    return A_sites
 
 def balanced_combinations_numpy(L):
     """
@@ -41,9 +53,10 @@ class MarshallSignOperator(nk.operator.AbstractOperator):
 def _marshal_sign_single_MCMC(sigma, vstate):
     #for samples in MCMC the dimension 1 is N, for samples in full hilbert the dimension 0 is N
     N_sites = sigma.shape[1]
+    A_sites = sublattice_sites(N_sites)
 
-    #A_sites = jnp.arange(0, N_sites, 2) # A sublattice
-    M_A = jnp.array([sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma[A_sites]) # Magn on A sublattice
+    #M_A = jnp.array([sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma[A_sites]) # Magn on A sublattice
+    M_A = jnp.array(0.5 * jnp.sum(sigma[:, A_sites], axis=1))
     S_A = jnp.ones_like(M_A) * 0.5 * (N_sites // 2) # sum of the spins in the sublattice
     
     log_psi = vstate.log_value(sigma) #log coefficient of wf associated with sample sigma
@@ -57,9 +70,14 @@ def _marshal_sign_single_MCMC(sigma, vstate):
 def _marshal_sign_single_full_hilbert(sigma, vstate):
 
     N_sites = sigma.shape[-1]
+    L = np.sqrt(N_sites)
+
+    A_sites = sublattice_sites(N_sites)
+
     #M_A = 0.5 * jnp.sum(sigma[..., ::2], axis=-1)
-    M_A = jnp.array([0.5*sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma_test[A_sites]) # Magn on A sublattice
-    S_A = 0.5 * (N_sites // 2)
+    #M_A = jnp.array([0.5*sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma_test[A_sites]) # Magn on A sublattice
+    M_A = jnp.array(0.5 * jnp.sum(sigma[:, A_sites], axis=1))
+    S_A = jnp.ones_like(M_A) * 0.5 * (N_sites // 2) 
     psi = jnp.exp(vstate.log_value(sigma))
     sign = jnp.real((psi * ((-1.0) ** (S_A - M_A))) / jnp.abs(psi))
 
@@ -112,17 +130,22 @@ def Marshall_Sign(marshall_op, vstate, folder_path, n_samples, L):
         exp_val = vstate.expect(marshall_op)
         sign1[i] = exp_val.mean
 
+
         # Compute expectation value full Hilbert space
         configs = balanced_combinations_numpy(L*L)
+        N_sites = configs.shape[-1]
+        A_sites = sublattice_sites(N_sites)
+
         logpsi = vstate.log_value(configs)
         psi = jnp.exp(logpsi)
         weights = jnp.abs(psi) ** 2
-        signs = _marshal_sign_single_full_hilbert( configs, vstate) 
+        signs = _marshal_sign_single_full_hilbert(configs, vstate) 
+
         #print("sign_full :", signs)
         # reweighted expectation
         sign2[i] = jnp.sum(weights * signs) / jnp.sum(weights)
         #not weighted expectation
-        sign3[i] = np.mean(signs)
+        #sign3[i] = np.mean(signs)
         
     return sign1, sign2
 
@@ -149,3 +172,21 @@ def Marshall_Sign_Fidelity(marshall_op, ket_gs, vstate, folder_path, L):
         fidelity[i] = Fidelity(vstate, ket_gs)
 
     return sign2, fidelity
+
+def Sign_gs(ket_gs, hi):
+        print("ket_gs",ket_gs)
+        print(ket_gs.shape)
+
+        N_sites = hi.size
+        configs = hi.all_states()
+        M_A = jnp.array([0.5*sum(sample[::2]) for sample in configs]) #jnp.sum(0.5 * sigma_test[A_sites]) # Magn on A sublattice
+        S_A = 0.5 * (N_sites // 2) 
+        marshall_phase = (-1.0) ** (S_A - M_A)
+
+        # Compute expectation value full Hilbert space
+        psi = ket_gs
+        signs = jnp.real((psi * marshall_phase) / jnp.abs(psi))
+
+        weights = jnp.abs(psi) ** 2
+        marshall_sign_expect = jnp.sum(weights * signs) / jnp.sum(weights)
+        print("⟨Marshall sign gs⟩ =", jnp.real(marshall_sign_expect))
