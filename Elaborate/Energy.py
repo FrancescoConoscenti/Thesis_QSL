@@ -6,6 +6,7 @@ def Energy(log, L, folder):
     print("Last value: ", energy_per_site[-1])
 
     plt.plot(energy_per_site)
+    plt.title("Energy per site vs Ierations")
     plt.xlabel("Iterations")
     plt.ylabel("Energy per site")
     plt.savefig(f'{folder}/Energy.png')

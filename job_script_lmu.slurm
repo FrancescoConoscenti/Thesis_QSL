@@ -5,7 +5,7 @@
 
 ##SBATCH --cpus-per-task=8
 ##SBATCH --gres=gpu:1
-##SBATCH --partition=cip-ws
+##SBATCH --partition=cip
 
 #SBATCH --mem=16G
 #SBATCH --time=00-12:00:00
@@ -18,6 +18,5 @@ J_VALUES=(0.0 0.2 0.5 0.7 1.0)
 J=${J_VALUES[$SLURM_ARRAY_TASK_ID]}
 
 #srun python -m HFDS_Heisenberg.run_ferm --J2 $J
-#srun python -m HFDS_Heisenberg.run_spin --J2 $J
-#srun python -m ViT_Heisenberg/run_ViT.py --J2 $J
-srun python -m Elaborate.Sign_obs
+srun python -m HFDS_Heisenberg.run_spin --J2 $J
+#srun python -m ViT_Heisenberg.run_ViT --J2 $J

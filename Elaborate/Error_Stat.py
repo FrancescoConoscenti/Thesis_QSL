@@ -6,7 +6,7 @@ from scipy.sparse.linalg import eigsh
 from jax import numpy as jnp
 
 #Exact gs
-def Exact_gs(L, J2, ha, J1J2=True, spin=True):
+def Exact_gs(L, J2, ha, J1J2, spin=True):
 
     if J1J2==True and spin==True:
         E_gs, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
@@ -52,7 +52,8 @@ def Fidelity(vstate, ket_gs):
     vstate_array = vstate.to_array()
     overlap_val = vstate_array.conj() @ ket_gs
     fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
-    print(f"Fidelity <vstate|exact> = {fidelity_val}")
+    #print(f"Fidelity <vstate|exact> = {fidelity_val}")
+    return np.real(fidelity_val)
 
 #Relative Error
 def Relative_Error(E_vs, E_exact):
