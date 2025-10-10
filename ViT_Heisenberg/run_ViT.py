@@ -20,6 +20,7 @@ from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
 from Elaborate.count_params import *
 from Elaborate.Sign_vs_iteration import *
+from Elaborate.Sign_vs_iteration import *
 
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
@@ -38,15 +39,15 @@ key = jax.random.key(seed)
 n_dim = 2
 J2 = args.J2
 
-num_layers      = 3     # number of Tranformer layers
-d_model         = 32    # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+num_layers      = 1     # number of Tranformer layers
+d_model         = 16    # dimensionality of the embedding space
+n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.01
 
 N_samples       = 1024
-N_opt           = 3000
-save_every       = 20
+N_opt           = 110
+save_every       = 5
 block_iter = N_opt//save_every
 
 
@@ -172,11 +173,14 @@ Vscore(L, variance, E_vs)
 count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
 print(f"params={count_params}")
 
-Staggered_and_Striped_Magnetization(vstate, lattice, hilbert)
+#Staggered_and_Striped_Magnetization(vstate, lattice, hilbert)
 
 marshall_op = MarshallSignOperator(hilbert)
 #Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
-Marshall_sign_Fidelity(marshall_op, ket_gs, vstate, folder )
+n_sample = 4096
+marshall_op = MarshallSignOperator(hilbert)
+plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
+plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder)
 
 
 """

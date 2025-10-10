@@ -1,4 +1,4 @@
-def _marshal_sign_single_full_hilbert(sigma, vstate):
+"""def _marshal_sign_single_full_hilbert(sigma, vstate):
     N_sites = sigma.shape[-1]
     #M_A = 0.5 * jnp.sum(sigma[..., ::2], axis=-1)
     M_A = jnp.array([0.5*sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma_test[A_sites]) # Magn on A sublattice
@@ -9,14 +9,12 @@ def _marshal_sign_single_full_hilbert(sigma, vstate):
     return  sign
 
 
-get_marshal_sign_full_hilbert = lambda vstate: _marshal_sign_single_full_hilbert
-
 #########################################################################################
 
 def Marshall_Sign(vstate, folder_path, n_samples, L):
     
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    sign2 = np.zeros(number_models)
+    sign = np.zeros(number_models)
     vstate.n_samples = n_samples
 
     for i in range(0, number_models):
@@ -28,7 +26,84 @@ def Marshall_Sign(vstate, folder_path, n_samples, L):
         logpsi = vstate.log_value(configs)
         psi = jnp.exp(logpsi)
         weights = jnp.abs(psi) ** 2
-        signs = _marshal_sign_single_full_hilbert( configs, vstate) 
-        sign2[i] = jnp.sum(weights * signs) / jnp.sum(weights)
+
+        N_sites = configs.shape[-1]
+        M_A = jnp.array([0.5*sum(sample[::2]) for sample in configs]) #jnp.sum(0.5 * sigma_test[A_sites]) # Magn on A sublattice
+        S_A = 0.5 * (N_sites // 2)
+        psi = jnp.exp(vstate.log_value(configs))
+        signs = jnp.real((psi * ((-1.0) ** (S_A - M_A))) / jnp.abs(psi)) 
+        sign[i] = jnp.sum(weights * signs) / jnp.sum(weights)
         
-    return sign1
+    return sign1"""
+
+import netket as nk
+import jax
+import jax.numpy as jnp
+
+import netket as nk
+import jax.numpy as jnp
+
+L = 4
+n_dim = 2
+J2 = 0.2
+
+# Define 2D square lattice with up to 2nd-neighbor bonds
+lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
+hi = nk.hilbert.Spin(s=1/2, N=lattice.n_nodes, total_sz=0)
+
+# Unfrustrated Heisenberg model (no built-in Marshall sign rule)
+ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()
+
+E_gs, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+
+# ---- Marshall sign evaluation ----
+N_sites = hi.size
+configs = hi.all_states()  # shape (2**N_sites, N_sites)
+configs_05 = 0.5 * configs
+
+# Checkerboard A/B sublattice definition
+#A_sites = jnp.arange(0, N_sites, 2) # A sublattice
+A_sites = []
+for idx in range(N_sites):
+    x = idx % L
+    y = idx // L
+    if (x + y) % 2 == 0:
+        A_sites.append(idx)
+A_sites = jnp.array(A_sites)
+print(A_sites)
+
+B_sites = []
+for idx in range(N_sites):
+    x = idx % L
+    y = idx // L
+    if (x + y) % 2 == 1:
+        B_sites.append(idx)
+B_sites = jnp.array(B_sites)
+print(B_sites)
+
+M_A = jnp.sum(configs_05[:, A_sites], axis=1)
+print(M_A)
+
+M_B = jnp.sum(configs_05[:, B_sites], axis=1)
+print(M_B)
+
+S_A = 0.5 * len(A_sites)
+print(S_A)
+
+marshall_phase = (-1.0) ** (S_A - M_A)
+print("Marshall phase",marshall_phase)
+print("Marshall phase shape",marshall_phase.shape)
+
+psi = ket_gs[:,0]
+print("psi", psi)
+print("psi shape", psi.shape)
+
+signs = jnp.real((psi * marshall_phase) / jnp.abs(psi))
+print("Signs",signs)
+print("Signs shape",signs.shape)
+
+weights = jnp.abs(psi) ** 2
+marshall_sign_expect = jnp.sum(weights * signs) / jnp.sum(weights)
+
+print("⟨Marshall sign gs⟩ =", float(jnp.real(marshall_sign_expect)))
+
