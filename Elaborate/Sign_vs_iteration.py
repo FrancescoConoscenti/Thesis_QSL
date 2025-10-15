@@ -159,17 +159,19 @@ def plot_Sign_full_MCMC(marshall_op, vstate, folder_path, n_samples):
 
 
 
-def plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder_path):
+def plot_Sign_Fidelity(ket_gs, vstate, folder_path, hi):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     sign2 = np.zeros(number_models)
     x_axis = np.arange(number_models)*20
 
-    sign2, fidelity = Marshall_Sign_Fidelity(marshall_op, ket_gs, vstate, folder_path, L)
+    sign2, fidelity, sign_exact = Marshall_Sign_Fidelity(ket_gs, vstate, folder_path, L, hi)
 
-    print("Marshall Sign = ", sign2[-1])
+    print("⟨Marshall Sign final vstate⟩ = ", sign2[-1])
+    print("⟨Marshall sign exact gs⟩ =", sign_exact)
     
     plt.figure(figsize=(10, 6))
+    #left axis: Sign
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
     ax1.plot(x_axis, sign2, marker='o', label='Full Hilbert sampled sign',
@@ -177,6 +179,8 @@ def plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder_path):
     ax1.set_xlabel("Iterations", fontsize=12)
     ax1.set_ylabel("Sign", color='tab:blue', fontsize=12)
     ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax1.axhline(y=sign_exact, color='tab:blue', linestyle='--', linewidth=1.5, alpha=0.7, label='Exact Sign gs')
+    ax1.axhline(y=-1*sign_exact, color='tab:blue', linestyle='--', linewidth=1.5, alpha=0.7, label='_nolegend_')
 
     # right axis: fidelity
     ax2 = ax1.twinx()  # create a second y-axis sharing the same x-axis

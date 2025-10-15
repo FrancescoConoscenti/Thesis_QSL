@@ -207,8 +207,7 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 n_sample = 2048
 marshall_op = MarshallSignOperator(hi)
 #plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
-plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder)
-Sign_gs(ket_gs, hi)
+plot_Sign_Fidelity( ket_gs, vstate, folder, hi)
 
 sys.stdout.close()
 
