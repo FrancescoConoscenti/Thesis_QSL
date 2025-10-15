@@ -175,12 +175,12 @@ print(f"params={count_params}")
 
 #Staggered_and_Striped_Magnetization(vstate, lattice, hilbert)
 
-marshall_op = MarshallSignOperator(hilbert)
+
 #Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
 n_sample = 4096
 marshall_op = MarshallSignOperator(hilbert)
-plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
-plot_Sign_Fidelity(marshall_op, ket_gs, vstate, folder)
+#plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
+plot_Sign_Fidelity(ket_gs, vstate, folder, hilbert)
 
 
 """
