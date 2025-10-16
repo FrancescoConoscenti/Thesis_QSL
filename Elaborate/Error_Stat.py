@@ -57,7 +57,7 @@ def Fidelity(vstate, ket_gs):
 
 #Relative Error
 def Relative_Error(E_vs, E_exact):
-    e = np.abs((E_vs - E_exact)/E_exact)
+    e = np.abs((E_vs - E_exact))/(L*L)
     print(f"Relative error = {e}")
 
 #Total magnetization on Z

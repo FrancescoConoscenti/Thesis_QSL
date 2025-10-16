@@ -36,6 +36,7 @@ def Marshall_Sign(vstate, folder_path, n_samples, L):
         
     return sign1"""
 
+"""
 import netket as nk
 import jax
 import jax.numpy as jnp
@@ -107,3 +108,53 @@ marshall_sign_expect = jnp.sum(weights * signs) / jnp.sum(weights)
 
 print("⟨Marshall sign gs⟩ =", float(jnp.real(marshall_sign_expect)))
 
+"""
+#%%
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Example data
+steps = np.arange(20)
+values1 = np.random.randint(0, 2, size=20)
+values2 = np.random.randint(0, 2, size=20)
+line_data = np.random.rand(20)  # continuous variable
+
+# Convert 0→'-' and 1→'+'
+symbols1 = np.where(values1 == 1, '+', '-')
+symbols2 = np.where(values2 == 1, '+', '-')
+
+# Create figure
+fig, ax = plt.subplots(figsize=(10, 4))
+
+# --- 1️⃣ Plot the line ---
+ax.plot(steps, line_data, color='cyan', lw=2, label='Continuous variable')
+
+# --- 2️⃣ Add binary sequences as text ---
+offset1 = -0.2
+offset2 = -0.4
+
+for i, sym in enumerate(symbols1):
+    ax.text(steps[i], offset1, sym, ha='center', va='center', fontsize=14, color='red')
+
+for i, sym in enumerate(symbols2):
+    ax.text(steps[i], offset2, sym, ha='center', va='center', fontsize=14, color='blue')
+
+# --- 3️⃣ Style ---
+ax.set_xlabel("Step")
+ax.set_ylabel("Value")
+ax.set_title("Binary sequences (+/−) and continuous line")
+
+ax.set_xlim(-0.5, len(steps) - 0.5)
+
+# Adjust vertical limits to fit the line and symbols
+ymin = min(line_data.min(), offset2 - 0.5)
+ymax = max(line_data.max(), 0.5)
+ax.set_ylim(ymin, ymax)
+
+ax.legend()
+
+plt.show()
+
+
+
+# %%
