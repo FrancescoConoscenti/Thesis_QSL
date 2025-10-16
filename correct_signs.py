@@ -27,6 +27,7 @@ def extract_variables_from_title(path: Path, model):
     
     Returns a dictionary of parsed variables.
     """
+    path = Path(path)
     title = path.name  # Get folder name
 
     # Pattern to capture name-value pairs (letters + number/word/float)
@@ -132,9 +133,9 @@ def apply_to_files(root_folder: str, model):
 
                         vstate, ha, hi = initialize_vstate(first_level, J2, model)
 
-                        #E_exact, ket_gs = Exact_gs(4, J2, ha, J1J2, spin)
+                        E_exact, ket_gs = Exact_gs(4, J2, ha, J1J2, spin)
                         #plot_Sign_Fidelity(ket_gs, vstate, str(second_level), hi)
-
+                        plot_Sign_single(ket_gs, vstate, str(second_level), hi)
                         
                         count += 1
 
@@ -151,7 +152,30 @@ def apply_to_files(root_folder: str, model):
 # ---------------- Script Entry ----------------
 
 if __name__ == "__main__":
+
     model = "ViT"
-    #folder = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/J1J2/spin"
-    folder = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot"
-    apply_to_files(folder, model)
+    L=4
+
+    if model == "ViT":
+        folder = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot"
+    if model == "HFDS":
+        folder = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/J1J2/spin"
+
+    #apply_to_files(folder, model)
+
+    path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d32_heads2_patch2_sample1024_lr0.01_iter1000_symmTrue"
+    #path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/J1J2/spin/layers1_hidd1_feat4_sample512_lr0.02_iter100_symmTrue_Hannah"
+    J2=0.5
+    first_level = path
+    second_level = first_level + f"/J={J2}_L=4"
+
+    vstate, ha, hi = initialize_vstate(first_level, J2, model)
+    E_exact, ket_gs = Exact_gs(4, J2, ha, J1J2=True, spin=True)
+    #plot_Sign_Fidelity(ket_gs, vstate, str(second_level), hi)
+    plot_Sign_single(ket_gs, vstate, second_level, hi, 4, L)
+    #plot_Weight_single(ket_gs, vstate, second_level, hi, L)
+    #plot_MSE_configs(ket_gs, vstate, second_level, hi)
+    #plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, second_level, hi)
+
+    #sign_expect = get_marshal_sign_full_hilbert(vstate, hi) 
+                        
