@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_ferm.py", line 34, in <module>
-    from HFDS_model_ferm import Orbitals
-ModuleNotFoundError: No module named 'HFDS_model_ferm'
-srun: error: cip-ws-129: task 0: Exited with exit code 1
-srun: Terminating StepId=9670608.0

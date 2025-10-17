@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_ferm.py", line 119, in <module>
-    hamiltonian = nk.operator.Heisenberg(hilbert=hi, graph=g, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule
-                                                                      ^^
-NameError: name 'J2' is not defined
-srun: error: cip-ws-105: task 0: Exited with exit code 1
-srun: Terminating StepId=9670825.0

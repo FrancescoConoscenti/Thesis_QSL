@@ -56,7 +56,7 @@ def Fidelity(vstate, ket_gs):
     return np.real(fidelity_val)
 
 #Relative Error
-def Relative_Error(E_vs, E_exact):
+def Relative_Error(E_vs, E_exact, L):
     e = np.abs((E_vs - E_exact))/(L*L)
     print(f"Relative error = {e}")
 

@@ -31,7 +31,7 @@ def Corr_Struct(lattice, vstate, L, folder, hi):
     plt.title('Spin-Spin Correlation Function C(r) in 2D')
     plt.xticks(np.arange(L))  # integer ticks for x-axis
     plt.yticks(np.arange(L)) 
-    plt.savefig(f'{folder}/Corr.png')
+    plt.savefig(f'{folder}/physical_obs/Corr.png')
     plt.show()
 
 
@@ -52,5 +52,5 @@ def Corr_Struct(lattice, vstate, L, folder, hi):
     plt.title('Structure Factor S(q)')
     plt.xticks([0, 1/2*L, L], ['0', 'π', '2π'])
     plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
-    plt.savefig(f'{folder}/Struct.png')
+    plt.savefig(f'{folder}/physical_obs/Struct.png')
     plt.show()
