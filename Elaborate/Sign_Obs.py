@@ -215,12 +215,10 @@ def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignOperator)
 
 #########################################################################################
 
-def Marshall_Sign(marshall_op, vstate, folder_path, n_samples, L, hi):
+def Marshall_Sign_MCMC(marshall_op, vstate, folder_path, n_samples):
     
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    sign1 = np.zeros(number_models)
-    sign2 = np.zeros(number_models)
-
+    sign = np.zeros(number_models)
     vstate.n_samples = n_samples
 
     for i in range(0, number_models):
@@ -229,40 +227,38 @@ def Marshall_Sign(marshall_op, vstate, folder_path, n_samples, L, hi):
 
         # Compute expectation value MCMC
         exp_val = vstate.expect(marshall_op)
-        sign1[i] = exp_val.mean
+        sign[i] = exp_val.mean
 
-        # Compute expectation value full Hilbert space
-        sign2[i] = _marshal_sign_full_hilbert(vstate, hi) 
+    return sign
 
-    return sign1, sign2
 
-def Marshall_Sign(ket_gs, vstate, folder_path, L, hi):
+def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
     
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     sign = np.zeros(number_models)
-    fidelity = np.zeros(number_models)
+
+    for i in range(0, number_models):
+        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+
+        sign[i] = _marshal_sign_full_hilbert(vstate, hi) 
+
+    return sign
+
+
+def Marshall_Sign_exact(ket_gs, hi):
 
     sign_expected = _marshal_sign_exact(ket_gs, hi)
 
-    for i in range(0, number_models):
-        
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
-        
-        sign[i] = _marshal_sign_full_hilbert(vstate, hi) 
-       
-        
+    return sign_expected
 
-    return sign, sign_expected
 
 def Fidelity_iteration(vstate, ket_gs, folder_path):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     fidelity = np.zeros(number_models)
 
-
     for i in range(0, number_models):
-        
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
         
@@ -301,7 +297,7 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
     return configs, sign_config_vstate, weight_config_exact, weight_vstate
 
 
-def Mean_Square_Error_configs(ket_gs, vstate, folder_path, L, hi):
+def Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     Error = np.zeros(number_models)

@@ -1,10 +1,0 @@
-  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:17<?, ?it/s, Energy=-5.64-0.00j ± 0.21 [σ²=4.0e+01, R̂=1.225]]  0%|          | 0/2 [00:13<?, ?it/s, Energy=-6.39-0.00j ± 0.30 [σ²=8.4e+01, R̂=1.225]] 50%|█████     | 1/2 [00:13<00:13, 13.08s/it, Energy=-6.39-0.00j ± 0.30 [σ²=8.4e+01, R̂=1.225]]100%|██████████| 2/2 [00:13<00:00,  6.54s/it, Energy=-6.39-0.00j ± 0.30 [σ²=8.4e+01, R̂=1.225]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 187, in <module>
-    E_exact, ket_gs = Exact_gs(L, h, ha)
-                                  ^
-NameError: name 'h' is not defined. Did you mean: 'hi'?
-srun: error: cip-ws-131: task 0: Exited with exit code 1
-srun: Terminating StepId=9670630.0
