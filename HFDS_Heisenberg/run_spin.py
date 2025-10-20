@@ -48,6 +48,7 @@ from Elaborate.Sign_Obs import *
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+parser.add_argument("--seed", type=float, default=0, help="seed")
 args = parser.parse_args()
 
 spin = True
@@ -62,6 +63,7 @@ n_dim = 2
 
 J1J2 = True
 J2 = args.J2
+seed = int(args.seed)
 
 dtype   = "real"
 MFinitialization = "Fermi"
@@ -86,13 +88,14 @@ chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Hannah"
-lattice_name = f"J2={J2}_L={L}"
+seed_str = f"seed_{seed}"
+J_value = f"J={J2}"
 if J1J2==True:
-   folder = f'HFDS_Heisenberg/plot/J1J2/spin/{model_name}/{lattice_name}'
-   save_model = f"HFDS_Heisenberg/plot/J1J2/spin/{model_name}/{lattice_name}/models"
+   model_path = f'HFDS_Heisenberg/plot/spin_new/{model_name}/{J_value}'
+   save_model = f"HFDS_Heisenberg/plot/spin_new/{model_name}/{J_value}/{seed_str}/models"
 else:
-    folder = f'HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}'
-    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{lattice_name}/models"
+    folder = f'HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}'
+    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}/models"
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 os.makedirs(save_model, exist_ok=True)
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
@@ -180,34 +183,50 @@ for i in range(block_iter):
 
 #Energy
 E_vs = Energy(log, L, folder)
-
 #Correlation function
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hi)
-
+#exact diagonalization
 E_exact, ket_gs = Exact_gs(L, J2, ha, J1J2, spin)
-
-
+#Fidelity
 if J1J2 == True:
     fidelity = Fidelity(vstate, ket_gs)
     print(f"Fidelity <vstate|exact> = {fidelity}")
-
+#Rel Error
 Relative_Error(E_vs, E_exact)
-
+#magnetization
 Magnetization(vstate, lattice, hi)
-
+#Variance
 variance = Variance(log)
-
+#Vscore
 Vscore(L, variance, E_vs)
-
+#count number of parameters in the model
 hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 
-#Staggered_and_Striped_Magnetization(vstate, lattice, hi)
+#Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
+#n_sample = 4096
+#marshall_op = MarshallSignOperator(hilbert)
+#sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
+sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 5, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 5, L, folder, one_avg = "one")
+error = plot_MSE_configs(ket_gs, vstate, hi, folder, one_avg = "one")
+error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
 
-n_sample = 2048
-marshall_op = MarshallSignOperator(hi)
-#plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
-plot_Sign_Fidelity( ket_gs, vstate, folder, hi)
+variables = {
+        #'sign_vstate_MCMC': sign_vstate_MCMC,
+        'sign_vstate_full': sign_vstate_full,
+        'sign_exact': sign_exact,
+        'fidelity': fidelity,
+        'configs': configs,
+        'sign_vstate_config': sign_vstate_config,
+        'weight_exact': weight_exact,
+        'weight_vstate': weight_vstate,
+        'error': error
+    }
+
+with open(folder+"/variables", 'wb') as f:
+    pickle.dump(variables, f)   
 
 sys.stdout.close()
 
