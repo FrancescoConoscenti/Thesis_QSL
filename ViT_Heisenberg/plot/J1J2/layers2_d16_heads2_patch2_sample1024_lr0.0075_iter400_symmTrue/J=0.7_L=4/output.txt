@@ -1,0 +1,15 @@
+ViT, J=0.7, L=4, layers2_d16_heads2_patch2_sample1024_lr0.0075_iter400
+Number of parameters =  6208
+Automatic SR implementation choice:  NTK
+20
+Last value:  -0.5464607026941762
+Exact ground state energy per site= -0.5638581160226857
+Fidelity <vstate|exact> = [0.46856313]
+Relative error = 0.030854239451630888
+Magnetization = 0.0
+Variance = 14.057646275800298
+V-score = -6.431224700373186
+params=6208
+Staggered Magnetization = -0.00439453125
+Striped Magnetization = 0.005859375
+Marshall Sign =  -0.12679666275531729

@@ -106,8 +106,8 @@ def avarage_plots_seeds(folder, Js):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers1_d16_heads4_patch2_sample1024_lr0.0075_iter3000_symmTrue_new"
-    Js = [ 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample1024_lr0.02_iter2_symmTrue_Hannah"
+    Js = [ 0.3, 0.4]
 
     average_models_seeds(model_path, Js)
     avarage_plots_seeds(model_path, Js)

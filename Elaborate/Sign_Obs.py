@@ -106,15 +106,15 @@ def MSE_configs(ket_gs, vstate, hi):
     # Compute probability weights from variational wf
     weights = jnp.abs(psi_var) ** 2
     weights = weights / jnp.sum(weights)  # normalized weights (sum = 1)
-    #print("weights",weights.shape)
+    print(jnp.sum(weights))
+    weights = weights / jnp.sum(weights)  # normalized weights (sum = 1)
+    print(jnp.sum(weights))
 
     # Compute real-part difference per configuration
     diff = jnp.abs(jnp.real(psi_exact) - jnp.real(psi_var))
-    #print("diff",diff.shape)
 
     # Weighted average
     Error = jnp.sum(weights * diff)
-    #print("Error", Error)
 
     return Error
 
@@ -301,8 +301,6 @@ def Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     Error = np.zeros(number_models)
-
-    ket_gs = ket_gs / jnp.linalg.norm(ket_gs)
 
     for i in range(0, number_models):
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
