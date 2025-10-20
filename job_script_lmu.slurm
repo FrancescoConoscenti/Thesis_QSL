@@ -10,14 +10,14 @@
 #SBATCH --mem=16G
 #SBATCH --time=00-12:00:00
 
-#SBATCH --array=0-3
+#SBATCH --array=0-47
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
 export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.0 0.2)
-SEED_VALUES=(1 2)
+J_VALUES=(0.3 0.4 0.5 0.6 0.7 0.8)
+SEED_VALUES=(1 2 3 4 5 6 7 8)
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
