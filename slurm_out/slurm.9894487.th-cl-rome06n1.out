@@ -1,0 +1,17 @@
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:19<?, ?it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]100%|██████████| 1/1 [00:00<00:00,  7.97it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]100%|██████████| 1/1 [00:00<00:00,  7.95it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]
+  0%|          | 0/1 [00:00<?, ?it/s]2025-10-17 16:27:12.275254: E external/xla/xla/service/slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__reset] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+2025-10-17 16:28:26.477314: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 3m14.201118815s
+
+********************************
+[Compiling module jit__reset] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+  0%|          | 0/1 [03:31<?, ?it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]100%|██████████| 1/1 [00:00<00:00,  8.24it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]100%|██████████| 1/1 [00:00<00:00,  8.22it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=3.8399999992-0.0000000004j ± 0.0000000066 e+01 [σ²=4.5e-12]]100%|██████████| 1/1 [00:00<00:00, 2033.11it/s, Energy=3.8399999992-0.0000000004j ± 0.0000000066 e+01 [σ²=4.5e-12]]
+usage: plot_avarage_models.py [-h] [--model_path MODEL_PATH]
+plot_avarage_models.py: error: argument --model_path: invalid float value: '[CpuDevice(id=0)]'
+[CpuDevice(id=0)]
+srun: error: th-cl-rome06n1: task 0: Exited with exit code 2
+srun: Terminating StepId=9894487.1

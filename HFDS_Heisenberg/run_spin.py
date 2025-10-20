@@ -27,6 +27,7 @@ os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
 import matplotlib.pyplot as plt
 import numpy as np 
 from scipy.sparse.linalg import eigsh
+import pickle
 
 from netket.operator.spin import sigmax, sigmaz, sigmay
 # Variational monte carlo driver
@@ -73,13 +74,13 @@ symmetry = True  #True or False
 
 #Varaitional state param
 n_hid_ferm       = 1
-features         = 4 #hidden units per layer
+features         = 2 #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
 n_samples        = 1024
-N_opt            = 110
+N_opt            = 3
 save_every       = 1
 block_iter = N_opt//save_every
 
@@ -92,17 +93,22 @@ seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
    model_path = f'HFDS_Heisenberg/plot/spin_new/{model_name}/{J_value}'
-   save_model = f"HFDS_Heisenberg/plot/spin_new/{model_name}/{J_value}/{seed_str}/models"
+   folder = f'{model_path}/{seed_str}'
+   save_model = f"{model_path}/{seed_str}/models"
 else:
     folder = f'HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}'
     save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}/models"
-os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
-os.makedirs(save_model, exist_ok=True)
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 
+os.makedirs(save_model, exist_ok=True)
+os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
+os.makedirs(folder+"/physical_obs", exist_ok=True)
+os.makedirs(folder+"/Sign_plot", exist_ok=True)
+os.makedirs(model_path+"/plot_avg", exist_ok=True)
+
+sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
-
+# Hilbert space of spins on the graph
 boundary_conditions = 'pbc' 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
@@ -180,7 +186,6 @@ for i in range(block_iter):
     
 
 #%%
-
 #Energy
 E_vs = Energy(log, L, folder)
 #Correlation function
@@ -193,7 +198,7 @@ if J1J2 == True:
     fidelity = Fidelity(vstate, ket_gs)
     print(f"Fidelity <vstate|exact> = {fidelity}")
 #Rel Error
-Relative_Error(E_vs, E_exact)
+Relative_Error(E_vs, E_exact, L)
 #magnetization
 Magnetization(vstate, lattice, hi)
 #Variance
@@ -207,11 +212,11 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 5, L, folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 5, L, folder, one_avg = "one")
+#sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+#configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
+#configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
 error = plot_MSE_configs(ket_gs, vstate, hi, folder, one_avg = "one")
-error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
+#error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,

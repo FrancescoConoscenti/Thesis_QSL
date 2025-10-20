@@ -1,0 +1,13 @@
+ViT, J=0.2, L=4, layers1_d2_heads1_patch2_sample1024_lr0.01_iter5
+Number of parameters =  100
+Automatic SR implementation choice:  QGT
+Last value:  0.6000000012686283
+Exact ground state energy per site= -0.6198739415299094
+Fidelity <vstate|exact> = [6.17479791e-17]
+Relative error = 0.0762421214249086
+Magnetization = 0.0
+Variance = 2.34415825879191e-11
+V-score = 9.76732605764778e-12
+params=100
+⟨Marshall Sign final vstate⟩ =  -0.005438982957487958
+⟨Marshall sign exact gs⟩ = -1.0

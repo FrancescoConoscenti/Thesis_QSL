@@ -50,7 +50,7 @@ block_iter = N_opt//save_every
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}_new"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-model_path = f'ViT_Heisenberg/plot/{model_name}/{J_value}'
+model_path = f'ViT_Heisenberg/plot/ViT_new/{model_name}/{J_value}'
 folder = f'{model_path}/{seed_str}'
 save_model = f"{model_path}/{seed_str}/models"
 
@@ -171,8 +171,8 @@ print(f"params={count_params}")
 #marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
 sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 5, L, folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 5, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
 error = plot_MSE_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
 error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
 

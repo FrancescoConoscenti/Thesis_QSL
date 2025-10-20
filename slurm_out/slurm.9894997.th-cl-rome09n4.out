@@ -1,0 +1,6 @@
+usage: run_ViT.py [-h] [--J2 J2] [--seed SEED]
+run_ViT.py: error: argument --seed: invalid float value: ''
+[CpuDevice(id=0)]
+[CpuDevice(id=0)]
+srun: error: th-cl-rome09n4: task 0: Exited with exit code 2
+srun: Terminating StepId=9894997.0

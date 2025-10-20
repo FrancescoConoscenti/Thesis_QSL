@@ -1,0 +1,13 @@
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:26<?, ?it/s, Energy=-6.03-0.00j ± 0.18 [σ²=3.0e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 15.90it/s, Energy=-6.03-0.00j ± 0.18 [σ²=3.0e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:19<?, ?it/s, Energy=-7.78-0.00j ± 0.24 [σ²=5.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1019.52it/s, Energy=-7.78-0.00j ± 0.24 [σ²=5.5e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:19<?, ?it/s, Energy=-7.16+0.00j ± 0.28 [σ²=7.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1411.75it/s, Energy=-7.16+0.00j ± 0.28 [σ²=7.4e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:19<?, ?it/s, Energy=-8.11-0.00j ± 0.29 [σ²=7.9e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1567.38it/s, Energy=-8.11-0.00j ± 0.29 [σ²=7.9e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:19<?, ?it/s, Energy=-10.05+0.00j ± 0.27 [σ²=7.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2038.05it/s, Energy=-10.05+0.00j ± 0.27 [σ²=7.4e+01, R̂=1.225]]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 201, in <module>
+    Relative_Error(E_vs, E_exact)
+TypeError: Relative_Error() missing 1 required positional argument: 'L'
+srun: error: th-cl-rome09n1: task 0: Exited with exit code 1
+srun: Terminating StepId=9906834.0
