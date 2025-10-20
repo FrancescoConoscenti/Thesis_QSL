@@ -15,14 +15,12 @@ import pickle
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
-
 from Elaborate.Energy import *
 from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
 from Elaborate.count_params import *
 from Elaborate.Sign_vs_iteration import *
 from Elaborate.Sign_vs_iteration import *
-
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
@@ -31,35 +29,38 @@ args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
 L = 4  # Linear size of the lattice
-symm = True
+
 
 n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
 num_layers      = 1     # number of Tranformer layers
-d_model         = 2    # dimensionality of the embedding space
-n_heads         = 1     # number of heads
+d_model         = 16    # dimensionality of the embedding space
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.01
+lr              = 0.0075
+symm = True
 
 N_samples       = 1024
-N_opt           = 15
-save_every       = 5
+N_opt           = 3000
+save_every       = 30
 block_iter = N_opt//save_every
 
-
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}_new"
 seed_str = f"seed_{seed}"
-lattice_name = f"J={J2}"
-folder = f'ViT_Heisenberg/plot/{model_name}/{seed_str}/{lattice_name}'
-save_model = f"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/{model_name}/{seed_str}/{lattice_name}/models"
+J_value = f"J={J2}"
+model_path = f'ViT_Heisenberg/plot/{model_name}/{J_value}'
+folder = f'{model_path}/{seed_str}'
+save_model = f"{model_path}/{seed_str}/models"
+
 os.makedirs(save_model, exist_ok=True)
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
+sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph
@@ -145,41 +146,35 @@ for i in range(block_iter):
 #%%
 #Energy
 E_vs = Energy(log, L, folder)
-
 #Correlation function
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hilbert)
-
 #change to lanczos for Heisenberg
 E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
-
-#comment for ising
+#Fidelity
 fidelity = Fidelity(vstate, ket_gs)
 print(f"Fidelity <vstate|exact> = {fidelity}")
-
+#Rel Err
 Relative_Error(E_vs, E_exact, L)
-
+#Magn
 Magnetization(vstate, lattice, hilbert)
-
+#Variance
 variance = Variance(log)
-
+#Vscore
 Vscore(L, variance, E_vs)
-
+#count Params
 count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
 print(f"params={count_params}")
 
 #Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
-n_sample = 4096
-marshall_op = MarshallSignOperator(hilbert)
-#plot_Sign_full_MCMC(marshall_op, vstate, folder, n_sample)
-plot_Sign_Fidelity(ket_gs, vstate, folder, hilbert)
+#n_sample = 4096
+#marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, folder, hilbert)
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, folder, hilbert, 4, L)
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, folder, hilbert, L)
-error = plot_MSE_configs(ket_gs, vstate, folder, hilbert)
-error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, folder, hilbert)
-
+sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 5, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 5, L, folder, one_avg = "one")
+error = plot_MSE_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
+error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
