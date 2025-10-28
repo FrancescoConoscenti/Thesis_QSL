@@ -37,14 +37,14 @@ seed = int(args.seed)
 
 num_layers      = 1     # number of Tranformer layers
 d_model         = 16    # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+n_heads         = 6     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.0075
+lr              = 0.015
 symm = True
 
 N_samples       = 1024
-N_opt           = 3000
-save_every       = 30
+N_opt           = 1000
+save_every       = 100
 block_iter = N_opt//save_every
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}_new"

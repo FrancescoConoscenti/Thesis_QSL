@@ -9,7 +9,9 @@ import os
 from Elaborate.Error_Stat import Fidelity
 
 def sublattice_sites(N_sites):
-
+    """
+    Returns the indices of the sites belonging to sublattice A, assuming a square lattice.
+    """
     L = np.sqrt(N_sites)
 
     A_sites = []
@@ -23,7 +25,9 @@ def sublattice_sites(N_sites):
 
 def balanced_combinations_numpy(L):
     """
-    Generate all arrays as numpy arrays
+    Generates all possible combinations of a 1D array of length L 
+    with an equal number of 1s and -1s.
+    Returns a numpy array of these combinations.
     """
     if L % 2 != 0:
         raise ValueError("L must be even for equal numbers of 1 and -1")
@@ -43,7 +47,7 @@ import numpy as np
 def extract_config(ket_gs, hi, n):
     """
     Returns the n-th most probable configuration and its coefficient
-    from a wavefunction vector `ket_gs` defined on a Hilbert space `hi`.
+    from a wavefunction vector `ket_gs`.
     """
 
     probs = np.abs(ket_gs[:,0]) ** 2
@@ -57,6 +61,7 @@ def extract_config(ket_gs, hi, n):
 
 
 def _marshal_sign_exact_single_config(most_prob_config, coeff, hi):
+
     N_sites = hi.size
     A_sites = sublattice_sites(N_sites)
     coeff=coeff[0]
@@ -73,7 +78,7 @@ def _marshal_sign_exact_single_config(most_prob_config, coeff, hi):
     return sign, weight
 
 def _marshal_sign_single_config(most_prob_config, vstate, hi):
-
+    
     N_sites = hi.size
     A_sites = sublattice_sites(N_sites)
 
@@ -88,11 +93,10 @@ def _marshal_sign_single_config(most_prob_config, vstate, hi):
     Z = jnp.sum(non_norm_weights)
     psi_most_weight = jnp.abs(psi_most) ** 2 / Z
 
-
     return  sign_most, psi_most_weight
 
 def MSE_configs(ket_gs, vstate, hi):
-
+    
     configs = hi.all_states()
 
     # Evaluate both wavefunctions
@@ -103,20 +107,18 @@ def MSE_configs(ket_gs, vstate, hi):
     psi_var = psi_var / jnp.sqrt(jnp.sum(jnp.abs(psi_var) ** 2))
     psi_exact = psi_exact / jnp.sqrt(jnp.sum(jnp.abs(psi_exact) ** 2))
 
-    # Compute probability weights from variational wf
-    weights = jnp.abs(psi_var) ** 2
-    weights = weights / jnp.sum(weights)  # normalized weights (sum = 1)
-    print(jnp.sum(weights))
-    weights = weights / jnp.sum(weights)  # normalized weights (sum = 1)
-    print(jnp.sum(weights))
-
-    # Compute real-part difference per configuration
-    diff = jnp.abs(jnp.real(psi_exact) - jnp.real(psi_var))
-
-    # Weighted average
+    """
+    # Error difference amplitude
+    weights = jnp.abs(psi_exact) ** 2
+    diff = jnp.abs(jnp.abs(psi_exact)**2 - jnp.abs(psi_var)**2)
     Error = jnp.sum(weights * diff)
+    """
 
-    return Error
+    # Error product amplitude
+    Overlap = jnp.sum(np.abs(psi_exact) * np.abs(psi_var))
+
+
+    return Overlap
 
 #################################################################################################################################################
 
@@ -142,10 +144,9 @@ def _marshal_sign_MCMC(sigma, vstate):
     
     log_psi = vstate.log_value(sigma) #log coefficient of wf associated with sample sigma
     psi = jnp.exp(log_psi)
-    #print("psi = ",psi)
     sign = jnp.real((psi * ((-1.0) ** (S_A - M_A))) / jnp.abs(psi))
-    #print("sign MCMC = ",sign.val)
-    return  sign #jnp.rint(S_A - M_A)"""
+
+    return  sign
 
 
 def _marshal_sign_full_hilbert(vstate, hi):
@@ -162,7 +163,8 @@ def _marshal_sign_full_hilbert(vstate, hi):
     weights = jnp.abs(psi) ** 2
     sign_expect = jnp.sum(weights * signs) / jnp.sum(weights) 
 
-    return  sign_expect
+    return  sign_expect, signs
+
 
 def _marshal_sign_exact(ket_gs, hi):
     N_sites = hi.size
@@ -182,7 +184,7 @@ def _marshal_sign_exact(ket_gs, hi):
     weights = jnp.abs(psi) ** 2
     marshall_sign_expect = jnp.sum(weights * signs) / jnp.sum(weights)
 
-    return marshall_sign_expect
+    return marshall_sign_expect, signs
 
 
 
@@ -236,21 +238,22 @@ def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
     
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     sign = np.zeros(number_models)
+    signs_vstate = np.zeros(number_models, hi.size)
 
     for i in range(0, number_models):
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
-        sign[i] = _marshal_sign_full_hilbert(vstate, hi) 
+        sign[i], signs_vstate[i,:] = _marshal_sign_full_hilbert(vstate, hi) 
 
-    return sign
+    return sign,  signs_vstate
 
 
 def Marshall_Sign_exact(ket_gs, hi):
 
-    sign_expected = _marshal_sign_exact(ket_gs, hi)
+    sign_expected, signs_exact = _marshal_sign_exact(ket_gs, hi)
 
-    return sign_expected
+    return sign_expected, signs_exact
 
 
 def Fidelity_iteration(vstate, ket_gs, folder_path):
@@ -300,12 +303,34 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
 def Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    Error = np.zeros(number_models)
+    Overlap = np.zeros(number_models)
 
     for i in range(0, number_models):
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
-        Error[i] = MSE_configs(ket_gs, vstate, hi)
+        Overlap[i] = MSE_configs(ket_gs, vstate, hi)
 
-    return Error
+    return Overlap
+
+def Sign_difference(sign_vstate, sign_exact):
+
+    array = np.ones_like(sign_vstate)
+    sign_exact_array= array * sign_exact
+
+    sign_error = np.abs(np.abs(sign_vstate) - np.abs(sign_exact_array))
+
+    return sign_error 
+
+
+def Sign_overlap(ket_gs, signs_vstate, signs_exact):
+
+    array = np.ones_like(signs_vstate)
+    sign_exact_array= array * signs_exact
+
+    psi = ket_gs[:,0]
+    weights = jnp.abs(psi) ** 2
+
+    sign_overlap = np.sum(weights * signs_vstate * sign_exact_array)
+
+    return sign_overlap 

@@ -3,20 +3,19 @@
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
-##SBATCH --cpus-per-task=8
-##SBATCH --gres=gpu:1
-##SBATCH --partition=cip
+#SBATCH --cpus-per-task=16
+#SBATCH --gres=gpu:1
 
 #SBATCH --mem=16G
-#SBATCH --time=00-12:00:00
-#SBATCH --array=0-3
+#SBATCH --time=00-24:00:00
+#SBATCH --array=0-4
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
-export JAX_PLATFORMS=cpu
+##export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.3 0.4)
-SEED_VALUES=(1 2)
+J_VALUES=(0.6)
+SEED_VALUES=(1 2 3 4 5)
 
 
 NUM_J=${#J_VALUES[@]}

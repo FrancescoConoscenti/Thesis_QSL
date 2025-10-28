@@ -1,0 +1,5 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 9985524 ON th-cl-naples07 CANCELLED AT 2025-10-24T17:37:26 ***
+slurmstepd: error: *** STEP 9985524.0 ON th-cl-naples07 CANCELLED AT 2025-10-24T17:37:26 ***

@@ -133,9 +133,12 @@ def apply_to_files(root_folder: str, model):
                         vstate, ha, hi = initialize_vstate(first_level, J2, model)
 
                         E_exact, ket_gs = Exact_gs(4, J2, ha, J1J2, spin)
-                        #plot_Sign_Fidelity(ket_gs, vstate, str(second_level), hi)
-                        plot_Sign_single(ket_gs, vstate, str(second_level), hi)
-                        
+                        plot_Sign_Fidelity(ket_gs, vstate, hi, str(second_level), one_avg = "one")
+                        plot_Sign_single_config(ket_gs, vstate, hi, 3, L,str(second_level), one_ag = "one")
+                        plot_Weight_single(ket_gs, vstate, hi, 3,L, str(second_level),one_avg = "one")
+                        plot_MSE_configs(ket_gs, vstate, hi, str(second_level), one_avg="one")
+                        plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, str(second_level), one_avg = "avg")
+
                         count += 1
 
                         print(f"✅ Processed folders.")
@@ -151,59 +154,61 @@ def apply_to_files(root_folder: str, model):
 # ---------------- Script Entry ----------------
 
 if __name__ == "__main__":
-
-    model = "ViT"
-    L=4
-
-    if model == "ViT":
-        folder = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot"
-    if model == "HFDS":
-        folder = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/J1J2/spin"
-
+    
     #apply_to_files(folder, model)
 
-    path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d32_heads2_patch2_sample1024_lr0.01_iter1000_symmTrue"
-    #path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/J1J2/spin/layers1_hidd1_feat4_sample512_lr0.02_iter100_symmTrue_Hannah"
-    J2=0.5
-    first_level = path
-    second_level = first_level + f"/J={J2}_L=4"
+    L = 4
+    model = "HFDS"
+    base_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.02_iter2000_symmTrue_Hannah"
 
-    vstate, ha, hi = initialize_vstate(first_level, J2, model)
-    marshall_op = MarshallSignOperator(hi)
-    E_exact, ket_gs = Exact_gs(4, J2, ha, J1J2=True, spin=True)
+    for j_folder in os.listdir(base_path):
+        if j_folder.startswith("J="):
+            j_path = os.path.join(base_path, j_folder)
+            if not os.path.isdir(j_path):
+                continue
+            
+            try:
+                j_value_str = j_folder.split('=')[1]
+                j_value = float(j_value_str)
+            except (ValueError, IndexError):
+                print(f"Could not parse J value from folder name: {j_folder}")
+                continue
 
-    #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(second_level), 64, hi)
-    sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, str(second_level), hi)
-    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, second_level, hi, 4, L)
-    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, second_level, hi, L)
-    error = plot_MSE_configs(ket_gs, vstate, second_level, hi)
-    error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, second_level, hi)
+            for seed_folder in os.listdir(j_path):
+                if seed_folder.startswith("seed_"):
+                    seed_path = os.path.join(j_path, seed_folder)
+                    if not os.path.isdir(seed_path):
+                        continue
+                    
+                    print(f"Processing J={j_value} in {seed_path}")
 
-    variables = {
-        #'sign_vstate_MCMC': sign_vstate_MCMC,
-        'sign_vstate_full': sign_vstate_full,
-        'sign_exact': sign_exact,
-        'fidelity': fidelity,
-        'configs': configs,
-        'sign_vstate_config': sign_vstate_config,
-        'weight_exact': weight_exact,
-        'weight_vstate': weight_vstate,
-        'error': error
-    }
+                    try:
+                        # Correctly call initialize_vstate with the model
+                        vstate, ha, hi = initialize_vstate(Path(base_path), j_value, model)
+                        marshall_op = MarshallSignOperator(hi)
+                        E_exact, ket_gs = Exact_gs(4, j_value, ha, J1J2=True, spin=True)
 
-    with open('/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d32_heads2_patch2_sample1024_lr0.01_iter1000_symmTrue/J=0.5_L=4/variables.pkl', 'wb') as f:
-        pickle.dump(variables, f)                   
+                        # Calling plot_Sign_Fidelity with corrected arguments.
+                        sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi, seed_path, "one")
+                        configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 4, L, seed_path, "one")
+                        configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 4, L, seed_path, "one")
+                        error = plot_MSE_configs(ket_gs, vstate, hi, seed_path, "one")
+                        error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, seed_path, "one")
+                        
+                        variables = {
+                            #'sign_vstate_MCMC': sign_vstate_MCMC,
+                            'sign_vstate_full': sign_vstate_full,
+                            'sign_exact': sign_exact,
+                            'fidelity': fidelity,
+                            'configs': configs,
+                            'sign_vstate_config': sign_vstate_config,
+                            'weight_exact': weight_exact,
+                            'weight_vstate': weight_vstate,
+                            'error': error
+                        }
 
-    # Load all variables
-    loaded_data = pickle.load(open('/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/layers2_d32_heads2_patch2_sample1024_lr0.01_iter1000_symmTrue/J=0.5_L=4/variables.pkl', 'rb'))
-
-    # Access individual variables
-    #sign_vstate_MCMC = loaded_data['sign_vstate_MCMC']
-    sign_vstate_full = loaded_data['sign_vstate_full']
-    sign_exact = loaded_data['sign_exact']
-    fidelity = loaded_data['fidelity']
-    configs = loaded_data['configs']
-    sign_vstate_config = loaded_data['sign_vstate_config']
-    weight_exact = loaded_data['weight_exact']
-    weight_vstate = loaded_data['weight_vstate']
-    error = loaded_data['error']
+                        with open(os.path.join(seed_path, 'variables.pkl'), 'wb') as f:
+                            pickle.dump(variables, f)      
+                            
+                    except Exception as e:
+                        print(f"Error processing {seed_path}: {e}")
