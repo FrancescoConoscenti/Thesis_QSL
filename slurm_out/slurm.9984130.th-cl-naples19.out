@@ -1,0 +1,13 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+2025-10-24 15:07:19.653491: E external/xla/xla/tsl/distributed_runtime/coordination/coordination_service.cc:2188] Use error polling to propagate the following error to all tasks: UNAVAILABLE: The following tasks are unhealthy (stopped sending heartbeats):
+/job:jax_worker/replica:0/task:0
+The tasks have crashed. Check the task logs for an earlier error, or scheduler events (e.g. preemption, eviction) to debug further. [type.googleapis.com/tensorflow.CoordinationServiceError='']
+E1024 15:07:19.676534 1198558 coordination_service_agent.cc:567] Polled an error from coordination service (this can be an error from this or another task).
+2025-10-24 15:07:19.690719: F external/xla/xla/pjrt/distributed/client.h:80] Terminating process because the JAX distributed service detected fatal errors. This most likely indicates that another task died; see the other task logs for more details. Disable Python buffering, i.e. `python -u`, to be sure to see all the previous output. absl::Status: UNAVAILABLE: The following tasks are unhealthy (stopped sending heartbeats):
+/job:jax_worker/replica:0/task:0
+The tasks have crashed. Check the task logs for an earlier error, or scheduler events (e.g. preemption, eviction) to debug further.
+
+RPC: /tensorflow.CoordinationService/PollForError [type.googleapis.com/tensorflow.CoordinationServiceError='']
+srun: error: th-cl-naples19: task 0: Aborted (core dumped)
+srun: Terminating StepId=9984130.0

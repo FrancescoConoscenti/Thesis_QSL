@@ -1,0 +1,13 @@
+ViT, J=0.5, L=4, layers1_d16_heads4_patch2_sample1024_lr0.0015_iter700
+Number of parameters =  3472
+Automatic SR implementation choice:  NTK
+Last value:  -0.5033694174472264
+Exact ground state energy per site= -0.5286202094621766
+Fidelity <vstate|exact> = [0.60837246]
+Relative error = 0.0015781745009343859
+Magnetization = 0.0
+Variance = 13.570796210518122
+V-score = -6.7399785029356165
+params=3472
+⟨Marshall Sign final vstate⟩ =  -0.9962233500102065
+⟨Marshall sign exact gs⟩ = -0.9745380645577973

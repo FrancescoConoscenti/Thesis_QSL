@@ -1,0 +1,16 @@
+2025-10-24 14:08:57.273373: E external/xla/xla/service/slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+2025-10-24 14:10:24.503948: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 3m27.232662816s
+
+********************************
+[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+  0%|          | 0/1 [00:00<?, ?it/s]2025-10-24 14:34:58.988086: E external/xla/xla/service/slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__sample_chain] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 9983801.0 ON th-cl-naples19 CANCELLED AT 2025-10-24T14:35:22 ***
+slurmstepd: error: *** JOB 9983801 ON th-cl-naples19 CANCELLED AT 2025-10-24T14:35:22 ***

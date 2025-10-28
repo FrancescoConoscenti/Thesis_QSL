@@ -1,16 +1,16 @@
 #%%
 try:
-  from mpi4py import MPI
-  comm = MPI.COMM_WORLD
-  rank = comm.Get_rank()
-  import jax
-  jax.distributed.initialize()
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    import jax
+    jax.distributed.initialize()
 
-  print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
-  print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
+    print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
+    print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
 
-  # wait for all processes to show their devices
-  comm.Barrier()
+    # wait for all processes to show their devices
+    comm.Barrier()
 except:
   pass
 
@@ -49,7 +49,7 @@ from Elaborate.Sign_Obs import *
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
-parser.add_argument("--seed", type=float, default=0, help="seed")
+parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
 spin = True
@@ -67,28 +67,28 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "real"
-MFinitialization = "Fermi"
+MFinitialization = "Hartree" #Hartree #random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
 symmetry = True  #True or False
 
 #Varaitional state param
-n_hid_ferm       = 1
-features         = 2 #hidden units per layer
+n_hid_ferm       = 4
+features         = 64 #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
+lr               = 0.025
 n_samples        = 1024
-N_opt            = 3
-save_every       = 1
+N_opt            = 2000
+save_every       = 20
 block_iter = N_opt//save_every
 
 n_chains         = n_samples//2
 chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Hannah"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -212,11 +212,11 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-#sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
-#configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
-#configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
+sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
 error = plot_MSE_configs(ket_gs, vstate, hi, folder, one_avg = "one")
-#error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
+error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,

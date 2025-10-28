@@ -1,0 +1,30 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 162, in <module>
+    vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 81, in __call__
+    log_psi, sign = self.calc_psi(jnp.concatenate([x,x_refl]))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 52, in calc_psi
+    orbitals = self.orbitals(x)
+               ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 152, in __call__
+    orbitals_full = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
+                                     ^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'orbitals_mfmf' where it is not associated with a value
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: th-cl-naples21: task 0: Exited with exit code 1
+srun: Terminating StepId=9985532.0

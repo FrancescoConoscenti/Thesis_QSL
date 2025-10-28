@@ -309,6 +309,10 @@ class ViT_sym(nn.Module):
             z_plus = vit(spins)
             z_minus =  vit((-1.)*spins)   
             return logsumexp_cplx(jnp.array([z_plus, z_minus]), axis=0)
+#        if self.rotational:
+#            z_ = vit(spins)
+#            z_minus =  vit(matmul*spins)   
+#            return logsumexp_cplx(jnp.array([z_plus, z_minus]), axis=0)
         else:
             return vit(spins)
 
