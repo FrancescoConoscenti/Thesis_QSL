@@ -37,7 +37,7 @@ from HFDS_Heisenberg.HFDS_model_ferm import HiddenFermion
 from Elaborate.Energy import *
 from Elaborate.Corr_Struct import *
 from Elaborate.Error_Stat import *
-from Elaborate.count_params import *
+from Elaborate.Statistics.count_params import *
 from Elaborate.order_param import *
 from Elaborate.Sign_vs_iteration import MarshallSignOperator
 

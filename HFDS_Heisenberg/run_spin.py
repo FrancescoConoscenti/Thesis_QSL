@@ -39,12 +39,13 @@ sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_
 from HFDS_Heisenberg.HFDS_model_spin import Orbitals
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 
-from Elaborate.Energy import *
-from Elaborate.Corr_Struct import *
-from Elaborate.Error_Stat import *
-from Elaborate.count_params import *
-from Elaborate.Sign_vs_iteration import *
+from Elaborate.Statistics.Energy import *
+from Elaborate.Statistics.Corr_Struct import *
+from Elaborate.Statistics.Error_Stat import *
+from Elaborate.Statistics.count_params import *
+from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
+from Elaborate.Plotting.S_matrix_vs_iteration import *
 
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
@@ -67,7 +68,7 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "real"
-MFinitialization = "Hartree" #Hartree #random #Fermi
+MFinitialization = "Fermi" #Hartree #random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
 symmetry = True  #True or False
@@ -81,7 +82,7 @@ hid_layers       = 1
 lr               = 0.025
 n_samples        = 1024
 N_opt            = 2000
-save_every       = 20
+save_every       = 100
 block_iter = N_opt//save_every
 
 n_chains         = n_samples//2
@@ -215,8 +216,10 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
-error = plot_MSE_configs(ket_gs, vstate, hi, folder, one_avg = "one")
-error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
+amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
+amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
+S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
@@ -227,7 +230,9 @@ variables = {
         'sign_vstate_config': sign_vstate_config,
         'weight_exact': weight_exact,
         'weight_vstate': weight_vstate,
-        'error': error
+        'amp_overlap': amp_overlap,
+        'sign_overlap': sign_overlap,
+        'eigenvalues': eigenvalues
     }
 
 with open(folder+"/variables", 'wb') as f:

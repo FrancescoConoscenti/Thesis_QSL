@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=HFDS_ferm
+#SBATCH --job-name=HFDS_spin
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -8,13 +8,13 @@
 
 #SBATCH --mem=16G
 #SBATCH --time=00-24:00:00
-#SBATCH --array=0-4
+#SBATCH --array=0-19
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
 ##export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.6)
+J_VALUES=(0.2 0.5 0.7 1)
 SEED_VALUES=(1 2 3 4 5)
 
 

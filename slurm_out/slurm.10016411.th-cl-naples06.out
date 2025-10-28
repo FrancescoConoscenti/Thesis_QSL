@@ -1,0 +1,28 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:21<?, ?it/s, Energy=-5.95-0.00j ± 0.17 [σ²=2.6e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 11.59it/s, Energy=-5.95-0.00j ± 0.17 [σ²=2.6e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:02<?, ?it/s, Energy=-7.43-0.00j ± 0.22 [σ²=4.7e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2223.92it/s, Energy=-7.43-0.00j ± 0.22 [σ²=4.7e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-6.91+0.00j ± 0.27 [σ²=7.1e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1715.46it/s, Energy=-6.91+0.00j ± 0.27 [σ²=7.1e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-8.34+0.00j ± 0.27 [σ²=7.1e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1401.84it/s, Energy=-8.34+0.00j ± 0.27 [σ²=7.1e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-9.10+0.00j ± 0.31 [σ²=9.1e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1601.49it/s, Energy=-9.10+0.00j ± 0.31 [σ²=9.1e+01, R̂=1.225]]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 219, in <module>
+    error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 305, in plot_Sign_Err_Amplitude_Err_Fidelity
+    Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 324, in Plot_Sign_Err_Amplitude_Err_Fidelity
+    ax1.plot(x_axis, sign_err, marker='o', label='Sign error',
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_axes.py", line 1777, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 297, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 494, in _plot_args
+    raise ValueError(f"x and y must have same first dimension, but "
+ValueError: x and y must have same first dimension, but have shapes (5,) and (1,)
+srun: error: th-cl-naples06: task 0: Exited with exit code 1
+srun: Terminating StepId=10016411.0

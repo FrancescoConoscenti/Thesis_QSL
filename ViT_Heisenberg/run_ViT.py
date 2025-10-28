@@ -15,12 +15,12 @@ import pickle
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
-from Elaborate.Energy import *
-from Elaborate.Corr_Struct import *
-from Elaborate.Error_Stat import *
-from Elaborate.count_params import *
-from Elaborate.Sign_vs_iteration import *
-from Elaborate.Sign_vs_iteration import *
+from Elaborate.Statistics.Energy import *
+from Elaborate.Statistics.Corr_Struct import *
+from Elaborate.Statistics.Error_Stat import *
+from Elaborate.Statistics.count_params import *
+from Elaborate.Plotting.Sign_vs_iteration import *
+from Elaborate.Plotting.Sign_vs_iteration import *
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
@@ -173,9 +173,10 @@ print(f"params={count_params}")
 sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
-error = plot_MSE_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
-error, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
+amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
+amp_overlap, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
 
+amplitude_overlap_for_plot, sign_vstate_for_plot, sign_exact_for_plot, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
         'sign_vstate_full': sign_vstate_full,
@@ -185,7 +186,8 @@ variables = {
         'sign_vstate_config': sign_vstate_config,
         'weight_exact': weight_exact,
         'weight_vstate': weight_vstate,
-        'error': error
+        'amp_overlap': amp_overlap,
+        'sign_overlap': sign_overlap
     }
 
 with open(folder+"/variables", 'wb') as f:
