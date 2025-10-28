@@ -6,7 +6,7 @@ import numpy as np
 import netket as nk
 import flax
 import os
-from Elaborate.Error_Stat import Fidelity
+from Elaborate.Statistics.Error_Stat import Fidelity
 
 def sublattice_sites(N_sites):
     """
@@ -95,7 +95,7 @@ def _marshal_sign_single_config(most_prob_config, vstate, hi):
 
     return  sign_most, psi_most_weight
 
-def MSE_configs(ket_gs, vstate, hi):
+def Amp_overlap_configs(ket_gs, vstate, hi):
     
     configs = hi.all_states()
 
@@ -238,7 +238,7 @@ def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
     
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     sign = np.zeros(number_models)
-    signs_vstate = np.zeros(number_models, hi.size)
+    signs_vstate = np.zeros((number_models, hi.n_states))
 
     for i in range(0, number_models):
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
@@ -300,7 +300,7 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
     return configs, sign_config_vstate, weight_config_exact, weight_vstate
 
 
-def Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi):
+def Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     Overlap = np.zeros(number_models)
@@ -309,14 +309,19 @@ def Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi):
         with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
-        Overlap[i] = MSE_configs(ket_gs, vstate, hi)
+        Overlap[i] = Amp_overlap_configs(ket_gs, vstate, hi)
 
     return Overlap
 
 def Sign_difference(sign_vstate, sign_exact):
+    """
+    Computes the difference between the variational sign and the exact sign.
+    sign_vstate: total sign from variational state at each model step (array of shape (number_models,))
+    sign_exact: total sign from exact state (scalar)
+    """
 
-    array = np.ones_like(sign_vstate)
-    sign_exact_array= array * sign_exact
+    array = np.ones_like(sign_vstate) #
+    sign_exact_array = array * sign_exact
 
     sign_error = np.abs(np.abs(sign_vstate) - np.abs(sign_exact_array))
 
@@ -324,13 +329,21 @@ def Sign_difference(sign_vstate, sign_exact):
 
 
 def Sign_overlap(ket_gs, signs_vstate, signs_exact):
+    """
+    Computes the sign overlap between the variational state and the exact state.
+    signs_vstate: array of variational signs for each configuration for each model step (array of shape (number_models, N_states))
+    signs_exact: array of exact signs for each configuration (array of shape (N_states,))
+    Returns the sign overlap (number_models,)
+    """
 
-    array = np.ones_like(signs_vstate)
-    sign_exact_array= array * signs_exact
-
-    psi = ket_gs[:,0]
+    psi = ket_gs[:, 0]
     weights = jnp.abs(psi) ** 2
 
-    sign_overlap = np.sum(weights * signs_vstate * sign_exact_array)
+    # weights has shape (N_states,)
+    # signs_vstate has shape (number_models, N_states)
+    # signs_exact has shape (N_states,)
+    # The product will be broadcast correctly.
+    # We sum along axis=1 to get a result per model.
+    sign_overlap = np.abs(np.sum(weights * signs_vstate * signs_exact, axis=1))
 
     return sign_overlap 

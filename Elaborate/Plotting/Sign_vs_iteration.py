@@ -26,7 +26,7 @@ import jax
 import jax.numpy as jnp
 
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
-from Elaborate.Error_Stat import Fidelity
+from Elaborate.Statistics.Error_Stat import Fidelity
 from Elaborate.Sign_Obs import *
 
 
@@ -64,7 +64,7 @@ def Plot_Sign_full_MCMC(sign_vstate_MCMC, sign_vstate_full, folder_path):
 
 def plot_Sign_Fidelity(ket_gs, vstate,  hi, folder_path, one_avg):
 
-    sign_vstate_full = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
+    sign_vstate_full,_ = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact, _ = Marshall_Sign_exact(ket_gs, hi)
     fidelity = Fidelity_iteration(vstate, ket_gs, folder_path)
 
@@ -88,7 +88,7 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
     ax1.set_xlabel("Iterations", fontsize=12)
     if one_avg == "avg" and plot_variance and sign_vstate_full_var is not None:
         std_dev = np.sqrt(sign_vstate_full_var)
-        ax1.fill_between(x_axis, sign_vstate_full - std_dev, sign_vstate_full + std_dev, color='tab:blue', alpha=0.2)
+        ax1.errorbar(x_axis, sign_vstate_full, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
     ax1.set_ylabel("Sign", color='tab:blue', fontsize=12)
     ax1.tick_params(axis='y', labelcolor='tab:blue')
@@ -100,7 +100,7 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
     ax2.plot(x_axis, fidelity, marker='s', label='Fidelity',markersize=8, linewidth=2, color='tab:red')
     if one_avg == "avg" and plot_variance and fidelity_var is not None:
         std_dev = np.sqrt(fidelity_var)
-        ax2.fill_between(x_axis, fidelity - std_dev, fidelity + std_dev, color='tab:red', alpha=0.2)
+        ax2.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
     ax2.set_ylabel("Fidelity", color='tab:red', fontsize=12)
     ax2.tick_params(axis='y', labelcolor='tab:red')
@@ -123,7 +123,7 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
 
 def plot_Sign_single_config(ket_gs, vstate, hi, number_states, L, folder_path, one_avg):
 
-    sign_vstate_tot = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
+    sign_vstate_tot, _ = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact_tot, _ = Marshall_Sign_exact(ket_gs, hi)
     configs, sign_vstate_config, weight_exact, weight_vstate = Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, number_states)
 
@@ -143,7 +143,7 @@ def Plot_Sign_single_config(configs, sign_vstate_config,sign_vstate_tot, sign_ex
     ax.plot(x_axis, sign_vstate_tot, marker='o', label='Sign full Hilbert, vstate',markersize=8, alpha=1, linewidth=2, color='tab:blue')
     if one_avg == "avg" and plot_variance and sign_vstate_full_var is not None:
         std_dev = np.sqrt(sign_vstate_full_var)
-        ax.fill_between(x_axis, sign_vstate_tot - std_dev, sign_vstate_tot + std_dev, color='tab:blue', alpha=0.2)
+        ax.errorbar(x_axis, sign_vstate_tot, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
     # Horizontal lines for exact sign
     ax.axhline(y=sign_exact_tot, color='tab:blue', linestyle='--', linewidth=1, alpha=0.4, label='Exact Sign gs full Hilbert')
@@ -227,7 +227,7 @@ def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate,
                 markersize=8, alpha=0.7, linewidth=2, color=colors[i % len(colors)])
         if one_avg == "avg" and plot_variance and weight_vstate_var is not None:
             std_dev = np.sqrt(weight_vstate_var[i])
-            ax1.fill_between(x_axis, weight_vstate[i] - std_dev, weight_vstate[i] + std_dev, color=colors[i % len(colors)], alpha=0.2)
+            ax1.errorbar(x_axis, weight_vstate[i], yerr=std_dev, fmt='none', ecolor=colors[i % len(colors)], capsize=5, alpha=0.5)
 
         
         ax1.axhline(y=weight_exact[i], color=colors[i % len(colors)], linestyle='--', 
@@ -252,15 +252,15 @@ def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate,
 
 
 
-def plot_MSE_configs(ket_gs, vstate, hi, folder_path, one_avg):
+def plot_Amp_overlap_configs(ket_gs, vstate, hi, folder_path, one_avg): 
 
-    error = Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi)
+    amp_overlap = Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi)
     
-    Plot_MSE_configs(error, folder_path, one_avg, plot_variance=False)
+    Plot_Amp_overlap_configs(amp_overlap, folder_path, one_avg, plot_variance=False)
 
-    return error
+    return amp_overlap
 
-def Plot_MSE_configs(error, folder_path, one_avg, plot_variance=False, error_var=None):
+def Plot_Amp_overlap_configs(error, folder_path, one_avg, plot_variance=False, error_var=None):
 
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     x_axis = np.arange(number_models)*20
@@ -268,16 +268,16 @@ def Plot_MSE_configs(error, folder_path, one_avg, plot_variance=False, error_var
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
-    ax1.plot(x_axis, error, marker='o', label=f'MSE full Hilbert space',
+    ax1.plot(x_axis, error, marker='o', label=f'Amplitude Overlap full Hilbert space',
             markersize=8, linewidth=2, color='pink')
     if one_avg == "avg" and plot_variance and error_var is not None:
         std_dev = np.sqrt(error_var)
-        ax1.fill_between(x_axis, error - std_dev, error + std_dev, color='pink', alpha=0.2)
+        ax1.errorbar(x_axis, error, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
     
     ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("MSE configs", fontsize=12)
+    ax1.set_ylabel("Amplitude Overlap configs", fontsize=12)
 
-    fig.suptitle("MSE full Hiblert space", fontsize=14)
+    fig.suptitle("Amplitude Overlap full Hiblert space", fontsize=14)
     ax1.grid(True, alpha=0.3)
     lines1, labels1 = ax1.get_legend_handles_labels()
     ax1.legend(lines1, labels1, loc='best')
@@ -285,27 +285,26 @@ def Plot_MSE_configs(error, folder_path, one_avg, plot_variance=False, error_var
     
     if one_avg == "avg":
         folder_path = Path(folder_path)
-        save_path = folder_path.parent /"plot_avg"/"MSE_configs.png"
+        save_path = folder_path.parent /"plot_avg"/"Amp_Overlap_configs.png"
         plt.savefig(save_path)
     if one_avg == "one":
-        plt.savefig(f"{folder_path}/Sign_plot/MSE_configs.png")
+        plt.savefig(f"{folder_path}/Sign_plot/Amp_Overlap_configs.png")
     
     plt.show()
 
 
 def plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder_path, one_avg):
 
-    error = Mean_Square_Error_configs(ket_gs, vstate, folder_path, hi)
+    amplitude_overlap = Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi)
     fidelity = Fidelity_iteration(vstate, ket_gs, folder_path)
     sign_vstate, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact, signs_exact = Marshall_Sign_exact(ket_gs, hi)
     #sign_err = Sign_difference(sign_vstate, sign_exact)
     sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
-    Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
+    Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
     
-    return error, fidelity, sign_vstate, sign_exact
-
+    return amplitude_overlap, fidelity, sign_vstate, sign_exact, sign_overlap
 
 def Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_err, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None):
 
@@ -315,20 +314,19 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_err, folder_path,
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
     # First y-axis (left) - for Error and sign_err
-    ax1.plot(x_axis, error, marker='o', label='MSE configs',
+    ax1.plot(x_axis, error, marker='o', label='Amplitude Overlap configs',
             markersize=8, linewidth=2, color='pink')
     if one_avg == "avg" and plot_variance and error_var is not None:
         std_dev = np.sqrt(error_var)
-        ax1.fill_between(x_axis, error - std_dev, error + std_dev, color='pink', alpha=0.2)
+        ax1.errorbar(x_axis, error, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
 
-    ax1.plot(x_axis, sign_err, marker='o', label='Sign error',
-            markersize=8, linewidth=2, color='tab:blue')
+    ax1.plot(x_axis, sign_err, marker='o', label='Sign error',markersize=8, linewidth=2, color='tab:blue')
     if one_avg == "avg" and plot_variance and sign_err_var is not None:
         std_dev = np.sqrt(sign_err_var)
-        ax1.fill_between(x_axis, sign_err - std_dev, sign_err + std_dev, color='tab:blue', alpha=0.2)
+        ax1.errorbar(x_axis, sign_err, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
     ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("MSE / Error Values", fontsize=12)
+    ax1.set_ylabel("Amplitude Overlap / Sign Overlap", fontsize=12)
     ax1.grid(True, alpha=0.3)
     ax1.set_yscale('log')
     # Create second y-axis (right) - for Fidelity
@@ -337,14 +335,14 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_err, folder_path,
             markersize=8, linewidth=2, color='tab:red')
     if one_avg == "avg" and plot_variance and fidelity_var is not None:
         std_dev = np.sqrt(fidelity_var)
-        ax2.fill_between(x_axis, fidelity - std_dev, fidelity + std_dev, color='red', alpha=0.2)
+        ax2.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
     ax2.set_ylabel("Fidelity", fontsize=12)
     # Combine legends from both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='best')
-    fig.suptitle("MSE full Hilbert space & Sign Error & Fidelity", fontsize=14)
+    fig.suptitle("Amplitude Overlap full Hilbert space & Sign Overlap & Fidelity", fontsize=14)
     plt.tight_layout()
 
     if one_avg == "avg":
@@ -355,3 +353,47 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_err, folder_path,
         plt.savefig(f"{folder_path}/Sign_plot/Sign_Err_&_Amplitude_Err_&_Fidelity.png")
     
     plt.show()
+
+
+def plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, folder_path, one_avg):
+
+    amplitude_overlap = Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi)
+    sign_vstate, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
+    sign_exact, signs_exact = Marshall_Sign_exact(ket_gs, hi)
+    #sign_err = Sign_difference(sign_vstate, sign_exact)
+    sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+
+    Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False)
+
+    return amplitude_overlap, sign_vstate, sign_exact, sign_overlap
+                       
+
+def Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False, amplitude_overlap_var=None, sign_overlap_var=None):
+    
+    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    if plot_variance and amplitude_overlap_var is not None and sign_overlap_var is not None:
+        xerr = np.sqrt(amplitude_overlap_var)
+        yerr = np.sqrt(sign_overlap_var)
+        ax.errorbar(amplitude_overlap, sign_overlap, xerr=xerr, yerr=yerr,
+                    fmt='o', color='purple', capsize=5, alpha=0.7, label='Models with Variance')
+    else:
+        ax.scatter(amplitude_overlap, sign_overlap, marker='o', color='purple', alpha=0.7, label='Models')
+
+    ax.set_xlabel("Amplitude Overlap (Amplitude Overlap configs)", fontsize=12)
+    ax.set_ylabel("Sign Overlap", fontsize=12)
+    ax.set_title("Sign Overlap vs Amplitude Overlap", fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.legend(loc='best')
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        folder_path = Path(folder_path)
+        save_path = folder_path.parent / "plot_avg" / "Sign_Overlap_vs_Amplitude_Overlap.png"
+        plt.savefig(save_path)
+    if one_avg == "one":
+        plt.savefig(f"{folder_path}/Sign_plot/Sign_Overlap_vs_Amplitude_Overlap.png")
+    
+    plt.show()
+ 

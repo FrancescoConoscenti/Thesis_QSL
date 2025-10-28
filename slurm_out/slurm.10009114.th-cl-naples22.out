@@ -1,0 +1,35 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:21<?, ?it/s, Energy=-6.23+0.00j ± 0.19 [σ²=3.7e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 11.50it/s, Energy=-6.23+0.00j ± 0.19 [σ²=3.7e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:02<?, ?it/s, Energy=-6.96-0.00j ± 0.22 [σ²=4.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2067.18it/s, Energy=-6.96-0.00j ± 0.22 [σ²=4.4e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-6.75-0.00j ± 0.27 [σ²=7.0e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1695.35it/s, Energy=-6.75-0.00j ± 0.27 [σ²=7.0e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-7.16+0.00j ± 0.29 [σ²=8.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1901.32it/s, Energy=-7.16+0.00j ± 0.29 [σ²=8.5e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-7.51+0.00j ± 0.29 [σ²=7.8e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2755.78it/s, Energy=-7.51+0.00j ± 0.29 [σ²=7.8e+01, R̂=1.225]]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 215, in <module>
+    sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 74, in plot_Sign_Fidelity
+    Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_avg)
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 87, in Plot_Sign_Fidelity
+    ax1.plot(x_axis, sign_vstate_full, marker='o', label='Full Hilbert sampled sign',markersize=8, linewidth=2, color='tab:blue')
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_axes.py", line 1777, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 297, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 484, in _plot_args
+    y = _check_1d(xy[1])
+        ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/cbook.py", line 1368, in _check_1d
+    return np.atleast_1d(x)
+           ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/numpy/_core/shape_base.py", line 63, in atleast_1d
+    result = asanyarray(arys[0])
+             ^^^^^^^^^^^^^^^^^^^
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 2 dimensions. The detected shape was (2, 5) + inhomogeneous part.
+srun: error: th-cl-naples22: task 0: Exited with exit code 1
+srun: Terminating StepId=10009114.0
