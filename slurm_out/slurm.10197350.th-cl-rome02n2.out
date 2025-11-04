@@ -1,0 +1,3 @@
+srun: error: th-cl-rome02n2: task 0: Out Of Memory
+srun: Terminating StepId=10197350.0
+slurmstepd: error: Detected 1 oom_kill event in StepId=10197350.0. Some of the step tasks have been OOM Killed.

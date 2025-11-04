@@ -1,0 +1,7 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:18<?, ?it/s, Energy=-2.99+0.00j ± 0.35 [σ²=1.1e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 29.27it/s, Energy=-2.99+0.00j ± 0.35 [σ²=1.1e+02, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-4.38-0.00j ± 0.31 [σ²=9.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1129.63it/s, Energy=-4.38-0.00j ± 0.31 [σ²=9.4e+01, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-4.79-0.00j ± 0.32 [σ²=1.1e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1957.21it/s, Energy=-4.79-0.00j ± 0.32 [σ²=1.1e+02, R̂=1.225]]
+/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py:240: UserWarning: n_samples=256 (256 per JAX device) does not divide n_chains=512, increased to 512 (512 per JAX device)
+  vstate.n_samples = 256

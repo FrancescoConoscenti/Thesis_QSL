@@ -10,6 +10,7 @@ from netket import experimental as nkx
 from netket.jax import apply_chunked
 import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert
+from jax.scipy.special import logsumexp
 
 class HiddenFermion(nn.Module):
   n_elecs: int
@@ -25,12 +26,12 @@ class HiddenFermion(nn.Module):
   stop_grad_lower_block: bool = False
   bounds: str="PBC"
   parity: bool = False
+  rotation: bool = False
   dtype: type = jnp.float64
   U: float=8.0
 
   def setup(self):
     self.n_modes = 2*self.Lx*self.Ly
-    self.key = jax.random.PRNGKey(0)
     self.orbitals = Orbitals(self.n_elecs,self.n_hid,self.Lx, self.Ly, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
@@ -66,28 +67,47 @@ class HiddenFermion(nn.Module):
 
 
   def gen_reflected_samples(self,x):
-    assert self.n_elecs%2==0
-    x1 = x[:,:x.shape[1]//2].copy()
-    x2 = x[:,(x.shape[1]//2):].copy()
-    x_ = jnp.concatenate([x2,x1],axis=-1)
-    return x_
-    
+    x_refl = -x
+    return x_refl
+  
+
+  def gen_rotated_samples(self, x):
+  
+    # Construct rotation permutation once
+    idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
+    idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
+
+    # Apply to all batch elements
+    x_rot = x[:, idx_rot]
+    return x_rot
 
   def __call__(self,x):
-    batch = x.shape[0]
+    
+    log_psi, sign = self.calc_psi(x)
+    #log_psi += sign  # include sign once
 
+    # --- Step 1: add parity symmetry (if enabled) ---
     if self.parity:
-      x_refl    = self.gen_reflected_samples(x)
-      log_psi, sign = self.calc_psi(jnp.concatenate([x,x_refl]))
-      psi       = jnp.exp(log_psi)
-      psi0      = psi[0:batch] 
-      psi_refl  = psi[batch:] 
-      log_psi = jnp.log(1/2*(psi0+psi_refl))+sign[0:batch]
-    else:
-      log_psi, sign = self.calc_psi(x)
-      log_psi += sign
+        x_refl = self.gen_reflected_samples(x)
+        log_psi_refl, sign_refl = self.calc_psi(x_refl)
+        #log_psi_refl += sign_refl
+        log_psi = logsumexp(jnp.stack([log_psi, log_psi_refl]), axis=0) - jnp.log(2)
 
-    return log_psi
+    # --- Step 2: add rotation symmetry (on the current symmetrized state) ---
+    if self.rotation:
+        x_rot1 = self.gen_rotated_samples(x)
+        log_psi_rot1, sign_rot = self.calc_psi(x_rot1)
+
+        x_rot2 = self.gen_rotated_samples(x_rot1)
+        log_psi_rot2, sign_rot = self.calc_psi(x_rot2)
+
+        x_rot3 = self.gen_rotated_samples(x_rot2)
+        log_psi_rot3, sign_rot = self.calc_psi(x_rot3)
+
+        #log_psi_rot += sign_rot
+        log_psi = logsumexp(jnp.stack([log_psi, log_psi_rot1, log_psi_rot2, log_psi_rot3 ]), axis=0) - jnp.log(4)
+
+    return log_psi + sign
 
 class Orbitals(nn.Module):
   n_elecs: int
@@ -116,7 +136,7 @@ class Orbitals(nn.Module):
       return res
 
 
-    def ft(k_arr, max_val,sigmaz):
+    def ft(k_arr, max_val, sigmaz):
       if self.bounds=="PBC":
         matrix = []
         for idx,(kx, ky) in enumerate(k_arr[:max_val]):
@@ -137,6 +157,17 @@ class Orbitals(nn.Module):
     mf = jnp.block([[upmatrix, jnp.zeros(upmatrix.shape)], [jnp.zeros(dnmatrix.shape),dnmatrix]]).T
     #jax.debug.print("mf={x}",x=mf)
     return dtype(mf)
+  
+  
+  def _init_orbitals_hartree(self, key, shape, dtype):
+    mf = np.load("/project/th-scratch/h/Hannah.Lange/PhD/ML/HiddenFermions/src/orbs_8.0_16_14.npy")
+    mf = jnp.array(mf)
+    jax.debug.print("mf={x}",x=mf)
+    return dtype(mf)
+
+
+  def _init_orbitals_striped(self, key, shape, dtype):
+    return 1
 
 
   @nn.compact
@@ -145,7 +176,16 @@ class Orbitals(nn.Module):
     n_samples, N_sites = x.shape
 
     if self.MFinit=="Fermi":
-        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(self.Lx*self.Ly,self.n_elecs), self.dtype)
+        #orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(self.Lx*self.Ly,self.n_elecs), self.dtype)
+        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
+    elif self.MFinit=="Hartree":
+        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_hartree,(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
+    elif self.MFinit=="random":
+        orbitals_mfmf = self.param('orbitals_mf', normal(0.1),(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
+    elif self.MFinit=="striped":
+        orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_striped, (2 * self.Lx * self.Ly, self.n_elecs), self.dtype)
+    else:
+        raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
     
     orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
 
