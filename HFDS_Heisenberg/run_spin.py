@@ -49,7 +49,7 @@ from Elaborate.Plotting.S_matrix_vs_iteration import *
 
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.7, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
@@ -68,28 +68,29 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "real"
-MFinitialization = "Fermi" #Hartree #random #Fermi
+MFinitialization = "Fermi" #Hartree #random #Fermi #striped
 determinant_type = "hidden"
 bounds  = "PBC"
-symmetry = True  #True or False
+parity = True
+rotation = False
 
 #Varaitional state param
 n_hid_ferm       = 4
-features         = 64 #hidden units per layer
+features         = 32 #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.025
 n_samples        = 1024
-N_opt            = 2000
-save_every       = 100
+N_opt            = 400
+save_every       = 40
 block_iter = N_opt//save_every
 
 n_chains         = n_samples//2
 chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_symm{symmetry}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rotation{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -131,7 +132,8 @@ model = HiddenFermion(n_elecs=n_elecs,
                    stop_grad_mf=False,
                    stop_grad_lower_block=False,
                    bounds=bounds,
-                   parity=symmetry,
+                   parity=parity,
+                   rotation=rotation,
                    dtype=dtype_)
 
 
@@ -159,11 +161,17 @@ sampler = nk.sampler.MetropolisExchange(
     sweep_size=lattice.n_nodes,
 )
 
+key = jax.random.key(seed)
+key, pkey, skey = jax.random.split(key, 3)
+vstate = nk.vqs.MCState(
+    sampler, 
+    model, 
+    n_samples=n_samples, 
+    seed=pkey,
+    chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
 
-vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
-
 
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
@@ -218,8 +226,7 @@ configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_conf
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
 amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
 amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
-S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
-
+amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, folder, one_avg = "one")
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
@@ -232,11 +239,15 @@ variables = {
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
         'sign_overlap': sign_overlap,
-        'eigenvalues': eigenvalues
+        #'eigenvalues': eigenvalues
     }
 
 with open(folder+"/variables", 'wb') as f:
-    pickle.dump(variables, f)   
+    pickle.dump(variables, f)
+
+vstate.n_samples = 256
+S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+   
 
 sys.stdout.close()
 

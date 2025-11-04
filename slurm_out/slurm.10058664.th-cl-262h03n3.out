@@ -1,0 +1,6 @@
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:08<?, ?it/s, Energy=-1.16+0.01j ± 0.40 [σ²=1.6e+02]]100%|██████████| 1/1 [00:00<00:00, 14.83it/s, Energy=-1.16+0.01j ± 0.40 [σ²=1.6e+02]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:07<?, ?it/s, Energy=-3.61-0.01j ± 0.41 [σ²=1.7e+02]]100%|██████████| 1/1 [00:00<00:00, 15.13it/s, Energy=-3.61-0.01j ± 0.41 [σ²=1.7e+02]]
+/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/run_ViT.py:200: UserWarning: n_samples=256 (256 per JAX device) does not divide n_chains=1024, increased to 1024 (1024 per JAX device)
+  vstate.n_samples = 256
+[CpuDevice(id=0)]
+[CpuDevice(id=0)]

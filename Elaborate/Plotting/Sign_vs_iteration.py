@@ -77,8 +77,8 @@ def plot_Sign_Fidelity(ket_gs, vstate,  hi, folder_path, one_avg):
 
 def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_avg, plot_variance=False, sign_vstate_full_var=None, fidelity_var=None):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    x_axis = np.arange(number_models)*20
+    # Determine x-axis length from the data itself to avoid mismatches.
+    x_axis = np.arange(len(sign_vstate_full)) * 20
     
     plt.figure(figsize=(10, 6))
     #left axis: Sign
@@ -133,8 +133,8 @@ def plot_Sign_single_config(ket_gs, vstate, hi, number_states, L, folder_path, o
 
 def Plot_Sign_single_config(configs, sign_vstate_config,sign_vstate_tot, sign_exact_tot, weight_exact, weight_vstate, number_states, folder_path, one_avg, plot_variance=False, sign_vstate_full_var=None):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    x_axis = np.arange(number_models)*20
+    # Determine x-axis length from the data itself to avoid mismatches.
+    x_axis = np.arange(len(sign_vstate_tot)) * 20
 
     # Create figure
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -201,8 +201,8 @@ def plot_Weight_single(ket_gs, vstate, hi, number_states, L, folder_path, one_av
 
 def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate, number_states, folder_path, one_avg, plot_variance=False, weight_vstate_var=None):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    x_axis = np.arange(number_models)*20
+    # Determine x-axis length from the data itself to avoid mismatches.
+    x_axis = np.arange(weight_vstate.shape[1]) * 20
     spin_config = [[] for _ in range(number_states)] 
 
     plt.figure(figsize=(10, 6))
@@ -262,8 +262,8 @@ def plot_Amp_overlap_configs(ket_gs, vstate, hi, folder_path, one_avg):
 
 def Plot_Amp_overlap_configs(error, folder_path, one_avg, plot_variance=False, error_var=None):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    x_axis = np.arange(number_models)*20
+    # Determine x-axis length from the data itself to avoid mismatches.
+    x_axis = np.arange(len(error)) * 20
 
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -302,46 +302,46 @@ def plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder_path, one_av
     #sign_err = Sign_difference(sign_vstate, sign_exact)
     sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
-    Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
+    Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_vstate, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
     
     return amplitude_overlap, fidelity, sign_vstate, sign_exact, sign_overlap
 
-def Plot_Sign_Err_Amplitude_Err_Fidelity(error, fidelity, sign_err, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None):
+def Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap, fidelity, sign_err, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    x_axis = np.arange(number_models)*20
+    # Determine x-axis length from the data itself to avoid mismatches.
+    x_axis = np.arange(len(amp_overlap)) * 20
  
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
-    # First y-axis (left) - for Error and sign_err
-    ax1.plot(x_axis, error, marker='o', label='Amplitude Overlap configs',
-            markersize=8, linewidth=2, color='pink')
+    
+    # Amplitude Overlap
+    ax1.plot(x_axis, amp_overlap, marker='o', label='Amplitude Overlap configs',markersize=8, linewidth=2, color='pink')
+
     if one_avg == "avg" and plot_variance and error_var is not None:
         std_dev = np.sqrt(error_var)
-        ax1.errorbar(x_axis, error, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
+        ax1.errorbar(x_axis, amp_overlap, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
 
-    ax1.plot(x_axis, sign_err, marker='o', label='Sign error',markersize=8, linewidth=2, color='tab:blue')
+    # Sign Overlap
+    ax1.plot(x_axis, sign_err, marker='o', label='Sign overlap',markersize=8, linewidth=2, color='tab:blue')
+
     if one_avg == "avg" and plot_variance and sign_err_var is not None:
         std_dev = np.sqrt(sign_err_var)
         ax1.errorbar(x_axis, sign_err, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
     ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("Amplitude Overlap / Sign Overlap", fontsize=12)
+    ax1.set_ylabel("Amplitude Overlap / Sign Overlap/ Fidelity", fontsize=12)
     ax1.grid(True, alpha=0.3)
-    ax1.set_yscale('log')
-    # Create second y-axis (right) - for Fidelity
-    ax2 = ax1.twinx()
-    ax2.plot(x_axis, fidelity, marker='s', label='Fidelity',
-            markersize=8, linewidth=2, color='tab:red')
+
+    # Fidelity
+    ax1.plot(x_axis, fidelity, marker='s', label='Fidelity',markersize=8, linewidth=2, color='tab:red')
+
     if one_avg == "avg" and plot_variance and fidelity_var is not None:
         std_dev = np.sqrt(fidelity_var)
-        ax2.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
+        ax1.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
-    ax2.set_ylabel("Fidelity", fontsize=12)
     # Combine legends from both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='best')
+    ax1.legend(lines1, labels1, loc='best')
     fig.suptitle("Amplitude Overlap full Hilbert space & Sign Overlap & Fidelity", fontsize=14)
     plt.tight_layout()
 
@@ -386,6 +386,10 @@ def Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overla
     ax.set_title("Sign Overlap vs Amplitude Overlap", fontsize=14)
     ax.grid(True, alpha=0.3)
     ax.legend(loc='best')
+
+    # Set x and y axis limits from 0 to 1
+    ax.set_xlim(0.5, 1)
+    ax.set_ylim(0.5, 1)
     plt.tight_layout()
 
     if one_avg == "avg":
@@ -395,5 +399,114 @@ def Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overla
     if one_avg == "one":
         plt.savefig(f"{folder_path}/Sign_plot/Sign_Overlap_vs_Amplitude_Overlap.png")
     
+    plt.show()
+
+
+def plot_Overlap_vs_iteration(ket_gs, vstate, hi, folder_path, one_avg):
+    """
+    Calculates and plots Sign Overlap and Amplitude Overlap vs. optimization iterations.
+    """
+    amplitude_overlap = Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi)
+    _, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
+    _, signs_exact = Marshall_Sign_exact(ket_gs, hi)
+    sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+
+    Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False)
+
+    return amplitude_overlap, sign_overlap
+
+def Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False, amplitude_overlap_var=None, sign_overlap_var=None):
+    """
+    Plots Sign Overlap and Amplitude Overlap on the y-axis against optimization iterations on the x-axis.
+    """
+    x_axis = np.arange(len(amplitude_overlap)) * 20
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot Amplitude Overlap
+    ax.plot(x_axis, amplitude_overlap, marker='o', label='Amplitude Overlap', color='tab:purple', markersize=8, linewidth=2)
+    if one_avg == "avg" and plot_variance and amplitude_overlap_var is not None:
+        std_dev_amp = np.sqrt(amplitude_overlap_var)
+        ax.errorbar(x_axis, amplitude_overlap, yerr=std_dev_amp, fmt='none', ecolor='tab:purple', capsize=5, alpha=0.5)
+
+    # Plot Sign Overlap
+    ax.plot(x_axis, sign_overlap, marker='s', label='Sign Overlap', color='tab:green', markersize=8, linewidth=2)
+    if one_avg == "avg" and plot_variance and sign_overlap_var is not None:
+        std_dev_sign = np.sqrt(sign_overlap_var)
+        ax.errorbar(x_axis, sign_overlap, yerr=std_dev_sign, fmt='none', ecolor='tab:green', capsize=5, alpha=0.5)
+
+    ax.set_xlabel("Iterations", fontsize=12)
+    ax.set_ylabel("Overlap Value", fontsize=12)
+    ax.set_title("Amplitude and Sign Overlap vs. Iterations", fontsize=14)
+    ax.grid(True, alpha=0.3)
+    ax.legend(loc='best')
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        save_path = Path(folder_path).parent / "plot_avg" / "Overlaps_vs_Iteration.png"
+        plt.savefig(save_path)
+    elif one_avg == "one":
+        plt.savefig(f"{folder_path}/Sign_plot/Overlaps_vs_Iteration.png")
+
+    plt.show()
+
+
+def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
+    """
+    Calculates and plots per-configuration Sign and Amplitude Overlap vs. exact weight.
+    This is done for the final trained model.
+    """
+    # Get the final model state
+    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
+    model_index = number_models - 1
+    with open(folder_path + f"/models/model_{model_index} .mpack", "rb") as f:
+        vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+
+    # Get all states and amplitudes
+    all_states = hi.all_states()
+    psi_vstate = vstate.log_value(all_states)
+    psi_exact = ket_gs
+
+    # Calculate weights and overlaps
+    weights_exact = np.abs(psi_exact)**2
+    amp_overlap_per_config = np.abs(np.exp(psi_vstate)) * np.abs(psi_exact)
+    sign_overlap_per_config = np.sign(np.exp(psi_vstate).real) * np.sign(psi_exact.real)
+
+    # Sort by exact weight
+    sort_indices = np.argsort(weights_exact)
+    sorted_weights = weights_exact[sort_indices]
+    sorted_amp_overlap = amp_overlap_per_config[sort_indices]
+    sorted_sign_overlap = sign_overlap_per_config[sort_indices]
+
+    Plot_Overlap_vs_Weight(sorted_weights, sorted_amp_overlap, sorted_sign_overlap, folder_path, one_avg)
+
+    return sorted_weights, sorted_amp_overlap, sorted_sign_overlap
+
+def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_avg):
+    """
+    Plots per-configuration Sign and Amplitude Overlap vs. exact weight.
+    """
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    # Plot Amplitude Overlap
+    ax.scatter(weights, amp_overlap, label='Amplitude Overlap per config', color='tab:purple', alpha=0.6, s=15)
+
+    # Plot Sign Overlap
+    ax.scatter(weights, sign_overlap, label='Sign Overlap per config', color='tab:green', alpha=0.6, s=15, marker='x')
+
+    ax.set_xlabel("Exact Weight |<s|ψ_exact>|² (log scale)", fontsize=12)
+    ax.set_ylabel("Overlap Value", fontsize=12)
+    ax.set_title("Per-Configuration Overlap vs. Exact Weight", fontsize=14)
+    ax.set_xscale('log')
+    ax.grid(True, which="both", ls="--", alpha=0.3)
+    ax.legend(loc='best')
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        save_path = Path(folder_path).parent / "plot_avg" / "Overlap_vs_Weight.png"
+        plt.savefig(save_path)
+    elif one_avg == "one":
+        plt.savefig(f"{folder_path}/Sign_plot/Overlap_vs_Weight.png")
+
     plt.show()
  

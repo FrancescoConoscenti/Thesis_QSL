@@ -21,6 +21,7 @@ from Elaborate.Statistics.Error_Stat import *
 from Elaborate.Statistics.count_params import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.Sign_vs_iteration import *
+from Elaborate.Plotting.S_matrix_vs_iteration import *
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
@@ -35,22 +36,22 @@ n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
-num_layers      = 1     # number of Tranformer layers
+num_layers      = 2     # number of Tranformer layers
 d_model         = 16    # dimensionality of the embedding space
-n_heads         = 6     # number of heads
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.015
+lr              = 0.01
 symm = True
 
 N_samples       = 1024
-N_opt           = 1000
-save_every       = 100
+N_opt           = 500
+save_every       = 50
 block_iter = N_opt//save_every
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}_new"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-model_path = f'ViT_Heisenberg/plot/ViT_new/{model_name}/{J_value}'
+model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'
 folder = f'{model_path}/{seed_str}'
 save_model = f"{model_path}/{seed_str}/models"
 
@@ -174,9 +175,10 @@ sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilb
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
 amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
-amp_overlap, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
+amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
+amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
 
-amplitude_overlap_for_plot, sign_vstate_for_plot, sign_exact_for_plot, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
+
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
         'sign_vstate_full': sign_vstate_full,
@@ -187,11 +189,16 @@ variables = {
         'weight_exact': weight_exact,
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
-        'sign_overlap': sign_overlap
+        'sign_overlap': sign_overlap,
+        #'eigenvalues': eigenvalues
     }
 
 with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)                   
+
+
+vstate.n_samples = 256
+S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
 
 
 sys.stdout.close()
