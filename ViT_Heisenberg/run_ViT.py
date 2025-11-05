@@ -177,6 +177,7 @@ configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ke
 amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
 amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
 amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
+sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, seed_path, "one")
 
 
 variables = {

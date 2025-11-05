@@ -14,7 +14,7 @@ source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
 #export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.2 0.5 0.7 1)
+J_VALUES=(0.5 0.55 0.6 0.65 0.7)
 SEED_VALUES=(1 2 3 4)
 
 
@@ -31,4 +31,5 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 #srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
 #srun python -m HFDS_Heisenberg.run_ferm --J2 $J
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
+#srun python -m Elaborate.QSL_regime
 srun python -m Elaborate.QSL_DMRG

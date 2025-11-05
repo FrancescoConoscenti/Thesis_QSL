@@ -14,15 +14,15 @@ def compute_S_matrix(vstate, folder_path, hi):
         hi: The Hamiltonian instance.
     """
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    S_matrices = []
+    
+    # Load only the last model to compute its S-matrix
+    last_model_index = number_models - 1
+    with open(folder_path + f"/models/model_{last_model_index} .mpack", "rb") as f:
+        vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
-    for i in range(0, number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+    S_matrix = compute_S_matrix_single_model(vstate, hi)
 
-        S_matrices.append(compute_S_matrix_single_model(vstate, hi))
-
-    return S_matrices
+    return S_matrix  # Return the last S-matrix computed
 
 
 def compute_S_matrix_single_model(vstate, hi):
