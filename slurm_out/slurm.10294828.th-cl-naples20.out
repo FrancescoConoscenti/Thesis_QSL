@@ -1,0 +1,72 @@
+2025-11-04 15:12:26.828166: E external/xla/xla/stream_executor/cuda/cuda_platform.cc:51] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+Traceback (most recent call last):
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/xla_bridge.py", line 915, in backends
+    backend = _init_backend(platform)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/xla_bridge.py", line 1001, in _init_backend
+    backend = registration.factory()
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/xla_bridge.py", line 693, in factory
+    return xla_client.make_c_api_client(plugin_name, updated_options, None)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jaxlib/xla_client.py", line 207, in make_c_api_client
+    return _xla.get_c_api_client(plugin_name, options, distributed_client)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: FAILED_PRECONDITION: No visible GPU devices.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/apply_function_models.py", line 4, in <module>
+    from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 9, in <module>
+    from netket import experimental as nkx
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/__init__.py", line 33, in <module>
+    from . import driver
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/driver/__init__.py", line 15, in <module>
+    from .tdvp import TDVP
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/driver/tdvp.py", line 31, in <module>
+    from netket.experimental.dynamics import AbstractSolver
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/dynamics/__init__.py", line 33, in <module>
+    from ._rk._solver import Euler, Heun, Midpoint, RK4, RK12, RK23, RK45
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/dynamics/_rk/__init__.py", line 1, in <module>
+    from ._solver import Euler, Heun, Midpoint, RK4, RK12, RK23, RK45
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/dynamics/_rk/_solver.py", line 23, in <module>
+    from ._tableau import TableauRKExplicit
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/experimental/dynamics/_rk/_tableau.py", line 76, in <module>
+    a = jnp.zeros((1,1), dtype=default_dtype),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/numpy/array_creation.py", line 78, in zeros
+    return lax.full(shape, 0, dtypes.jax_dtype(dtype), sharding=util.normalize_device_to_sharding(device))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 3223, in full
+    fill_value = _convert_element_type(fill_value, dtype, weak_type)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 1614, in _convert_element_type
+    return convert_element_type_p.bind(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/core.py", line 502, in bind
+    return self._true_bind(*args, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/core.py", line 520, in _true_bind
+    return self.bind_with_trace(prev_trace, args, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 4701, in _convert_element_type_bind_with_trace
+    operand = core.Primitive.bind_with_trace(convert_element_type_p, trace, args, params)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/core.py", line 525, in bind_with_trace
+    return trace.process_primitive(self, args, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/core.py", line 1029, in process_primitive
+    return primitive.impl(*args, **params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/jax/_src/dispatch.py", line 88, in apply_primitive
+    outs = fun(*args)
+           ^^^^^^^^^^
+RuntimeError: Unable to initialize backend 'cuda': FAILED_PRECONDITION: No visible GPU devices. (you may need to uninstall the failing plugin package, or set JAX_PLATFORMS=cpu to skip this backend.)
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: th-cl-naples20: task 0: Exited with exit code 1
+srun: Terminating StepId=10294828.0

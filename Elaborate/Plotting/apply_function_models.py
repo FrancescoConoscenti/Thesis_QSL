@@ -185,7 +185,7 @@ if __name__ == "__main__":
     #apply_to_files(folder, model)
 
     model = "HFDS"
-    base_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter400_parityTrue_rotationFalse_InitFermi_typereal"
+    base_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter500_parityTrue_rotationFalse_InitFermi_typereal"
     
     for j_folder in os.listdir(base_path):
         if j_folder.startswith("J="):
@@ -211,13 +211,13 @@ if __name__ == "__main__":
                     try:
                         # Correctly call initialize_vstate with the model
                         vstate, ha, hi = initialize_vstate(Path(base_path), j_value, model)
-                        E_exact, ket_gs = Exact_gs(4, j_value, ha, J1J2=True, spin=True)
+                        #E_exact, ket_gs = Exact_gs(4, j_value, ha, J1J2=True, spin=True)
                         #sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi, seed_path, one_avg = "one")
                         #configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, 4, seed_path, one_avg = "one")
                         #amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, seed_path, one_avg = "one")
                         #amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, seed_path, one_avg = "one")
-                        sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, seed_path, "one")
-                        #S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, seed_path, hi,  one_avg = "one")
+                        #sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, seed_path, "one")
+                        S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, seed_path, hi,  one_avg = "one")
                         
                         """variables = {
                                 #'sign_vstate_MCMC': sign_vstate_MCMC,

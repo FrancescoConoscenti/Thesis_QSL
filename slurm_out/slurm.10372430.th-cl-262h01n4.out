@@ -1,0 +1,118 @@
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.60e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.55e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.45e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.10e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.00e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=8.28e-05
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=9.09e-05
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.08e-04
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config J1J2Heisenberg
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+final DMRG state not in canonical form up to norm_tol=1.00e-05: norm_err=1.67e-04
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/QSL_DMRG.py", line 235, in <module>
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/QSL_DMRG.py", line 162, in main
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/algorithms/dmrg.py", line 100, in run
+    E, _ = engine.run()
+           ^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/algorithms/dmrg.py", line 443, in run
+    return super().run()
+           ^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/algorithms/mps_common.py", line 801, in run
+    consistency_check(np.max(self.trunc_err_list), self.options, 'max_trunc_err', 1e-4,
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/misc.py", line 1008, in consistency_check
+    raise TenpyInconsistencyError(msg)
+tenpy.tools.misc.TenpyInconsistencyError: Maximum truncation error (``max_trunc_err``) exceeded.
+
+Starting DMRG analysis for L=5x5 and J2 values: [0.4        0.43333333 0.46666667 0.5        0.53333333 0.56666667
+ 0.6        0.63333333 0.66666667 0.7       ]
+
+--- Processing L=5, J2 = 0.400 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -24.987087
+Calculated R = 0.313490
+
+--- Processing L=5, J2 = 0.433 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -24.627766
+Calculated R = 0.308037
+
+--- Processing L=5, J2 = 0.467 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -24.282958
+Calculated R = 0.301939
+
+--- Processing L=5, J2 = 0.500 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -23.954209
+Calculated R = 0.295051
+
+--- Processing L=5, J2 = 0.533 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -23.643395
+Calculated R = 0.287183
+
+--- Processing L=5, J2 = 0.567 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -23.352903
+Calculated R = 0.278164
+
+--- Processing L=5, J2 = 0.600 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -23.085980
+Calculated R = 0.267277
+
+--- Processing L=5, J2 = 0.633 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+DMRG complete. Ground state energy: -22.847702
+Calculated R = 0.253301
+
+--- Processing L=5, J2 = 0.667 ---
+Debug: lat.N_sites = 25, len(mps_sites) = 25
+Constructed MPS with MPS.from_product_state(...).
+/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/tenpy/tools/params.py:232: UserWarning: unused option ['verbose'] for config DMRG
+  warnings.warn(msg.format(keys=sorted(unused), name=self.name))
+srun: error: th-cl-262h01n4: task 0: Exited with exit code 1
+srun: Terminating StepId=10372430.0

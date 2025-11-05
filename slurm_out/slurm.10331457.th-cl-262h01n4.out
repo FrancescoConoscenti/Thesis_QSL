@@ -1,0 +1,3 @@
+srun: error: th-cl-262h01n4: task 0: Out Of Memory
+srun: Terminating StepId=10331457.0
+slurmstepd: error: Detected 1 oom_kill event in StepId=10331457.0. Some of the step tasks have been OOM Killed.

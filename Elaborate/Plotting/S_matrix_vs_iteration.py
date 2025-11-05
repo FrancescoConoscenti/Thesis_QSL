@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+from scipy.sparse.linalg import eigsh
 from pathlib import Path
 from Elaborate.S_matrix_Obs import *
 
@@ -15,33 +17,48 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi,  one_avg):
         one_avg: Type of averaging to perform.
     """
 
-    S_matrices = compute_S_matrix(vstate, folder_path, hi)
-    eigenvalues, _ = np.linalg.eigh(S_matrices)
+    S_matrix = compute_S_matrix(vstate, folder_path, hi)
+    
+    # Use eigsh to find the 1000 largest eigenvalues for each S-matrix
+    # This is much faster than computing all eigenvalues with eigh for large matrices.
+    #eigenvalues = np.array([eigsh(S, k=1000, which='LA', return_eigenvectors=False) for S in S_matrix ])
 
+    eigenvalues = np.linalg.eigvalsh(S_matrix)
+    
     Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg)
 
-    return S_matrices, eigenvalues
+    # Calculate the mean of eigenvalues at each step
+    #eigenvalues_mean = np.mean(eigenvalues, axis=1)
+
+    # Save the eigenvalues to a file using pickle, similar to run_spin.py
+    save_path = Path(folder_path) / "Sign_plot" / "S_matrix_eigenvalues.pkl"
+    variables_to_save = {
+        'eigenvalues_mean': eigenvalues
+    }
+    with open(save_path, 'wb') as f:
+        pickle.dump(variables_to_save, f)
+    print(f"S-matrix eigenvalues saved to {save_path} using pickle.")
+
+    return S_matrix, eigenvalues
 
 def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
 
     print("Plotting S-matrix eigenvalues...", eigenvalues.shape)
 
-    sorted_eigenval = np.sort(eigenvalues, axis=-1)[:, ::-1]  # descending per row
-    indices = np.arange(len(sorted_eigenval[1]))   # x-axis positions
+    # Since we have eigenvalues for only one matrix, it's a 1D array.
+    # Sort them in descending order.
+    sorted_eigenval = np.sort(eigenvalues)[::-1]
+    indices = np.arange(len(sorted_eigenval))  # x-axis: eigenvalue index
 
-    normalized_eigenvals = sorted_eigenval / np.max(np.abs(sorted_eigenval), axis=1, keepdims=True)
-
-    # Choose a green colormap and pick evenly spaced colors from it
-    cmap = plt.cm.Greens  # "Greens" goes from light to dark
-    n_lines = normalized_eigenvals.shape[0]
-    colors = [cmap(0.3 + 0.7*i/(n_lines-1)) for i in range(n_lines)]  # avoid very pale end
+    # Normalize by the largest absolute eigenvalue
+    normalized_eigenvals = sorted_eigenval / np.max(np.abs(sorted_eigenval))
 
     # Plot
     plt.figure(figsize=(8,4))
-    for i in range(normalized_eigenvals.shape[0]):
-        plt.plot(indices, np.abs(normalized_eigenvals[i]), lw=1, color=colors[i])
+    plt.plot(indices, np.abs(normalized_eigenvals), lw=1.5, color='darkgreen', marker='.', markersize=3, linestyle='-')
     
     plt.title("Eigenvalues of the S-matrix for optimization iterations")
+    plt.title("Eigenvalue Spectrum of the S-matrix (Final Model)")
     plt.xlabel("eigenvalues index")
     plt.ylabel("eigenvalue (normalized)")
     plt.yscale("log")
@@ -52,5 +69,7 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
     if one_avg == "one":
         plt.savefig(f"{folder_path}/Sign_plot/S_matrix_spectrum.png")
     
+
+
     plt.show()
     

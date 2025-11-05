@@ -465,40 +465,84 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     # Get all states and amplitudes
     all_states = hi.all_states()
     psi_vstate = vstate.log_value(all_states)
-    psi_exact = ket_gs
+    psi_exact = ket_gs.reshape(psi_vstate.shape) # Ensure shapes match
+
+    # Normalize the variational wavefunction
+    psi_vstate_unnorm = np.exp(psi_vstate)
+    norm_vstate = np.sqrt(np.sum(np.abs(psi_vstate_unnorm)**2))
+    psi_vstate_norm = psi_vstate_unnorm / norm_vstate
 
     # Calculate weights and overlaps
     weights_exact = np.abs(psi_exact)**2
-    amp_overlap_per_config = np.abs(np.exp(psi_vstate)) * np.abs(psi_exact)
-    sign_overlap_per_config = np.sign(np.exp(psi_vstate).real) * np.sign(psi_exact.real)
+    
+    # Calculate per-configuration amplitude fidelity. This is bounded between 0 and 1.
+    # It is 1 if |psi_vstate_norm| = |psi_exact| for a given configuration.
+    amp_vstate = np.abs(psi_vstate_norm)
+    amp_exact = np.abs(psi_exact)
+    numerator = 2 * amp_vstate * amp_exact
+    denominator = amp_vstate**2 + amp_exact**2
+    amp_overlap_per_config = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
 
-    # Sort by exact weight
-    sort_indices = np.argsort(weights_exact)
-    sorted_weights = weights_exact[sort_indices]
-    sorted_amp_overlap = amp_overlap_per_config[sort_indices]
-    sorted_sign_overlap = sign_overlap_per_config[sort_indices]
+    # Calculate sign overlap as sign(<s|psi_var>) * sign(<s|psi_exact>)
+    sign_overlap_per_config = np.sign(psi_vstate_norm.real) * np.sign(psi_exact.real)
 
-    Plot_Overlap_vs_Weight(sorted_weights, sorted_amp_overlap, sorted_sign_overlap, folder_path, one_avg)
+    # --- Bin weights on a log scale and average overlaps within each bin ---
+    # This reduces the number of points for a clearer plot.
+    num_bins = 40  # Adjust this number to control the density of points
+    
+    # Filter out zero weights to avoid issues with log scale
+    valid_indices = weights_exact > 1e-12
+    weights_to_bin = weights_exact[valid_indices]
+    amp_to_bin = amp_overlap_per_config[valid_indices]
+    sign_to_bin = sign_overlap_per_config[valid_indices]
 
-    return sorted_weights, sorted_amp_overlap, sorted_sign_overlap
+    # Create logarithmic bins
+    log_bins = np.logspace(np.log10(weights_to_bin.min()), np.log10(weights_to_bin.max()), num_bins + 1)
+    
+    # Digitize weights to find which bin each weight belongs to
+    bin_indices = np.digitize(weights_to_bin, log_bins)
 
+    # Calculate the mean for each bin using np.bincount for efficiency
+    binned_weights = np.bincount(bin_indices, weights=weights_to_bin)[1:num_bins+1]
+    binned_amp_overlap = np.bincount(bin_indices, weights=amp_to_bin)[1:num_bins+1]
+    binned_sign_overlap = np.bincount(bin_indices, weights=sign_to_bin)[1:num_bins+1]
+    counts = np.bincount(bin_indices)[1:num_bins+1]
+    
+    # Avoid division by zero for empty bins
+    non_empty = counts > 0
+    avg_weights = np.divide(binned_weights, counts, where=non_empty, out=np.zeros_like(binned_weights))
+    avg_amp_overlap = np.divide(binned_amp_overlap, counts, where=non_empty, out=np.zeros_like(binned_amp_overlap))
+    avg_sign_overlap = np.divide(binned_sign_overlap, counts, where=non_empty, out=np.zeros_like(binned_sign_overlap))
+
+    Plot_Overlap_vs_Weight(avg_weights[non_empty], avg_amp_overlap[non_empty], avg_sign_overlap[non_empty], folder_path, one_avg)
+
+    return avg_weights[non_empty], avg_amp_overlap[non_empty], avg_sign_overlap[non_empty]
 def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_avg):
     """
     Plots per-configuration Sign and Amplitude Overlap vs. exact weight.
     """
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    x = np.arange(len(weights))  # the label locations
+    width = 0.35  # the width of the bars
 
     # Plot Amplitude Overlap
-    ax.scatter(weights, amp_overlap, label='Amplitude Overlap per config', color='tab:purple', alpha=0.6, s=15)
+    ax.bar(x - width/2, amp_overlap, width, label='Amplitude Overlap', color='tab:purple', alpha=0.9)
 
     # Plot Sign Overlap
-    ax.scatter(weights, sign_overlap, label='Sign Overlap per config', color='tab:green', alpha=0.6, s=15, marker='x')
+    ax.bar(x + width/2, sign_overlap, width, label='Sign Overlap', color='tab:green', alpha=0.9)
 
-    ax.set_xlabel("Exact Weight |<s|ψ_exact>|² (log scale)", fontsize=12)
+    ax.set_xlabel("Binned Exact Weight |<s|ψ_exact>|²", fontsize=12)
     ax.set_ylabel("Overlap Value", fontsize=12)
     ax.set_title("Per-Configuration Overlap vs. Exact Weight", fontsize=14)
-    ax.set_xscale('log')
-    ax.grid(True, which="both", ls="--", alpha=0.3)
+    
+    # Use bin indices for ticks and label them with the corresponding average weight
+    # Show fewer labels to avoid clutter
+    tick_indices = np.linspace(0, len(x) - 1, num=10, dtype=int)
+    ax.set_xticks(tick_indices)
+    ax.set_xticklabels([f'{weights[i]:.1e}' for i in tick_indices], rotation=45, ha="right")
+
+    ax.grid(True, axis='y', linestyle="--", alpha=0.5)
     ax.legend(loc='best')
     plt.tight_layout()
 
