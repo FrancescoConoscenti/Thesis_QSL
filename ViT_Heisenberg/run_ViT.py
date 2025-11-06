@@ -1,4 +1,18 @@
-#%%
+try:
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    import jax
+    jax.distributed.initialize()
+
+    print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
+    print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
+
+    # wait for all processes to show their devices
+    comm.Barrier()
+except:
+  pass
+
 import matplotlib.pyplot as plt
 import netket as nk
 import jax
@@ -36,19 +50,22 @@ n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
-num_layers      = 2     # number of Tranformer layers
-d_model         = 16    # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+num_layers      = 1     # number of Tranformer layers
+d_model         = 2   # dimensionality of the embedding space
+n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.01
-symm = True
+lr              = 0.0075
+parity = True
+rotation = True
 
 N_samples       = 1024
-N_opt           = 500
-save_every       = 50
+N_opt           = 2
+
+number_data_points = 2
+save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_symm{symm}_new"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'
@@ -82,12 +99,14 @@ for u, v in lattice.edges():
 
 # Intiialize the ViT variational wave function
 vit_module = ViT_sym(
+    L=L,
     num_layers=num_layers, 
     d_model=d_model, 
     n_heads=n_heads, 
     patch_size=patch_size, 
     transl_invariant=True, 
-    parity=symm
+    parity=parity, 
+    rotation=rotation
 )
 
 key = jax.random.key(seed)
@@ -137,14 +156,20 @@ log = nk.logging.RuntimeLog()
 
 
 for i in range(block_iter):
-    vmc.run(n_iter=save_every, out=log)
-    #Save
-    with open(save_model +"/model_"+ f"{i} "+ ".mpack", "wb") as f:
+    #Save model
+    with open(save_model +f"/model_{i}.mpack", "wb") as f:
         bytes_out = flax.serialization.to_bytes(vstate.variables)
         f.write(bytes_out)
 
+    vmc.run(n_iter=save_every, out=log)
 
-#%%
+# Save the final model state after the last optimization step
+with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
+    bytes_out = flax.serialization.to_bytes(vstate.variables)
+    f.write(bytes_out)
+
+
+    
 #Energy
 E_vs = Energy(log, L, folder)
 #Correlation function
@@ -171,18 +196,18 @@ print(f"params={count_params}")
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
+#sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
+#amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
-amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
 amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
 amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
-sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, seed_path, "one")
+sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
 
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
-        'sign_vstate_full': sign_vstate_full,
+        #'sign_vstate_full': sign_vstate_full,
         'sign_exact': sign_exact,
         'fidelity': fidelity,
         'configs': configs,

@@ -1,0 +1,2 @@
+slurmstepd: error: *** JOB 10399151 ON th-cl-naples25 CANCELLED AT 2025-11-05T11:14:37 ***
+  0%|          | 0/50 [00:00<?, ?it/s]  0%|          | 0/50 [00:52<?, ?it/s, Energy=4.11-0.06j ± 0.54 [σ²=3.0e+02]]  0%|          | 0/50 [00:38<?, ?it/s, Energy=-0.89+0.04j ± 0.45 [σ²=2.0e+02]]  2%|▏         | 1/50 [00:38<31:39, 38.76s/it, Energy=-0.89+0.04j ± 0.45 [σ²=2.0e+02]]slurmstepd: error: *** STEP 10399151.0 ON th-cl-naples25 CANCELLED AT 2025-11-05T11:14:37 ***

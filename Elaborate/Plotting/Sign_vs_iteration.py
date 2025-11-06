@@ -9,9 +9,13 @@ from functools import partial  # partial(sum, axis=1)(x) == sum(x, axis=1)
 import flax
 import os
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import itertools
 from matplotlib.lines import Line2D
 from pathlib import Path
+import re
+import matplotlib.patches as mpatches
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 import jax
 import jax.numpy as jnp
@@ -75,10 +79,23 @@ def plot_Sign_Fidelity(ket_gs, vstate,  hi, folder_path, one_avg):
 
     return sign_vstate_full, sign_exact, fidelity
 
+def _get_iter_from_path(path_str):
+    """Extracts iteration number from a path string like '..._iter3000...'."""
+    match = re.search(r'_iter(\d+)', path_str)
+    if match:
+        return int(match.group(1))
+    return None
+
 def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_avg, plot_variance=False, sign_vstate_full_var=None, fidelity_var=None):
 
+    num_models = len(sign_vstate_full)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
     # Determine x-axis length from the data itself to avoid mismatches.
-    x_axis = np.arange(len(sign_vstate_full)) * 20
+    x_axis = np.arange(num_models) * save_every
     
     plt.figure(figsize=(10, 6))
     #left axis: Sign
@@ -93,6 +110,7 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
     ax1.set_ylabel("Sign", color='tab:blue', fontsize=12)
     ax1.tick_params(axis='y', labelcolor='tab:blue')
     ax1.axhline(y=sign_exact, color='tab:blue', linestyle='--', linewidth=1.5, alpha=0.7, label='Exact Sign gs')
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.axhline(y=-1*sign_exact, color='tab:blue', linestyle='--', linewidth=1.5, alpha=0.7, label='_nolegend_')
 
     # right axis: fidelity
@@ -133,8 +151,14 @@ def plot_Sign_single_config(ket_gs, vstate, hi, number_states, L, folder_path, o
 
 def Plot_Sign_single_config(configs, sign_vstate_config,sign_vstate_tot, sign_exact_tot, weight_exact, weight_vstate, number_states, folder_path, one_avg, plot_variance=False, sign_vstate_full_var=None):
 
+    num_models = len(sign_vstate_tot)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
     # Determine x-axis length from the data itself to avoid mismatches.
-    x_axis = np.arange(len(sign_vstate_tot)) * 20
+    x_axis = np.arange(num_models) * save_every
 
     # Create figure
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -169,11 +193,21 @@ def Plot_Sign_single_config(configs, sign_vstate_config,sign_vstate_tot, sign_ex
     ax.set_xlabel("Iterations", fontsize=12)
     ax.set_ylabel("Sign", fontsize=12)
     ax.set_title("Marshall Sign: Total and Most Probable Configurations", fontsize=14)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.grid(True, alpha=0.3)
 
     ax.set_xlim(x_axis[0]-5, x_axis[-1]+5)
-    ymin = min(sign_vstate_tot.min(), min(offsets) - 0.2)
-    ymax = max(sign_vstate_tot.max(), 0.5)
+    
+    # Filter out NaN/Inf values before calculating min/max for y-limits
+    valid_signs = sign_vstate_tot[np.isfinite(sign_vstate_tot)]
+    if valid_signs.size > 0:
+        min_sign_val = valid_signs.min()
+        max_sign_val = valid_signs.max()
+    else:
+        min_sign_val = -1.0 # Default range if all signs are non-finite
+        max_sign_val = 1.0
+    ymin = min(min_sign_val, min(offsets) - 0.2)
+    ymax = max(max_sign_val, 0.5)
     ax.set_ylim(ymin, ymax)
 
     # Add legend with all lines + dummy symbols
@@ -201,53 +235,131 @@ def plot_Weight_single(ket_gs, vstate, hi, number_states, L, folder_path, one_av
 
 def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate, number_states, folder_path, one_avg, plot_variance=False, weight_vstate_var=None):
 
+    num_models = weight_vstate.shape[1]
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
     # Determine x-axis length from the data itself to avoid mismatches.
-    x_axis = np.arange(weight_vstate.shape[1]) * 20
+    x_axis = np.arange(num_models) * save_every
     spin_config = [[] for _ in range(number_states)] 
 
-    plt.figure(figsize=(10, 6))
+    # --- helper to create a colored image from a 1D spin config (+1 = blue, -1 = red) ---
+    def make_colored_grid_image(config, cell_pixels=20):
+        """
+        config: 1D array-like of +1 / -1, length L*L
+        cell_pixels: how many pixels per grid cell (bigger -> bigger square)
+        returns: (H, W, 3) numpy float image with values in [0,1]
+        """
+        L = int(np.sqrt(len(config)))
+        arr = np.array(config).reshape(L, L)
+        img = np.zeros((L, L, 3), dtype=float)
+        img[arr == 1] = [0.0, 0.0, 1.0]   # blue
+        img[arr == -1] = [1.0, 0.0, 0.0]  # red
+
+        # Upscale each cell to cell_pixels x cell_pixels so the grid is larger and clearer
+        img_big = np.kron(img, np.ones((cell_pixels, cell_pixels, 1)))
+        return img_big
+
+    # --- plotting (replace or adapt your existing plotting block) ---
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
+    # Example style colors for the lines (keeps your previous palette)
+    line_colors = ['green', 'orange','brown', 'pink', 'gray', 'cyan', 'magenta', 'olive']
+
+    # Plot the main lines
     for i in range(number_states):
-        for s in configs[i]:
-            if s == +1:
-                spin_config[i].append("↑")
-            elif s == -1:
-                spin_config[i].append("↓")
-
-        spin_config[i] = "[" + "".join(spin_config[i]) + "]"
-
-    # Define colors and labels dynamically
-    colors = ['green', 'orange','brown', 'pink', 'gray', 'cyan', 'magenta', 'olive']
-    labels = [f'Sign config {i+1} most prob, vstate {spin_config[i]}' for i in range(number_states)]
-
-    for i in range(number_states):
-
-        ax1.plot(x_axis, weight_vstate[i], marker='o', label=labels[i],
-                markersize=8, alpha=0.7, linewidth=2, color=colors[i % len(colors)])
-        if one_avg == "avg" and plot_variance and weight_vstate_var is not None:
+        color = line_colors[i % len(line_colors)]
+        ax1.plot(
+            x_axis,
+            weight_vstate[i] + 0.0003 * i,   # your offset so they don't overlap
+            marker='s',
+            markersize=8,
+            alpha=0.8,
+            linewidth=2,
+            color=color,
+            label=f'Config {i+1}'
+        )
+        # optional errorbars
+        if one_avg == "avg" and plot_variance and (weight_vstate_var is not None):
             std_dev = np.sqrt(weight_vstate_var[i])
-            ax1.errorbar(x_axis, weight_vstate[i], yerr=std_dev, fmt='none', ecolor=colors[i % len(colors)], capsize=5, alpha=0.5)
+            ax1.errorbar(x_axis, weight_vstate[i], yerr=std_dev, fmt='none',
+                        ecolor=color, capsize=5, alpha=0.5)
+        # exact weight horizontal line
+        ax1.axhline(y=weight_exact[i], color=color, linestyle='--',
+                    linewidth=1, label=f'Exact weight config {i+1}={weight_exact[i]:.4f}')
 
-        
-        ax1.axhline(y=weight_exact[i], color=colors[i % len(colors)], linestyle='--', 
-                        linewidth=1, label=f'Exact weight config {i+1}={weight_exact[i]:.4f}')
-
+    # Axis labels + title
     ax1.set_xlabel("Iterations", fontsize=12)
     ax1.set_ylabel("Weight", fontsize=12)
-
-    fig.suptitle("Weight most probable configuration", fontsize=14)
+    ax1.set_title("Weight most probable configuration", fontsize=14)
+    ax1.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
     ax1.grid(True, alpha=0.3)
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    ax1.legend(lines1, labels1, loc='best')
-    plt.tight_layout()
+
+    # Build legend for the lines (we will color the legend text after creating it)
+    legend = ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 0.99))
+    # Color legend texts to match their lines (if legend entries match number_states)
+    for text, i in zip(legend.get_texts(), range(number_states * 2)):  # you have lines + axhlines -> double entries
+        # Only color the first number_states text entries that correspond to your "Config i" labels.
+        # We try to find the ones that start with "Config " (safe approach).
+        if text.get_text().startswith("Config "):
+            # extract index -> "Config X" where X is 1-based
+            try:
+                idx = int(text.get_text().split()[1]) - 1
+                col = line_colors[idx % len(line_colors)]
+                text.set_color(col)
+            except Exception:
+                pass
+
+    # === Insert the colored 2D grid images to the right of the plot and label them ===
+    # compute vertical spacing and positions so they don't overlap
+    right_x = 0.82   # left coordinate of first image in figure coords
+    img_width = 0.12 # width fraction for each image block
+    img_height = 0.12
+    v_space = 0.02   # vertical spacing between images
+
+    # Make sure we have enough vertical space: compute total height and adjust img_height if needed
+    total_needed = number_states * img_height + (number_states - 1) * v_space
+    if total_needed > 0.9:
+        # shrink each to fit
+        img_height = (0.9 - (number_states - 1) * v_space) / number_states
+        img_width = img_height  # keep roughly square
+
+    for i in range(number_states):
+        # position from top downward (figure coordinate system)
+        y_top = 0.95 - i * (img_height + v_space)  # top for this image
+        # convert y_top (top) to bottom for add_axes
+        y_bottom = y_top - img_height
+
+        # Create a small inset axes for the i-th grid
+        ax_img = fig.add_axes([right_x, y_bottom, img_width, img_height])
+        ax_img.axis('off')  # no ticks, frame is optional
+        grid_img = make_colored_grid_image(configs[i], cell_pixels=16)  # increase cell_pixels for bigger squares
+        ax_img.imshow(grid_img, interpolation='nearest', origin='upper')
+        # Optional framed box around the image to make it stand out
+        for spine in ax_img.spines.values():
+            spine.set_edgecolor('black')
+            spine.set_linewidth(0.5)
+            spine.set_visible(True)
+
+        # Put the text label to the right of the inset image, colored the same as the plotted line
+        txt_x = right_x + img_width + 0.01
+        txt_y = y_bottom + img_height / 2.0
+        label_color = line_colors[i % len(line_colors)]
+        fig.text(txt_x, txt_y, f"Config {i+1}", va='center', ha='left', color=label_color, fontsize=10)
+
+    plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+
+
+
     if one_avg == "avg":
         folder_path = Path(folder_path)
-        save_path = folder_path.parent /"plot_avg"/"Weight_single_config.png"
+        save_path = folder_path.parent / "plot_avg" / "Weight_single_config.png"
         plt.savefig(save_path)
-    if one_avg == "one":
+    elif one_avg == "one":
         plt.savefig(f"{folder_path}/Sign_plot/Weight_single_config.png")
-    
+
     plt.show()
 
 
@@ -262,8 +374,14 @@ def plot_Amp_overlap_configs(ket_gs, vstate, hi, folder_path, one_avg):
 
 def Plot_Amp_overlap_configs(error, folder_path, one_avg, plot_variance=False, error_var=None):
 
+    num_models = len(error)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
     # Determine x-axis length from the data itself to avoid mismatches.
-    x_axis = np.arange(len(error)) * 20
+    x_axis = np.arange(num_models) * save_every
 
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -276,6 +394,7 @@ def Plot_Amp_overlap_configs(error, folder_path, one_avg, plot_variance=False, e
     
     ax1.set_xlabel("Iterations", fontsize=12)
     ax1.set_ylabel("Amplitude Overlap configs", fontsize=12)
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     fig.suptitle("Amplitude Overlap full Hiblert space", fontsize=14)
     ax1.grid(True, alpha=0.3)
@@ -302,14 +421,20 @@ def plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder_path, one_av
     #sign_err = Sign_difference(sign_vstate, sign_exact)
     sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
-    Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_vstate, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
+    Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
     
     return amplitude_overlap, fidelity, sign_vstate, sign_exact, sign_overlap
 
 def Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap, fidelity, sign_err, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None):
 
+    num_models = len(amp_overlap)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
     # Determine x-axis length from the data itself to avoid mismatches.
-    x_axis = np.arange(len(amp_overlap)) * 20
+    x_axis = np.arange(num_models) * save_every
  
     plt.figure(figsize=(10, 6))
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -330,6 +455,7 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap, fidelity, sign_err, folder
 
     ax1.set_xlabel("Iterations", fontsize=12)
     ax1.set_ylabel("Amplitude Overlap / Sign Overlap/ Fidelity", fontsize=12)
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.grid(True, alpha=0.3)
 
     # Fidelity
@@ -419,8 +545,14 @@ def Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_
     """
     Plots Sign Overlap and Amplitude Overlap on the y-axis against optimization iterations on the x-axis.
     """
-    x_axis = np.arange(len(amplitude_overlap)) * 20
-
+    num_models = len(amplitude_overlap)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
+    x_axis = np.arange(num_models) * save_every
+    
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plot Amplitude Overlap
@@ -438,6 +570,7 @@ def Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_
     ax.set_xlabel("Iterations", fontsize=12)
     ax.set_ylabel("Overlap Value", fontsize=12)
     ax.set_title("Amplitude and Sign Overlap vs. Iterations", fontsize=14)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.grid(True, alpha=0.3)
     ax.legend(loc='best')
     plt.tight_layout()
@@ -459,7 +592,7 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     # Get the final model state
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     model_index = number_models - 1
-    with open(folder_path + f"/models/model_{model_index} .mpack", "rb") as f:
+    with open(folder_path + f"/models/model_{model_index}.mpack", "rb") as f:
         vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
     # Get all states and amplitudes
@@ -484,7 +617,7 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     amp_overlap_per_config = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
 
     # Calculate sign overlap as sign(<s|psi_var>) * sign(<s|psi_exact>)
-    sign_overlap_per_config = np.sign(psi_vstate_norm.real) * np.sign(psi_exact.real)
+    sign_overlap_per_config = (np.sign(psi_vstate_norm.real) * np.sign(psi_exact.real) + 1 ) / 2 # Map to [0,1] for plotting
 
     # --- Bin weights on a log scale and average overlaps within each bin ---
     # This reduces the number of points for a clearer plot.

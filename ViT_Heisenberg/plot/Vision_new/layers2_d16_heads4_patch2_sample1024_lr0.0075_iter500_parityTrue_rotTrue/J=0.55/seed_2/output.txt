@@ -1,0 +1,13 @@
+ViT, J=0.55, L=4, layers2_d16_heads4_patch2_sample1024_lr0.0075_iter500
+Number of parameters =  6224
+Automatic SR implementation choice:  NTK
+Last value:  -0.5054424807372246
+Exact ground state energy per site= -0.5235945676395833
+Fidelity <vstate|exact> = [0.60678306]
+Relative error = 0.0011345054313974187
+Magnetization = 0.0
+Variance = 35.42047882318348
+V-score = -17.519539894786906
+params=6224
+Plotting S-matrix eigenvalues... (6224,)
+S-matrix eigenvalues saved to ViT_Heisenberg/plot/Vision_new/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue/J=0.55/seed_2/Sign_plot/S_matrix_eigenvalues.pkl using pickle.

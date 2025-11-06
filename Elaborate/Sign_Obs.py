@@ -52,7 +52,7 @@ def extract_config(ket_gs, hi, n):
 
     probs = np.abs(ket_gs[:,0]) ** 2
     sorted_indices = np.argsort(probs)[::-1]
-    idx_nth = sorted_indices[n - 1]
+    idx_nth = sorted_indices[n]
 
     nth_most_prob_coeff = ket_gs[idx_nth]
     nth_most_prob_state = hi.all_states()[idx_nth]
@@ -71,8 +71,8 @@ def _marshal_sign_exact_single_config(most_prob_config, coeff, hi):
     S_A = jnp.ones_like(M_A) * 0.5 * (N_sites // 2)
     marshall_phase = (-1.0) ** (S_A - M_A)
 
-    # Compute expectation value full Hilbert space
-    sign = jnp.real((coeff * marshall_phase) / jnp.abs(coeff))
+    # Compute sign
+    sign = jnp.sign(jnp.real(coeff)) * marshall_phase
     weight = jnp.abs(coeff) ** 2
 
     return sign, weight
@@ -85,7 +85,7 @@ def _marshal_sign_single_config(most_prob_config, vstate, hi):
     M_A = 0.5 * jnp.sum(most_prob_config[A_sites])
     S_A = 0.5 * (N_sites // 2) 
     psi_most = jnp.exp(vstate.log_value(most_prob_config))
-    sign_most = jnp.real(psi_most) * ((-1.0) ** (S_A - M_A)) / jnp.abs(jnp.real(psi_most))
+    sign_most = jnp.sign(jnp.real(psi_most)) * ((-1.0) ** (S_A - M_A))
     
     configs = hi.all_states()
     psi = jnp.exp(vstate.log_value(configs))
@@ -144,7 +144,7 @@ def _marshal_sign_MCMC(sigma, vstate):
     
     log_psi = vstate.log_value(sigma) #log coefficient of wf associated with sample sigma
     psi = jnp.exp(log_psi)
-    sign = jnp.real((psi * ((-1.0) ** (S_A - M_A))) / jnp.abs(psi))
+    sign = jnp.sign(jnp.real(psi)) * ((-1.0) ** (S_A - M_A))
 
     return  sign
 
@@ -157,8 +157,8 @@ def _marshal_sign_full_hilbert(vstate, hi):
 
     M_A = jnp.array(0.5 * jnp.sum(configs[:, A_sites], axis=1))
     S_A = jnp.ones_like(M_A) * 0.5 * (N_sites // 2) 
-    psi = jnp.exp(vstate.log_value(configs))
-    signs = jnp.real(psi) * ((-1.0) ** (S_A - M_A)) / jnp.abs(jnp.real(psi))
+    psi = jnp.exp(vstate.log_value(configs)) # This can still be NaN/Inf if vstate.log_value is problematic
+    signs = jnp.sign(jnp.real(psi)) * ((-1.0) ** (S_A - M_A))
 
     weights = jnp.abs(psi) ** 2
     sign_expect = jnp.sum(weights * signs) / jnp.sum(weights) 
@@ -179,7 +179,7 @@ def _marshal_sign_exact(ket_gs, hi):
 
     # Compute expectation value full Hilbert space
     psi = ket_gs[:,0]
-    signs = jnp.real((psi * marshall_phase) / jnp.abs(psi))
+    signs = jnp.sign(jnp.real(psi)) * marshall_phase
 
     weights = jnp.abs(psi) ** 2
     marshall_sign_expect = jnp.sum(weights * signs) / jnp.sum(weights)
@@ -223,8 +223,8 @@ def Marshall_Sign_MCMC(marshall_op, vstate, folder_path, n_samples):
     sign = np.zeros(number_models)
     vstate.n_samples = n_samples
 
-    for i in range(0, number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+    for i in range(number_models):
+        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
         # Compute expectation value MCMC
@@ -236,12 +236,12 @@ def Marshall_Sign_MCMC(marshall_op, vstate, folder_path, n_samples):
 
 def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
     
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    sign = np.zeros(number_models)
-    signs_vstate = np.zeros((number_models, hi.n_states))
+    num_files = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
+    sign = np.zeros(num_files)
+    signs_vstate = np.zeros((num_files, hi.n_states))
 
-    for i in range(0, number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+    for i in range(num_files):
+        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
         sign[i], signs_vstate[i,:] = _marshal_sign_full_hilbert(vstate, hi) 
@@ -258,11 +258,11 @@ def Marshall_Sign_exact(ket_gs, hi):
 
 def Fidelity_iteration(vstate, ket_gs, folder_path):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    fidelity = np.zeros(number_models)
+    num_files = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
+    fidelity = np.zeros(num_files)
 
-    for i in range(0, number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+    for i in range(num_files):
+        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
         
         fidelity[i] = Fidelity(vstate, ket_gs)
@@ -271,17 +271,17 @@ def Fidelity_iteration(vstate, ket_gs, folder_path):
 
 def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, number_states):
     
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
+    num_files = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     
-    sign_config_vstate = np.zeros((number_states, number_models))  # Shape: (number_states, number_models)
-    weight_vstate = np.zeros((number_states, number_models))       # Shape: (number_states, number_models)
+    sign_config_vstate = np.zeros((number_states, num_files))  # Shape: (number_states, num_files)
+    weight_vstate = np.zeros((number_states, num_files))       # Shape: (number_states, num_files)
 
     configs = []
     weight_config_exact = np.zeros(number_states)
     
     # Extract all configurations and exact weights
     for i in range(number_states):
-        config, coeff = extract_config(ket_gs, hi, i*2 + 1)
+        config, coeff = extract_config(ket_gs, hi, i)
         configs.append(config)
         
         sign_config_exact, weight_config_exact[i] = _marshal_sign_exact_single_config(config, coeff, hi)
@@ -289,8 +289,8 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
     configs = np.array(configs)
 
     # Calculate variational weights and signs for each model
-    for i in range(number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+    for i in range(num_files):
+        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
         # Calculate for each state
@@ -302,11 +302,11 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
 
 def Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi):
 
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    Overlap = np.zeros(number_models)
+    num_files = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
+    Overlap = np.zeros(num_files)
 
-    for i in range(0, number_models):
-        with open(folder_path + f"/models/model_{i} .mpack", "rb") as f:
+    for i in range(num_files):
+        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
         Overlap[i] = Amp_overlap_configs(ket_gs, vstate, hi)

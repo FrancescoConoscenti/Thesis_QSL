@@ -17,7 +17,7 @@ def compute_S_matrix(vstate, folder_path, hi):
     
     # Load only the last model to compute its S-matrix
     last_model_index = number_models - 1
-    with open(folder_path + f"/models/model_{last_model_index} .mpack", "rb") as f:
+    with open(folder_path + f"/models/model_{last_model_index}.mpack", "rb") as f:
         vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
     S_matrix = compute_S_matrix_single_model(vstate, hi)
