@@ -1,0 +1,11 @@
+ViT, J=0.65, L=4, layers2_d32_heads4_patch2_sample1024_lr0.0075_iter2000
+Number of parameters =  23680
+Automatic SR implementation choice:  NTK
+Last value:  -0.5274028807205315
+Exact ground state energy per site= -0.5393824740692871
+Fidelity <vstate|exact> = [0.44756921]
+Relative error = 0.0007487245842972209
+Magnetization = 0.0
+Variance = 80.4145344345152
+V-score = -38.1181717876919
+params=23680

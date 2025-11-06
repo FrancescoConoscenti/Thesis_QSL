@@ -1,0 +1,14 @@
+Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/run_ViT.py", line 30, in <module>
+    from ViT_Heisenberg.ViT_model import ViT_sym
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/ViT_model.py", line 350
+    else:
+    ^^^^
+SyntaxError: invalid syntax
+[CudaDevice(id=0)]
+srun: error: th-cl-naples05: task 0: Exited with exit code 1
+srun: Terminating StepId=10512537.0

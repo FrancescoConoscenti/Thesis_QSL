@@ -1,0 +1,3 @@
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+  0%|          | 0/50 [00:00<?, ?it/s]  0%|          | 0/50 [00:53<?, ?it/s, Energy=0.65+0.50j ± 0.46 [σ²=2.2e+02]]  0%|          | 0/50 [00:39<?, ?it/s, Energy=-2.12-0.10j ± 0.39 [σ²=1.5e+02]]  2%|▏         | 1/50 [00:39<32:38, 39.97s/it, Energy=-2.12-0.10j ± 0.39 [σ²=1.5e+02]]slurmstepd: error: *** STEP 10399141.0 ON th-cl-naples06 CANCELLED AT 2025-11-05T11:14:37 ***
+slurmstepd: error: *** JOB 10399141 ON th-cl-naples06 CANCELLED AT 2025-11-05T11:14:37 ***

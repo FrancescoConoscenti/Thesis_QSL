@@ -9,8 +9,8 @@ from netket.utils.dispatch import dispatch
 from netket import experimental as nkx
 from netket.jax import apply_chunked
 import numpy as np
-from netket.hilbert.homogeneous import HomogeneousHilbert
-from jax.scipy.special import logsumexp
+from netket.hilbert.homogeneous import HomogeneousHilbert 
+from netket.jax import logsumexp_cplx
 
 class HiddenFermion(nn.Module):
   n_elecs: int
@@ -27,6 +27,7 @@ class HiddenFermion(nn.Module):
   bounds: str="PBC"
   parity: bool = False
   rotation: bool = False
+  translation: bool = False
   dtype: type = jnp.float64
   U: float=8.0
 
@@ -38,7 +39,13 @@ class HiddenFermion(nn.Module):
         self.output = nn.Dense(features=self.n_hid*(self.n_elecs + self.n_hid),use_bias=True,param_dtype=self.dtype)
     else:
         raise NotImplementedError()
-
+    
+    if self.rotation:
+        idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
+        self.idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
+    if self.translation:
+        idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
+        self.idx_trans = jnp.roll(idx, shift=1, axis=1).reshape(-1)
 
   def selu(self,x):
     if self.dtype==jnp.float64:
@@ -72,42 +79,77 @@ class HiddenFermion(nn.Module):
   
 
   def gen_rotated_samples(self, x):
-  
-    # Construct rotation permutation once
-    idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
-    idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
-
-    # Apply to all batch elements
-    x_rot = x[:, idx_rot]
+    x_rot = x[:, self.idx_rot]
     return x_rot
+  
+  def gen_translated_samples(self, x):
+    x_tra = x[:, self.idx_trans]
+    return x_tra
+
 
   def __call__(self,x):
     
-    log_psi, sign = self.calc_psi(x)
-    #log_psi += sign  # include sign once
+    log_psi_terms = []
+
+    # Original configuration
+    log_det, log_sign = self.calc_psi(x)
+    log_psi_terms.append(log_det + log_sign)
 
     # --- Step 1: add parity symmetry (if enabled) ---
     if self.parity:
         x_refl = self.gen_reflected_samples(x)
-        log_psi_refl, sign_refl = self.calc_psi(x_refl)
-        #log_psi_refl += sign_refl
-        log_psi = logsumexp(jnp.stack([log_psi, log_psi_refl]), axis=0) - jnp.log(2)
+        log_det_refl, log_sign_refl = self.calc_psi(x_refl)
+        log_psi_terms.append(log_det_refl + log_sign_refl)
 
     # --- Step 2: add rotation symmetry (on the current symmetrized state) ---
     if self.rotation:
         x_rot1 = self.gen_rotated_samples(x)
-        log_psi_rot1, sign_rot = self.calc_psi(x_rot1)
+        log_det_rot1, log_sign_rot1 = self.calc_psi(x_rot1)
+        log_psi_terms.append(log_det_rot1 + log_sign_rot1)
 
         x_rot2 = self.gen_rotated_samples(x_rot1)
-        log_psi_rot2, sign_rot = self.calc_psi(x_rot2)
+        log_det_rot2, log_sign_rot2 = self.calc_psi(x_rot2)
+        log_psi_terms.append(log_det_rot2 + log_sign_rot2)
 
         x_rot3 = self.gen_rotated_samples(x_rot2)
-        log_psi_rot3, sign_rot = self.calc_psi(x_rot3)
+        log_det_rot3, log_sign_rot3 = self.calc_psi(x_rot3)
+        log_psi_terms.append(log_det_rot3 + log_sign_rot3)
 
-        #log_psi_rot += sign_rot
-        log_psi = logsumexp(jnp.stack([log_psi, log_psi_rot1, log_psi_rot2, log_psi_rot3 ]), axis=0) - jnp.log(4)
+    if self.rotation and self.parity:
+        
+        x_refl = self.gen_reflected_samples(x)
 
-    return log_psi + sign
+        x_rot1_refl = self.gen_rotated_samples(x_refl)
+        log_det_rot1_refl, log_sign_rot1_refl = self.calc_psi(x_rot1_refl)
+        log_psi_terms.append(log_det_rot1_refl + log_sign_rot1_refl)
+
+        x_rot2_refl = self.gen_rotated_samples(x_rot1_refl)
+        log_det_rot2_refl, log_sign_rot2_refl = self.calc_psi(x_rot2_refl)
+        log_psi_terms.append(log_det_rot2_refl + log_sign_rot2_refl)
+
+        x_rot3_refl = self.gen_rotated_samples(x_rot2_refl)
+        log_det_rot3_refl, log_sign_rot3_refl = self.calc_psi(x_rot3_refl)
+        log_psi_terms.append(log_det_rot3_refl + log_sign_rot3_refl)
+
+    """    
+    # --- Step 3: add translation symmetry (on the current symmetrized state) ---
+    if self.translation:
+        x_tra1 = self.gen_translated_samples(x)
+        log_det_tra1, log_sign_tra1 = self.calc_psi(x_tra1)
+        log_psi_terms.append(log_det_tra1 + log_sign_tra1)
+
+        x_tra2 = self.gen_translated_samples(x_tra1)
+        log_det_tra2, log_sign_tra2 = self.calc_psi(x_tra2)
+        log_psi_terms.append(log_det_tra2 + log_sign_tra2)
+
+        x_tra3 = self.gen_translated_samples(x_tra2)
+        log_det_tra3, log_sign_tra3 = self.calc_psi(x_tra3)
+        log_psi_terms.append(log_det_tra3 + log_sign_tra3)
+    """
+
+    N = len(log_psi_terms)
+    return logsumexp_cplx( jnp.stack(log_psi_terms, axis=0), axis=0)
+
 
 class Orbitals(nn.Module):
   n_elecs: int
@@ -187,8 +229,8 @@ class Orbitals(nn.Module):
     else:
         raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
     
-    orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
-
+    #orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
+    orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*self.Lx*self.Ly,self.n_hid), self.dtype)
     orbitals_full = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
     n_orbs = orbitals_full.shape[1]
 

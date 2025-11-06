@@ -225,7 +225,7 @@ class Orbitals(nn.Module):
         orbitals_mfmf = self.param('orbitals_mf', normal(0.1),(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
     else:
         raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
-    orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
+    orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*self.Lx*self.Ly,self.n_hid), self.dtype)
     if self.stop_grad_mf: 
         orbitals_mfmf = jax.lax.stop_gradient(orbitals_mfmf)
     orbitals = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
