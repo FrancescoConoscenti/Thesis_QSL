@@ -27,7 +27,6 @@ class HiddenFermion(nn.Module):
   bounds: str="PBC"
   parity: bool = False
   rotation: bool = False
-  translation: bool = False
   dtype: type = jnp.float64
   U: float=8.0
 
@@ -39,13 +38,7 @@ class HiddenFermion(nn.Module):
         self.output = nn.Dense(features=self.n_hid*(self.n_elecs + self.n_hid),use_bias=True,param_dtype=self.dtype)
     else:
         raise NotImplementedError()
-    
-    if self.rotation:
-        idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
-        self.idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
-    if self.translation:
-        idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
-        self.idx_trans = jnp.roll(idx, shift=1, axis=1).reshape(-1)
+
 
   def selu(self,x):
     if self.dtype==jnp.float64:
@@ -79,12 +72,14 @@ class HiddenFermion(nn.Module):
   
 
   def gen_rotated_samples(self, x):
-    x_rot = x[:, self.idx_rot]
-    return x_rot
   
-  def gen_translated_samples(self, x):
-    x_tra = x[:, self.idx_trans]
-    return x_tra
+    # Construct rotation permutation once
+    idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
+    idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
+
+    # Apply to all batch elements
+    x_rot = x[:, idx_rot]
+    return x_rot
 
 
   def __call__(self,x):
@@ -115,40 +110,7 @@ class HiddenFermion(nn.Module):
         log_det_rot3, log_sign_rot3 = self.calc_psi(x_rot3)
         log_psi_terms.append(log_det_rot3 + log_sign_rot3)
 
-    if self.rotation and self.parity:
-        
-        x_refl = self.gen_reflected_samples(x)
-
-        x_rot1_refl = self.gen_rotated_samples(x_refl)
-        log_det_rot1_refl, log_sign_rot1_refl = self.calc_psi(x_rot1_refl)
-        log_psi_terms.append(log_det_rot1_refl + log_sign_rot1_refl)
-
-        x_rot2_refl = self.gen_rotated_samples(x_rot1_refl)
-        log_det_rot2_refl, log_sign_rot2_refl = self.calc_psi(x_rot2_refl)
-        log_psi_terms.append(log_det_rot2_refl + log_sign_rot2_refl)
-
-        x_rot3_refl = self.gen_rotated_samples(x_rot2_refl)
-        log_det_rot3_refl, log_sign_rot3_refl = self.calc_psi(x_rot3_refl)
-        log_psi_terms.append(log_det_rot3_refl + log_sign_rot3_refl)
-
-    """    
-    # --- Step 3: add translation symmetry (on the current symmetrized state) ---
-    if self.translation:
-        x_tra1 = self.gen_translated_samples(x)
-        log_det_tra1, log_sign_tra1 = self.calc_psi(x_tra1)
-        log_psi_terms.append(log_det_tra1 + log_sign_tra1)
-
-        x_tra2 = self.gen_translated_samples(x_tra1)
-        log_det_tra2, log_sign_tra2 = self.calc_psi(x_tra2)
-        log_psi_terms.append(log_det_tra2 + log_sign_tra2)
-
-        x_tra3 = self.gen_translated_samples(x_tra2)
-        log_det_tra3, log_sign_tra3 = self.calc_psi(x_tra3)
-        log_psi_terms.append(log_det_tra3 + log_sign_tra3)
-    """
-
-    N = len(log_psi_terms)
-    return logsumexp_cplx( jnp.stack(log_psi_terms, axis=0), axis=0)
+    return logsumexp_cplx(jnp.stack(log_psi_terms, axis=0), axis=0)
 
 
 class Orbitals(nn.Module):
