@@ -53,7 +53,6 @@ def plot_correlation_function(corr_r, model_params):
     os.makedirs(output_dir, exist_ok=True)
     save_path = os.path.join(output_dir, "Correlation")
     fig.savefig(save_path, dpi=300)
-    print(f"✅ Correlation function plot saved to {save_path}")
     plt.close(fig)
 
 def plot_structure_factor(S_q, model_params):
@@ -79,5 +78,4 @@ def plot_structure_factor(S_q, model_params):
     os.makedirs(output_dir, exist_ok=True)
     save_path = os.path.join(output_dir, "Structure_Factor")
     fig.savefig(save_path, dpi=300)
-    print(f"✅ Structure factor plot saved to {save_path}")
     plt.close(fig)

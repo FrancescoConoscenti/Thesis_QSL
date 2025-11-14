@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 3, in <module>
-srun: error: th-cl-naples18: task 0: Exited with exit code 1
-srun: Terminating StepId=9983850.0
-    from mpi4py import MPI
-ModuleNotFoundError: No module named 'mpi4py'

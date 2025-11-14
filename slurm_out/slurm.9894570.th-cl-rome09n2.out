@@ -1,5 +1,0 @@
-usage: plot_avarage_models.py [-h] [--model_path MODEL_PATH]
-plot_avarage_models.py: error: argument --model_path: invalid float value: '[CpuDevice(id=0)]'
-[CpuDevice(id=0)]
-srun: error: th-cl-rome09n2: task 0: Exited with exit code 2
-srun: Terminating StepId=9894570.1

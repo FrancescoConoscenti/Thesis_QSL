@@ -1,7 +1,0 @@
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:15<?, ?it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]100%|██████████| 1/1 [00:00<00:00,  8.12it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]100%|██████████| 1/1 [00:00<00:00,  8.09it/s, Energy=3.8400000003+0.0000000001j ± 0.0000000050 e+01 [σ²=2.6e-12]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:14<?, ?it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]100%|██████████| 1/1 [00:00<00:00,  7.73it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]100%|██████████| 1/1 [00:00<00:00,  7.71it/s, Energy=3.8400000009+0.0000000004j ± 0.0000000053 e+01 [σ²=2.9e-12]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=3.8399999992-0.0000000004j ± 0.0000000066 e+01 [σ²=4.5e-12]]100%|██████████| 1/1 [00:00<00:00, 1437.88it/s, Energy=3.8399999992-0.0000000004j ± 0.0000000066 e+01 [σ²=4.5e-12]]
-/scratch/f/F.Conoscenti/netket_venv1/bin/python: Error while finding module specification for 'Elaborate.plot_avarage_models.py' (ModuleNotFoundError: __path__ attribute not found on 'Elaborate.plot_avarage_models' while trying to find 'Elaborate.plot_avarage_models.py'). Try using 'Elaborate.plot_avarage_models' instead of 'Elaborate.plot_avarage_models.py' as the module name.
-[CpuDevice(id=0)]
-srun: error: th-cl-rome07n3: task 0: Exited with exit code 1
-srun: Terminating StepId=9894331.1

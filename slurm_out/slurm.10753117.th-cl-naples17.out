@@ -1,0 +1,29 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 157, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 143, in __call__
+    log_det_rot_refl_i, log_sign_rot_refl_i = self.calc_psi(x_sym_i)
+                                              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 63, in calc_psi
+    orbitals = self.orbitals(x)
+               ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 341, in __call__
+    raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
+NotImplementedError: This MF initialization is not implemented! Chose one of: Fermi, random
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: th-cl-naples17: task 0: Exited with exit code 1
+srun: Terminating StepId=10753117.0

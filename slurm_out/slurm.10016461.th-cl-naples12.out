@@ -1,16 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]2025-10-28 14:12:21.651152: E external/xla/xla/service/slow_operation_alarm.cc:73] 
-********************************
-[Compiling module jit__local_estimators_kernel] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-2025-10-28 14:13:41.023147: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 3m19.376269656s
-
-********************************
-[Compiling module jit__local_estimators_kernel] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-  0%|          | 0/1 [12:12<?, ?it/s, Energy=-6.01-0.00j ± 0.19 [σ²=3.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:07<00:00,  7.91s/it, Energy=-6.01-0.00j ± 0.19 [σ²=3.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:07<00:00,  7.91s/it, Energy=-6.01-0.00j ± 0.19 [σ²=3.4e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:45<?, ?it/s, Energy=-6.60-0.00j ± 0.26 [σ²=6.2e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 81.23it/s, Energy=-6.60-0.00j ± 0.26 [σ²=6.2e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:03<?, ?it/s, Energy=-6.47-0.00j ± 0.30 [σ²=8.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00,  8.03it/s, Energy=-6.47-0.00j ± 0.30 [σ²=8.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00,  8.01it/s, Energy=-6.47-0.00j ± 0.30 [σ²=8.5e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:03<?, ?it/s, Energy=-7.39+0.00j ± 0.31 [σ²=9.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00,  5.21it/s, Energy=-7.39+0.00j ± 0.31 [σ²=9.4e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00,  5.20it/s, Energy=-7.39+0.00j ± 0.31 [σ²=9.4e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:03<?, ?it/s, Energy=-8.75+0.00j ± 0.27 [σ²=8.3e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 29.59it/s, Energy=-8.75+0.00j ± 0.27 [σ²=8.3e+01, R̂=1.225]]

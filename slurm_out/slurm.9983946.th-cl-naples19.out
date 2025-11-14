@@ -1,14 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-2025-10-24 14:50:29.276236: E external/xla/xla/service/slow_operation_alarm.cc:73] 
-********************************
-[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-2025-10-24 14:51:07.019564: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 2m37.747162071s
-
-********************************
-[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-  0%|          | 0/1 [00:00<?, ?it/s]slurmstepd: error: *** STEP 9983946.0 ON th-cl-naples19 CANCELLED AT 2025-10-24T14:56:41 ***
-slurmstepd: error: *** JOB 9983946 ON th-cl-naples19 CANCELLED AT 2025-10-24T14:56:41 ***

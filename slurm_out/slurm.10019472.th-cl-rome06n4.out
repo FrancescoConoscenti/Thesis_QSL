@@ -1,16 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:22<?, ?it/s, Energy=-5.96+0.00j ± 0.20 [σ²=4.0e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 17.12it/s, Energy=-5.96+0.00j ± 0.20 [σ²=4.0e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-6.63+0.00j ± 0.30 [σ²=8.7e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1504.41it/s, Energy=-6.63+0.00j ± 0.30 [σ²=8.7e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-6.73+0.00j ± 0.34 [σ²=1.1e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 536.56it/s, Energy=-6.73+0.00j ± 0.34 [σ²=1.1e+02, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-8.07+0.00j ± 0.30 [σ²=8.9e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1903.04it/s, Energy=-8.07+0.00j ± 0.30 [σ²=8.9e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:17<?, ?it/s, Energy=-8.54+0.00j ± 0.33 [σ²=1.0e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1377.89it/s, Energy=-8.54+0.00j ± 0.33 [σ²=1.0e+02, R̂=1.225]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 218, in <module>
-    amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
-                  ^^^^^^^^^^^^^^^^^^^^^^^^
-NameError: name 'plot_Amp_overlap_configs' is not defined. Did you mean: 'Plot_Amp_overlap_configs'?
-srun: error: th-cl-rome06n4: task 0: Exited with exit code 1
-srun: Terminating StepId=10019472.0

@@ -1,0 +1,30 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:43<?, ?it/s, Energy=-2.09+0.00j ± 0.35 [σ²=1.1e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 28.67it/s, Energy=-2.09+0.00j ± 0.35 [σ²=1.1e+02, R̂=1.225]]
+/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:606: RuntimeWarning: invalid value encountered in divide
+  psi_vstate_norm = psi_vstate_unnorm / norm_vstate
+/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py:244: UserWarning: n_samples=256 (256 per JAX device) does not divide n_chains=512, increased to 512 (512 per JAX device)
+  vstate.n_samples = 256
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 245, in <module>
+    S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/S_matrix_vs_iteration.py", line 26, in plot_S_matrix_eigenvalues
+    eigenvalues = np.linalg.eigvalsh(S_matrix)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/numpy/linalg/_linalg.py", line 1376, in eigvalsh
+    w = gufunc(a, signature=signature)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/numpy/linalg/_linalg.py", line 169, in _raise_linalgerror_eigenvalues_nonconvergence
+    raise LinAlgError("Eigenvalues did not converge")
+numpy.linalg.LinAlgError: Eigenvalues did not converge
+srun: error: met-cl-lx024: task 0: Exited with exit code 1
+srun: Terminating StepId=10788882.0

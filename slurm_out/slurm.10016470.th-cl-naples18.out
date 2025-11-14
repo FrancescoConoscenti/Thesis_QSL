@@ -1,15 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]2025-10-28 14:10:10.082765: E external/xla/xla/service/slow_operation_alarm.cc:73] 
-********************************
-[Compiling module jit__sample_chain] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-2025-10-28 14:21:48.013249: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 13m37.935248802s
-
-********************************
-[Compiling module jit__sample_chain] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-  0%|          | 0/1 [21:29<?, ?it/s, Energy=-5.13-0.00j ± 0.24 [σ²=4.8e+01, R̂=1.225]]100%|██████████| 1/1 [02:05<00:00, 125.54s/it, Energy=-5.13-0.00j ± 0.24 [σ²=4.8e+01, R̂=1.225]]100%|██████████| 1/1 [02:05<00:00, 125.54s/it, Energy=-5.13-0.00j ± 0.24 [σ²=4.8e+01, R̂=1.225]]
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-  0%|          | 0/1 [00:00<?, ?it/s]slurmstepd: error: *** STEP 10016470.0 ON th-cl-naples18 CANCELLED AT 2025-10-28T14:32:08 ***
-slurmstepd: error: *** JOB 10016470 ON th-cl-naples18 CANCELLED AT 2025-10-28T14:32:08 ***

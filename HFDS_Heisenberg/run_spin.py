@@ -62,7 +62,7 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "real"
-MFinitialization = "Fermi" #Hartree #random #Fermi #striped
+MFinitialization = "Fermi"#random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
 parity = True
@@ -77,7 +77,7 @@ hid_layers       = 1
 #Network param
 lr               = 0.025
 n_samples        = 1024
-N_opt            = 100
+N_opt            = 200
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
@@ -87,7 +87,7 @@ n_chains         = n_samples//2
 chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_trans{translation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_trans{translation}_Init{MFinitialization}+random_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -140,14 +140,7 @@ model = HiddenFermion(n_elecs=n_elecs,
 if J1J2==True:
     # Heisenberg J1-J2 spin ha
     ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
-else:
-    #ising hamiltonian
-    ha = nk.operator.Ising(hilbert=hi, graph=lattice, h = J2, J=1.0, dtype=jnp.float64).to_jax_operator()
-    """ha = op.LocalOperator(hi)
-    for i, j in lattice.edges():
-        ha += -1 * op.spin.sigmaz(hi, i) * op.spin.sigmaz(hi, j)
-    for i in range(L*L):
-        ha += -h * op.spin.sigmax(hi, i)"""
+
 
 
 # ---------- define sampler ------------------------
@@ -221,8 +214,8 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 #Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
-#sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-#sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+#sign_vstate_MCMC, sign_vstate = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
+#sign_vstate, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
 #amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
 
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
@@ -233,7 +226,7 @@ sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
-        #'sign_vstate_full': sign_vstate_full,
+        'sign_vstate': sign_vstate,
         'sign_exact': sign_exact,
         'fidelity': fidelity,
         'configs': configs,
