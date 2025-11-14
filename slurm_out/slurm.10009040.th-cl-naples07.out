@@ -1,40 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-2025-10-28 11:47:04.078827: E external/xla/xla/service/slow_operation_alarm.cc:73] 
-********************************
-[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-2025-10-28 11:47:14.270866: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 2m10.194021343s
-
-********************************
-[Compiling module jit__init_state] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-  0%|          | 0/1 [00:00<?, ?it/s]2025-10-28 12:04:33.297350: E external/xla/xla/service/slow_operation_alarm.cc:73] 
-********************************
-[Compiling module jit__sample_chain] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-2025-10-28 12:07:46.036738: E external/xla/xla/service/slow_operation_alarm.cc:140] The operation took 5m12.740757569s
-
-********************************
-[Compiling module jit__sample_chain] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-  0%|          | 0/1 [25:38<?, ?it/s, Energy=-6.23-0.00j ± 0.20 [σ²=3.8e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 10.94it/s, Energy=-6.23-0.00j ± 0.20 [σ²=3.8e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:02<?, ?it/s, Energy=-7.03-0.00j ± 0.22 [σ²=4.7e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1925.76it/s, Energy=-7.03-0.00j ± 0.22 [σ²=4.7e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-6.37-0.00j ± 0.29 [σ²=8.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2409.13it/s, Energy=-6.37-0.00j ± 0.29 [σ²=8.5e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-7.83-0.00j ± 0.28 [σ²=7.8e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2540.46it/s, Energy=-7.83-0.00j ± 0.28 [σ²=7.8e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:01<?, ?it/s, Energy=-8.96+0.00j ± 0.38 [σ²=1.4e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2686.93it/s, Energy=-8.96+0.00j ± 0.38 [σ²=1.4e+02, R̂=1.225]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 215, in <module>
-    sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
-                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 67, in plot_Sign_Fidelity
-    sign_vstate_full,_ = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_Obs.py", line 247, in Marshall_Sign_full_hilbert
-    sign[i], signs_vstate[i,:] = _marshal_sign_full_hilbert(vstate, hi) 
-             ~~~~~~~~~~~~^^^^^
-ValueError: could not broadcast input array from shape (12870,) into shape (16,)
-srun: error: th-cl-naples07: task 0: Exited with exit code 1
-srun: Terminating StepId=10009040.0

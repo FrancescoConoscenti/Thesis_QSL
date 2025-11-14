@@ -1,13 +1,0 @@
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:10<?, ?it/s, Energy=0.08+0.61j ± 0.53 [σ²=2.8e+02]]100%|██████████| 1/1 [00:00<00:00, 13.79it/s, Energy=0.08+0.61j ± 0.53 [σ²=2.8e+02]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:09<?, ?it/s, Energy=-3.67-0.42j ± 0.47 [σ²=2.2e+02]]100%|██████████| 1/1 [00:00<00:00, 14.66it/s, Energy=-3.67-0.42j ± 0.47 [σ²=2.2e+02]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/run_ViT.py", line 178, in <module>
-    amp_overlap, fidelity, sign_vstate, sign_exact = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: too many values to unpack (expected 4)
-[CpuDevice(id=0)]
-[CpuDevice(id=0)]
-srun: error: usm-cl-seitz3: task 0: Exited with exit code 1
-srun: Terminating StepId=10058426.0

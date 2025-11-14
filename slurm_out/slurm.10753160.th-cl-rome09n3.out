@@ -1,0 +1,34 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 157, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 143, in __call__
+    log_det_rot_refl_i, log_sign_rot_refl_i = self.calc_psi(x_sym_i)
+                                              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 63, in calc_psi
+    orbitals = self.orbitals(x)
+               ^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 337, in __call__
+    orbitals_mfmf = self.param('orbitals_mf',self._init_orbitals_dct,(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 324, in _init_orbitals_dct
+    mf = jnp.block([[upmatrix, normal(0.1),(upmatrix.shape[0],upmatrix.shape[1])], [normal(0.1),(dnmatrix.shape[0],dnmatrix.shape[1]),dnmatrix]]).T
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Error interpreting argument to <function block at 0x15199605a160> as an abstract array. The problematic value is of type <class 'function'> and was passed to the function at path arrays[0][1].
+This typically means that a jit-wrapped function was called with a non-array argument, and this argument was not marked as static using the static_argnums or static_argnames parameters of jax.jit.
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: th-cl-rome09n3: task 0: Exited with exit code 1
+srun: Terminating StepId=10753160.0

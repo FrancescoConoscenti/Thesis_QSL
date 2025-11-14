@@ -50,18 +50,18 @@ n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
-num_layers      = 1     # number of Tranformer layers
-d_model         = 2   # dimensionality of the embedding space
-n_heads         = 2     # number of heads
+num_layers      = 2     # number of Tranformer layers
+d_model         = 8   # dimensionality of the embedding space
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 2
+N_opt           = 200
 
-number_data_points = 2
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
@@ -90,12 +90,6 @@ hamiltonian = nk.operator.Heisenberg(
     hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
 ).to_jax_operator()  # No Marshall sign rule
 
-"""
-#Ising Hamiltonian
-hamiltonian = nk.operator.LocalOperator(hilbert)
-for u, v in lattice.edges():
-    hamiltonian += sigmaz(hilbert, u) * sigmaz(hilbert, v) 
-"""
 
 # Intiialize the ViT variational wave function
 vit_module = ViT_sym(
@@ -198,6 +192,7 @@ print(f"params={count_params}")
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
 #sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
 #amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
+
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
 amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
@@ -207,7 +202,7 @@ sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
-        #'sign_vstate_full': sign_vstate_full,
+        'sign_vstate': sign_vstate,
         'sign_exact': sign_exact,
         'fidelity': fidelity,
         'configs': configs,

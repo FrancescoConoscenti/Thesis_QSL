@@ -1,19 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:26<?, ?it/s, Energy=-5.22-0.00j ± 0.22 [σ²=4.3e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 10.15it/s, Energy=-5.22-0.00j ± 0.22 [σ²=4.3e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:03<?, ?it/s, Energy=-5.80+0.00j ± 0.30 [σ²=8.1e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 2114.06it/s, Energy=-5.80+0.00j ± 0.30 [σ²=8.1e+01, R̂=1.225]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 215, in <module>
-    sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
-                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_vs_iteration.py", line 67, in plot_Sign_Fidelity
-    sign_vstate_full = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Sign_Obs.py", line 234, in Marshall_Sign_full_hilbert
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat4_sample1024_lr0.02_iter2_symmTrue_Hannah/J=0.5/seed_1/models'
-srun: error: th-cl-naples18: task 0: Exited with exit code 1
-srun: Terminating StepId=9983931.0

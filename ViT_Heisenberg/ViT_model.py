@@ -315,52 +315,36 @@ class ViT_sym(nn.Module):
             return -spins
 
         def gen_rotated_samples(spins):
-            spins_rot = spins[:, self.idx_rot]
-            return spins_rot
-
-        #def gen_translated_samples(spins):
+            spins_rot1 = spins[:, self.idx_rot]
+            spins_rot2 = spins_rot1[:, self.idx_rot]
+            spins_rot3 = spins_rot2[:, self.idx_rot]
+            return spins_rot1, spins_rot2, spins_rot3
         
-        z_ = []
+        def gen_sym_samples(spins):
 
-        z = vit(spins)
-        z_.append(z)
+            spins_sym = []
+            spins_sym.append(spins)
 
-        if self.parity:
+            if self.parity:
+                spins_refl = gen_reflected_samples(spins)
+                spins_sym.append(spins_refl)  
 
-            spins_refl = gen_reflected_samples(spins)
-            z_minus =  vit(spins_refl) 
-            z_.append(z_minus) 
+            if self.rotation:
+                spins_rot1, spins_rot2, spins_rot3 = gen_rotated_samples(spins)
+                spins_sym.extend([spins_rot1, spins_rot2, spins_rot3])          
+                if self.parity:
+                    spins_refl = gen_reflected_samples(spins)
+                    spins_rot1_refl, spins_rot2_refl, spins_rot3_refl = gen_rotated_samples(spins_refl)
+                    spins_sym.extend([spins_rot1_refl, spins_rot2_refl, spins_rot3_refl])
 
-        if self.rotation:
+            return spins_sym
 
-            spins_rot1 = gen_rotated_samples(spins)
-            z_rot1 =  vit(spins_rot1)
-            z_.append(z_rot1)
 
-            spins_rot2 = gen_rotated_samples(spins_rot1)
-            z_rot2 =  vit(spins_rot2)
-            z_.append(z_rot2)
+        spins_sym = gen_sym_samples(spins)
 
-            spins_rot3 = gen_rotated_samples(spins_rot2)
-            z_rot3 =  vit(spins_rot3)
-            z_.append(z_rot3)
+        #for spin_sym_i in spins_sym:
+        #    log_psi = self.vit(spin_sym_i)
+        log_psi = jax.vmap(vit)(jnp.stack(spins_sym))
         
-        if self.rotation and self.parity:
-
-            spins_refl = gen_reflected_samples(spins)
-
-            spins_rot1_refl = gen_rotated_samples(spins_refl)
-            z_rot1_minus =  vit(spins_rot1_refl)
-            z_.append(z_rot1_minus)
-
-            spins_rot2_refl = gen_rotated_samples(spins_rot1_refl)
-            z_rot2_minus =  vit(spins_rot2_refl)
-            z_.append(z_rot2_minus)
-
-            spins_rot3_refl = gen_rotated_samples(spins_rot2_refl)
-            z_rot3_minus =  vit(spins_rot3_refl)
-            z_.append(z_rot3_minus)
-
-        N = len(z_)
-        return logsumexp_cplx(1/N * jnp.stack(z_, axis=0), axis=0)
+        return logsumexp_cplx(log_psi, axis=0)
 

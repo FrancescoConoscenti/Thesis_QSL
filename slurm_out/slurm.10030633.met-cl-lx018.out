@@ -1,5 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
-slurmstepd: error: *** JOB 10030633 ON met-cl-lx018 CANCELLED AT 2025-10-29T11:08:27 ***
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-  0%|          | 0/20 [00:00<?, ?it/s]slurmstepd: error: *** STEP 10030633.0 ON met-cl-lx018 CANCELLED AT 2025-10-29T11:08:27 ***

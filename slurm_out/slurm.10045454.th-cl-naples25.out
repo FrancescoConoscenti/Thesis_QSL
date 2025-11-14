@@ -1,5 +1,0 @@
-2025-10-29 14:18:38.278093: E external/xla/xla/stream_executor/cuda/cuda_platform.cc:51] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:24<?, ?it/s, Energy=-4.11-0.00j ± 0.30 [σ²=8.2e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 22.21it/s, Energy=-4.11-0.00j ± 0.30 [σ²=8.2e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:23<?, ?it/s, Energy=-1.22+0.00j ± 0.34 [σ²=1.1e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 554.44it/s, Energy=-1.22+0.00j ± 0.34 [σ²=1.1e+02, R̂=1.225]]
-/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py:240: UserWarning: n_samples=256 (256 per JAX device) does not divide n_chains=512, increased to 512 (512 per JAX device)
-  vstate.n_samples = 256

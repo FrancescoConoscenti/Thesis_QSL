@@ -41,7 +41,7 @@ def average_models_seeds(folder, Js):
 
         # --- Calculate sign_err_var ---
         # Truncate arrays to the minimum length before stacking to avoid shape errors.
-        sign_vstate_arrays = [np.array(d['sign_vstate_full']) for d in data_list]
+        sign_vstate_arrays = [np.array(d['sign_vstate']) for d in data_list]
         min_len_sign = min(len(arr) for arr in sign_vstate_arrays)
         truncated_sign_arrays = [arr[:min_len_sign] for arr in sign_vstate_arrays]
         sign_vstate_full_values = np.stack(truncated_sign_arrays)
@@ -154,8 +154,8 @@ def avarage_plots_seeds(folder, Js, plot_variance=True):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter400_parityTrue_rotationFalse_InitFermi_typereal"
-    Js = [0.2,0.5,0.7, 1.0]
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat1_sample1024_lr0.025_iter1_parityTrue_rotTrue_transFalse_InitFermi+random_typereal"
+    Js = [0.0, 0.2,0.5,0.55, 0.6, 0.7]
 
     average_models_seeds(model_path, Js)
     avarage_plots_seeds(model_path, Js, plot_variance=True)

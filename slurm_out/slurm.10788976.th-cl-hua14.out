@@ -1,0 +1,5 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+slurmstepd: error: *** STEP 10788976.0 ON th-cl-hua14 CANCELLED AT 2025-11-14T19:22:53 ***
+slurmstepd: error: *** JOB 10788976 ON th-cl-hua14 CANCELLED AT 2025-11-14T19:22:53 ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
