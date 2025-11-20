@@ -1,0 +1,39 @@
+--- Loading pre-trained DMRG state from DMRG/trained_models/dmrg_L4_J2_0.0.pkl.gz ---
+--- DMRG state loaded. ---
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter150.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.612217
+
+==================== Running for n_samples = 512 ====================
+Fidelity sampled (RBM vs DMRG): 0.818587
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.682321
+
+==================== Running for n_samples = 1024 ====================
+Fidelity sampled (RBM vs DMRG): 0.813356
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.740812
+
+==================== Running for n_samples = 2048 ====================
+Fidelity sampled (RBM vs DMRG): 0.812343
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.817526
+
+==================== Running for n_samples = 4096 ====================
+Fidelity sampled (RBM vs DMRG): 0.816069
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.874858
+
+==================== Running for n_samples = 8192 ====================
+Fidelity sampled (RBM vs DMRG): 0.813354
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.911965
+
+==================== Running for n_samples = 16384 ====================
+Fidelity sampled (RBM vs DMRG): 0.811711
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.940767
+
+==================== Running for n_samples = 32768 ====================
+Fidelity sampled (RBM vs DMRG): 0.813715
+Classical Fidelity (Sample Distr. vs DMRG Theory): 0.960387
+
+✅ Final fidelity plot saved to DMRG/plot/Fidelity_vs_Samples/fidelity_vs_nsamples_L4_J2_0.0.png

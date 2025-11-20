@@ -103,14 +103,13 @@ def DMRG_vstate_optimization(hamiltonian, model_params, filename=None):
 
 #%%
 
-def RBM_vstate_optimization(model_params, filename=None):
+def RBM_vstate_optimization(model_params, n_iter, filename=None):
 
     # --- RBM Model and Sampler Definition ---
     L = model_params['Lx']
     N_sites = L * L
     hi = nk.hilbert.Spin(s=1/2, N=N_sites)
     RBM_model = nk.models.RBM(alpha=3, param_dtype=jnp.complex128)
-    n_iter = 150
 
     # --- RBM Part (already existing) ---
     print("\n--- Starting NetKet RBM Calculation ---")

@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/DMRG/importance_sampling.py", line 346, in <module>
+    plot_full_hilbert_distributions(ket_gs, samples_dmrg_01_basis, B_list, RBM_vstate, dmrg_array, RBM_array, model_params, base_output_dir="DMRG/plot", fidelity_exact=fidelity_exact_rbm_dmrg, fidelity_sampled=fidelity_sampled_rbm_dmrg)
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/DMRG/Fidelities.py", line 507, in plot_full_hilbert_distributions
+    ax.set_ylim(ymin, ymax)
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 4062, in set_ylim
+    return self.yaxis._set_lim(bottom, top, emit=emit, auto=auto)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axis.py", line 1217, in _set_lim
+    v1 = self.axes._validate_converted_limits(v1, self.convert_units)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 3749, in _validate_converted_limits
+    raise ValueError("Axis limits cannot be NaN or Inf")
+ValueError: Axis limits cannot be NaN or Inf
+--- Loading pre-trained DMRG state from DMRG/trained_models/dmrg_L4_J2_0.0.pkl.gz ---
+--- DMRG state loaded. ---
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter150.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.612217434165775
+
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.8124993350015045
+
+Fidelity (RBM vs Exact Diagonalization): 0.612217
+
+Fidelity (DMRG vs Exact Diagonallization): 1.000000
+
+Fidelity (DMRG_sampled vs DMRG_Full): 1.000000
+
+Fidelity (RBM_sampled vs RBM_Full): 1.000000
+✅ Probability distribution comparison plot saved to DMRG/plot/DMRG_RBM_Comparison/J=0.0/distributions/probability_distributions_comparison_32178.png
+srun: error: th-cl-naples01: task 0: Exited with exit code 1
+srun: Terminating StepId=10795185.0

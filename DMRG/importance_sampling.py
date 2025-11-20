@@ -266,7 +266,8 @@ if __name__ == "__main__":
         'J2': 0.0
     }
 
-    n_samples = 4096
+    n_samples = 2048
+    n_iter = 120
     N_sites = model_params['Lx'] **2
 
     # --- Define file paths for saved models ---
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     DMRG_vstate.canonical_form()
     
     # --- RBM ---
-    RBM_vstate, ha = RBM_vstate_optimization(model_params, filename=rbm_filename) # ha is the NetKet Hamiltonian for exact diagonalization
+    RBM_vstate, ha = RBM_vstate_optimization(model_params, n_iter, filename=rbm_filename) # ha is the NetKet Hamiltonian for exact diagonalization
     
     # --- Importance Sampling ---
 
@@ -294,12 +295,14 @@ if __name__ == "__main__":
         sigmas, psi_DMRG = DMRG_vstate.sample_measurements(first_site=0, last_site=N_sites-1, ops = ops_z, complex_amplitude=True)
         samples[n, :] = sigmas
         psi_DMRG_sampled[n] = psi_DMRG
+        
 
     # Convert samples from {-1, 1} basis (NetKet/Sigmaz) to {0, 1} basis (TenPy/DMRG)
     # This is crucial for functions expecting TenPy-like configurations.
     # +1 -> 0 (up), -1 -> 1 (down)
     samples_netket = samples # Keep original for RBM logpsi if needed
     samples_dmrg_01_basis = ((1 - np.asarray(samples_netket)) / 2).astype(int)
+    
 
     # Evaluate RBM amplitudes on the sampled configurations (NetKet format)
     # Note: logpsi_netket expects samples in {-1, 1} basis, so use samples_netket
@@ -311,10 +314,13 @@ if __name__ == "__main__":
     RBM_array = RBM_vstate.to_array()
 
     # --- Fidelity with DMRG and RBM ---
-    fidelity = Fidelity_exact(RBM_vstate, DMRG_vstate)
-    print("\nFidelity exact (RBM_Full vs DMRG_Full):", fidelity)
-    fidelity = Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled)
-    print("\nFidelity sampled (RBM_sampled vs DMRG_sampled):", fidelity)
+    fidelity_exact_rbm_dmrg = Fidelity_exact(RBM_vstate, DMRG_vstate)
+    print("\nFidelity exact (RBM_Full vs DMRG_Full):", fidelity_exact_rbm_dmrg)
+    fidelity_sampled_rbm_dmrg = Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled)
+    print("\nFidelity sampled (RBM_sampled vs DMRG_sampled):", fidelity_sampled_rbm_dmrg)
+    fidelity_rbm_sampled__dmrg_exact = Fidelity_RBM_sampled_vs_DMRG_exact(psi_RBM_sampled, samples_dmrg_01_basis, dmrg_array, local_dims)
+    print("\nFidelity sampled (RBM_sampled vs DMRG_exact):", fidelity_rbm_sampled__dmrg_exact)
+
 
     # --- Fidelity with Exact Ground State ---
 
@@ -340,5 +346,46 @@ if __name__ == "__main__":
     fidelity_RBM_sampled_vs_full_val = fidelity_RBM_sampled_vs_full(psi_RBM_sampled, samples_dmrg_01_basis, RBM_array, local_dims)
     print(f"\nFidelity (RBM_sampled vs RBM_Full): {fidelity_RBM_sampled_vs_full_val:.6f}")
 
+    # --- Compare DMRG probability distribution with the sample distribution ---
+    # This is a sanity check. Since we sampled from DMRG, the distributions should be similar.
+    unique_configs, unique_indices, counts = np.unique(samples_dmrg_01_basis, axis=0, return_index=True, return_counts=True)
+    P_samples = counts / counts.sum()
+    unique_configs, unique_indices, inverse_indices, counts = np.unique(
+        samples_dmrg_01_basis, axis=0, return_index=True, return_inverse=True, return_counts=True
+    )
+    # P_unique_samples contains the probability for each unique configuration
+    P_unique_samples = counts / counts.sum()
+
+    psi_DMRG_unique = psi_DMRG_sampled[unique_indices]
+    P_DMRG = np.abs(psi_DMRG_unique)**2
+    P_DMRG /= P_DMRG.sum()
+
+    classical_fidelity = np.sum(np.sqrt(P_samples * P_DMRG))**2
+    classical_fidelity = np.sum(P_unique_samples * P_DMRG)
+    print(f"\nClassical Fidelity (Sample Distr. vs DMRG  Distr.): {classical_fidelity:.6f}")
+
+    # --- Overlap Calculation Demonstration ---
+    # 1. Exact Overlap
+    overlap_exact_val = Overlap_exact(RBM_vstate, DMRG_vstate)
+    print(f"\nOverlap exact (RBM vs DMRG): {overlap_exact_val:.6f}")
+
+    # 2. Sampled Overlap (samples from DMRG, target is RBM)
+    overlap_sampled_val = Overlap_sampled(psi_proposal=psi_DMRG_sampled, psi_target=psi_RBM_sampled)
+    print(f"Overlap sampled (RBM vs DMRG): {overlap_sampled_val:.6f}")
+
+
+    # --- Fidelity norm ---
+    # Create P_sample_sort with the same order as samples_dmrg_01_basis
+    # It maps the probability of each unique sample back to all original samples.
+    P_sample_sort = P_unique_samples[inverse_indices]
+    fidelity_sampled_rbm_dmrg = Fidelity_sampled_norm(psi_DMRG_sampled, psi_RBM_sampled, P_sample_sort)
+    print("\nFidelity sampled (RBM_sampled vs DMRG_sampled):", fidelity_sampled_rbm_dmrg)
+    fidelity_new = fidelity_new(psi_DMRG_sampled, psi_RBM_sampled)
+    print("\nFidelity new (RBM_sampled vs DMRG_sampled):", fidelity_new)
+    
+
     # --- # --- Plotting --- ---
-    plot_probability_distributions(ket_gs, samples_netket, samples_dmrg_01_basis, B_list, RBM_vstate, dmrg_array, RBM_array, model_params)
+    #plot_probability_distributions(ket_gs, samples_netket, samples_dmrg_01_basis, B_list, RBM_vstate, dmrg_array, RBM_array, model_params, fidelity_exact=fidelity_exact_rbm_dmrg, fidelity_sampled=fidelity_sampled_rbm_dmrg)
+    #plot_full_hilbert_distributions(ket_gs, samples_dmrg_01_basis, B_list, RBM_vstate, dmrg_array, RBM_array, model_params, base_output_dir="DMRG/plot", fidelity_exact=fidelity_exact_rbm_dmrg, fidelity_sampled=fidelity_sampled_rbm_dmrg)
+
+##################################################################################################################################################################################################################

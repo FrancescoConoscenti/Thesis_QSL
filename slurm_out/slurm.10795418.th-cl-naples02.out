@@ -1,0 +1,154 @@
+--- Loading pre-trained DMRG state from DMRG/trained_models/dmrg_L4_J2_0.0.pkl.gz ---
+--- DMRG state loaded. ---
+
+--- Generating 4096 samples from DMRG wavefunction ---
+--- Sampling complete ---
+
+--- Starting NetKet RBM Calculation ---
+Automatic SR implementation choice:  QGT
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:10<?, ?it/s, Energy=7.9990-0.0014j ± 0.0027 [σ²=6.6e-03, R̂=1.013]]100%|██████████| 1/1 [00:00<00:00, 14.25it/s, Energy=7.9990-0.0014j ± 0.0027 [σ²=6.6e-03, R̂=1.013]]
+Final RBM Energy: 7.998995
+Final RBM Energy per site: 0.499937
+--- NetKet RBM Calculation Finished ---
+
+==================== Running for n_iter = 40 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter40_iter40.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.000000
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.000229
+
+==================== Running for n_iter = 60 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter60_iter60.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.000939
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.003573
+
+==================== Running for n_iter = 80 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter80_iter80.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.046465
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.126129
+
+==================== Running for n_iter = 100 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter100_iter100.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.208124
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.421596
+
+==================== Running for n_iter = 120 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter120_iter120.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.389389
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.639633
+
+==================== Running for n_iter = 140 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter140_iter140.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.545009
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.769332
+
+==================== Running for n_iter = 160 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter160_iter160.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.673098
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.849669
+
+==================== Running for n_iter = 180 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter180_iter180.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.772120
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.902525
+
+==================== Running for n_iter = 200 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter200_iter200.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.845566
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.936984
+
+==================== Running for n_iter = 220 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter220_iter220.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.897010
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.959384
+
+==================== Running for n_iter = 240 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter240_iter240.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.929910
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.973359
+
+==================== Running for n_iter = 260 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter260_iter260.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.951066
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.981805
+
+==================== Running for n_iter = 280 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter280_iter280.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.965672
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.987488
+
+==================== Running for n_iter = 300 ====================
+
+--- Starting NetKet RBM Calculation ---
+--- Loading pre-trained RBM parameters from DMRG/trained_models/rbm_L4_J2_0.0_iter300_iter300.mpack ---
+--- RBM parameters loaded. ---
+--- NetKet RBM Calculation Finished ---
+
+Fidelity exact (RBM_Full vs DMRG_Full): 0.973681
+Fidelity sampled (RBM_sampled vs DMRG_sampled): 0.990502
+
+✅ Final fidelity plot saved to DMRG/plot/Fidelity_vs_Iterations/fidelity_vs_n_iter_L4_J2_0.0.png
