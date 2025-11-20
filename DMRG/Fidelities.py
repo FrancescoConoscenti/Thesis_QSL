@@ -15,6 +15,8 @@ from DMRG.Observable.Corr_Struct import Correlations_Structure_Factor
 from netket.experimental.driver import VMC_SR
 from DMRG.QSL_DMRG import *
 from DMRG.importance_sampling import *
+from DMRG.Plotting import *
+
 
 import os
 import numpy as np
@@ -45,6 +47,8 @@ def fidelity_DMRG_exact(DMRG_vstate, exact_ket):
 
 def Fidelity_exact(RBM_vstate, DMRG_vstate):
 
+    # undo_sort_charge=True to ensure that the basis state ordering of the TenPy wavefunction
+    #  matches the standard lexicographical ordering used by NetKet's `to_array()` method
     dmrg_array = get_full_wavefunction(DMRG_vstate, undo_sort_charge=True)
     RBM_array = RBM_vstate.to_array(normalize=True)
 
@@ -53,6 +57,19 @@ def Fidelity_exact(RBM_vstate, DMRG_vstate):
 
     return fidelity
 
+def Overlap_exact(RBM_vstate, DMRG_vstate):
+    """
+    Calculates the exact complex overlap <ψ_RBM | ψ_DMRG> between the full
+    RBM and DMRG wavefunctions.
+    """
+    # Ensure basis ordering is consistent between TenPy and NetKet
+    dmrg_array = get_full_wavefunction(DMRG_vstate, undo_sort_charge=True)
+    RBM_array = RBM_vstate.to_array(normalize=True)
+
+    # np.vdot(a, b) computes a.conj().T @ b, which is the standard inner product <a|b>
+    overlap = np.vdot(RBM_array, dmrg_array)
+
+    return overlap
 
 def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
 
@@ -62,8 +79,13 @@ def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
     It's an overlap of probability distributions. 
     Therefore, psi_RBM_sampled_norm is not correctly normalizing ψ_RBM to unit norm.
     """
+    psi_DMRG_sampled_norm = psi_DMRG_sampled / np.sqrt(np.mean(np.abs(psi_DMRG_sampled)**2))
+    psi_RBM_sampled_norm = psi_RBM_sampled / np.sqrt(np.mean(np.abs(psi_RBM_sampled)**2))
+
     # 1. Calculate the element-wise ratio X(sigma) = psi_RBM(sigma) / psi_DMRG(sigma)
     ratio = psi_RBM_sampled / psi_DMRG_sampled
+    #ratio = psi_RBM_sampled / psi_DMRG_sampled
+
     
     # 2. Estimate the overlap <psi_DMRG | psi_RBM>
     # This is the mean of the ratio: E[X]
@@ -79,6 +101,77 @@ def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
     fidelity = numerator_est / denominator_est
 
     return fidelity
+
+
+def Fidelity_sampled_norm(psi_DMRG_sampled, psi_RBM_sampled, P_samples):
+
+    """
+    The term np.mean(np.abs(psi_RBM_sampled)**2) is an estimate of Σ_s |ψ_DMRG(s)|^2 * |ψ_RBM(s)|^2.
+    This is not the squared norm ⟨ψ_RBM | ψ_RBM⟩. 
+    It's an overlap of probability distributions. 
+    Therefore, psi_RBM_sampled_norm is not correctly normalizing ψ_RBM to unit norm.
+    """
+    DMRG_norm1 =np.sqrt(np.mean((np.abs(psi_DMRG_sampled)**2)))
+    RBM_norm1 = np.sqrt(np.mean((np.abs(psi_RBM_sampled)**2)))
+    DMRG_norm = np.sqrt(np.mean((np.abs(psi_DMRG_sampled)**2)/P_samples))
+    RBM_norm = np.sqrt(np.mean((np.abs(psi_RBM_sampled)**2)/P_samples))
+    print("DMRG_norm",DMRG_norm)
+    print("RBM_norm",RBM_norm)
+    print("DMRG_norm1",DMRG_norm1)
+    print("RBM_norm1",RBM_norm1)
+
+    psi_DMRG_sampled_norm = psi_DMRG_sampled/ DMRG_norm
+    psi_RBM_sampled_norm = psi_RBM_sampled / RBM_norm
+    
+    # 1. Calculate the element-wise ratio X(sigma) = psi_RBM(sigma) / psi_DMRG(sigma)
+    ratio = psi_RBM_sampled_norm / psi_DMRG_sampled_norm
+    
+    # 2. Estimate the overlap <psi_DMRG | psi_RBM>
+    # This is the mean of the ratio: E[X]
+    overlap_est = np.mean(ratio)
+    # The numerator of the fidelity is the squared magnitude of the overlap.
+    fidelity = np.abs(overlap_est)**2 
+
+    return fidelity
+
+def fidelity_new(psi_DMRG_sampled, psi_NQS_sampled):
+    """
+    Compute the fidelity between two possibly unnormalized
+    complex wavefunctions represented as 1D numpy arrays.
+
+    Both arrays must have the same basis ordering.
+    """
+
+    # inner product <psi_NQS | psi_DMRG>
+    overlap = np.vdot(psi_NQS_sampled, psi_DMRG_sampled)    # vdot does conj(psi_NQS) * psi_DMRG
+
+    # norms
+    norm_D = np.vdot(psi_DMRG_sampled, psi_DMRG_sampled)
+    norm_N = np.vdot(psi_NQS_sampled,  psi_NQS_sampled)
+
+    # fidelity formula
+    F = np.abs(overlap)**2 / (norm_D * norm_N)
+
+    return F.real
+
+def Overlap_sampled(psi_proposal, psi_target):
+    """
+    Estimates the complex overlap <ψ_proposal | ψ_target> using importance sampling.
+    Samples are assumed to be drawn from the distribution |ψ_proposal(s)|².
+
+    The estimator is E_{s~|ψ_proposal|²}[ ψ_target(s) / ψ_proposal(s) ].
+
+    Args:
+        psi_proposal (np.ndarray): Amplitudes of the proposal wavefunction (from which we sampled).
+        psi_target (np.ndarray): Amplitudes of the target wavefunction evaluated on the same samples.
+    """
+
+    psi_proposal = psi_proposal / np.sqrt(np.mean(np.abs(psi_proposal)**2))
+    psi_target = psi_target / np.sqrt(np.mean(np.abs(psi_target)**2))
+    ratio = psi_target / psi_proposal
+    overlap_estimate = np.mean(ratio)
+
+    return overlap_estimate
 
     
     """
@@ -100,6 +193,47 @@ def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
     return fidelity_improved
     """
 
+def Fidelity_sample_distr_vs_DMRG(P_DMRG_sampled, samples_dmrg_distr):
+    overlap = np.mean(np.vdot(P_DMRG_sampled, samples_dmrg_distr))
+    fidelity = np.abs(overlap)**2
+    return fidelity
+
+
+def ravel_configs_to_indices(configs_01, local_dims):
+        if configs_01.ndim == 1:
+            configs_01 = configs_01.reshape(1, -1)
+        tuples = tuple(configs_01[:, i] for i in range(configs_01.shape[1]))
+        return np.ravel_multi_index(tuples, dims=tuple(local_dims), order='C')
+
+
+def Fidelity_RBM_sampled_vs_DMRG_exact(psi_RBM_sampled, samples_dmrg, dmrg_array, local_dims):
+
+    # DMRG full-wavefunction
+    # --- flat indices in full Hilbert space for each unique config ---
+    flat_indices_unique = ravel_configs_to_indices(samples_dmrg, local_dims)  # shape (n_unique,)
+    psi_DMRG_exact = dmrg_array[flat_indices_unique]
+    psi_DMRG_exact = psi_DMRG_exact / (psi_DMRG_exact.sum() + 1e-16)
+
+
+    # 1. Calculate the element-wise ratio X(sigma) = psi_RBM(sigma) / psi_DMRG(sigma)
+    ratio = psi_RBM_sampled / psi_DMRG_exact
+    
+    # 2. Estimate the overlap <psi_DMRG | psi_RBM>
+    # This is the mean of the ratio: E[X]
+    overlap_est = np.mean(ratio)
+    # The numerator of the fidelity is the squared magnitude of the overlap.
+    numerator_est = np.abs(overlap_est)**2 
+    
+    # 3. Estimate the RBM Norm Squared (Denominator): <psi_RBM | psi_RBM>
+    # This is the mean of the squared magnitude of the ratio: E[|X|^2]
+    denominator_est = np.mean(np.abs(ratio)**2)
+    
+    # 4. Calculate Fidelity: |E[X]|^2 / E[|X|^2].
+    fidelity = numerator_est / denominator_est
+
+    return fidelity
+
+
 def fidelity_DMRG_sampled_vs_full(psi_DMRG_sampled, samples_dmrg, dmrg_array, local_dims):
     """
     Calculates the fidelity between the sampled DMRG amplitudes and the full DMRG wavefunction.
@@ -114,12 +248,6 @@ def fidelity_DMRG_sampled_vs_full(psi_DMRG_sampled, samples_dmrg, dmrg_array, lo
     Returns:
         float: The calculated fidelity.
     """
-    def ravel_configs_to_indices(configs_01, local_dims):
-        if configs_01.ndim == 1:
-            configs_01 = configs_01.reshape(1, -1)
-        tuples = tuple(configs_01[:, i] for i in range(configs_01.shape[1]))
-        return np.ravel_multi_index(tuples, dims=tuple(local_dims), order='C')
-
 
     # 1. Get the target amplitudes from the full array for each sampled configuration
     flat_indices = ravel_configs_to_indices(samples_dmrg, local_dims)
@@ -150,11 +278,6 @@ def fidelity_RBM_sampled_vs_full(psi_RBM_sampled, samples_dmrg, RBM_array, local
     Returns:
         float: The calculated fidelity.
     """
-    def ravel_configs_to_indices(configs_01, local_dims):
-        if configs_01.ndim == 1:
-            configs_01 = configs_01.reshape(1, -1)
-        tuples = tuple(configs_01[:, i] for i in range(configs_01.shape[1]))
-        return np.ravel_multi_index(tuples, dims=tuple(local_dims), order='C')
 
     # 1. Get the target amplitudes from the full array for each sampled configuration
     flat_indices = ravel_configs_to_indices(samples_dmrg, local_dims)
@@ -170,177 +293,107 @@ def fidelity_RBM_sampled_vs_full(psi_RBM_sampled, samples_dmrg, RBM_array, local
     fidelity = np.abs(overlap)**2 / (norm_target_sq * norm_sampled_sq)
     return fidelity.real
 
-def plot_probability_distributions(ket_gs, samples_netket, samples_dmrg, B_list, RBM_vstate, dmrg_array, RBM_array, model_params, base_output_dir="DMRG/plot"):
-    """
-    Plots and compares four probability distributions:
-    1. Exact probability distribution for unique sampled configurations.
-    2. DMRG probability from full wavefunction (`dmrg_array`).
-    3. RBM probability from full wavefunction (`RBM_array`).
-    4. DMRG probability from MPS tensors (`B_list`).
-    5. RBM probability from model evaluation (`log_value`).
-    6. Distribution of samples sampled from DMRG (frequency of unique samples).
 
-    Args:
-        ket_gs (np.ndarray): Exact ground state vector (full Hilbert space amplitudes).
-        hi (netket.hilbert.Hilbert): NetKet Hilbert space object.
-        samples_netket (np.ndarray): Samples in NetKet {-1, 1} basis.
-        samples_dmrg (np.ndarray): Samples in DMRG/TenPy {0, 1} basis.
-        B_list (list): List of MPS tensors (B_list) from DMRG.
-        RBM_vstate (netket.vqs.MCState): NetKet MCState object for the RBM.
-        dmrg_array (np.ndarray): Full DMRG wavefunction from `get_full_wavefunction`.
-        RBM_array (np.ndarray): Full RBM wavefunction from `to_array`.
-        model_params (dict): Dictionary containing model parameters like 'Lx', 'J2'.
-        base_output_dir (str): Base directory for saving plots (e.g., "DMRG/plot").
-    """
-    def ravel_configs_to_indices(configs_01, local_dims):
-        # configs_01: (n, L) with values 0..d-1
-        # local_dims: e.g. [2]*L
-        if configs_01.ndim == 1:
-            configs_01 = configs_01.reshape(1, -1)
-        tuples = tuple(configs_01[:, i] for i in range(configs_01.shape[1]))
-        return np.ravel_multi_index(tuples, dims=tuple(local_dims), order='C')
+if __name__ == "__main__":
 
-    # --- basic sizes and local dims ---
-    L = model_params['Lx']**2
-    local_dims = [2] * L  # spin-1/2 assumption
-    n_samples = samples_dmrg.shape[0]
+    model_params = {
+        'Lx': 4,
+        'Ly': 4,
+        'J1': 1.0,
+        'J2': 0.6
+    }
 
-    # --- find unique configs in NetKet-sampled set (keep first-occurrence indices) ---
-    unique_configs, unique_indices, inverse_indices, counts = np.unique(
-        samples_dmrg, axis=0, return_index=True, return_inverse=True, return_counts=True
-    )
-    # unique_configs in order of first occurrence due to return_index
-    n_unique = unique_configs.shape[0]
+    n_samples = 2048 # Number of samples for importance sampling
+    n_iter_values = [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 400, 500, 600, 700, 800, 900, 1000  ] # RBM training iterations to test
+    N_sites = model_params['Lx'] **2
 
-    # --- flat indices in full Hilbert space for each unique config ---
-    flat_indices_unique = ravel_configs_to_indices(unique_configs, local_dims)  # shape (n_unique,)
+    # --- Define file paths for saved models ---
+    model_storage_dir = "DMRG/trained_models"
+    os.makedirs(model_storage_dir, exist_ok=True)
+    dmrg_filename = os.path.join(model_storage_dir, f"dmrg_L{model_params['Lx']}_J2_{model_params['J2']}.pkl.gz")
 
-    # --- extract & normalize distributions restricted to these unique configs ---
-    # Exact
-    P_exact = np.abs(ket_gs[flat_indices_unique])**2
-    P_exact = P_exact / (P_exact.sum() + 1e-16)
+    # --- DMRG (run once) ---
+    hamiltonian = J1J2Heisenberg(model_params=model_params)
+    DMRG_vstate = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
+    B_list, local_dims = extract_mps_tensors(DMRG_vstate)
+    DMRG_vstate.canonical_form()
+    dmrg_array = get_full_wavefunction(DMRG_vstate, undo_sort_charge=True)
 
-    # DMRG full-wavefunction
-    P_dmrg_full = np.abs(dmrg_array[flat_indices_unique])**2
-    P_dmrg_full = P_dmrg_full / (P_dmrg_full.sum() + 1e-16)
+    # --- Importance Sampling from DMRG (run once) ---
+    print(f"\n--- Generating {n_samples} samples from DMRG wavefunction ---")
+    ops_z = ['Sigmaz'] * N_sites
+    samples = np.zeros((n_samples, N_sites), dtype=int)
+    psi_DMRG_sampled = np.zeros(n_samples, dtype=np.complex128)
+    for n in range(n_samples):
+        sigmas, psi_DMRG = DMRG_vstate.sample_measurements(first_site=0, last_site=N_sites-1, ops = ops_z, complex_amplitude=True)
+        samples[n, :] = sigmas
+        psi_DMRG_sampled[n] = psi_DMRG
+    print("--- Sampling complete ---")
 
-    # RBM full-wavefunction (precomputed)
-    P_rbm_full = np.abs(RBM_array[flat_indices_unique])**2
-    P_rbm_full = P_rbm_full / (P_rbm_full.sum() + 1e-16)
+    samples_netket = samples  # Samples in {-1, 1} basis for NetKet
+    samples_dmrg_01_basis = ((1 - np.asarray(samples_netket)) / 2).astype(int)
 
-    # DMRG from MPS tensors: psi_mps_from_config must accept array shape (n_configs, L) in 0/1 format
-    psi_DMRG_from_B = psi_mps_from_config(B_list, unique_configs)   # shape (n_unique,)
-    P_dmrg_from_B = np.abs(psi_DMRG_from_B)**2
-    P_dmrg_from_B = P_dmrg_from_B / (P_dmrg_from_B.sum() + 1e-16)
+    # --- Get Exact Ground State (run once) ---
+    # Define a dummy RBM to get the NetKet Hamiltonian `ha`
+    _, ha = RBM_vstate_optimization(model_params, n_iter=1)
+    E_gs_vals, ket_gs_matrix = nk.exact.lanczos_ed(ha, k=1, compute_eigenvectors=True)
+    ket_gs = ket_gs_matrix[:, 0]
 
-    # RBM evaluation: logpsi_netket must accept configs in NetKet format {-1,+1}
-    # We pass the NetKet-format configs corresponding to unique_configs
-    unique_configs_netket = (unique_configs * 2 - 1)  # convert 0/1 -> -1/+1
-    logpsi_rbm = logpsi_netket(RBM_vstate, unique_configs_netket)  # shape (n_unique,)
-    psi_rbm_eval = np.exp(logpsi_rbm)
-    P_rbm_eval = np.abs(psi_rbm_eval)**2
-    P_rbm_eval = P_rbm_eval / (P_rbm_eval.sum() + 1e-16)
+    # --- Loop over RBM training iterations ---
+    exact_fidelities = []
+    sampled_fidelities = []
+    sampled_norm_fidelities = []
+    new_fidelities = []
 
-    # empirical frequencies from DMRG sampling:
-    # We need counts for exactly the same unique configs; `counts` returned by np.unique above
-    P_sampled = counts.astype(float) / counts.sum()
+    for n_iter in n_iter_values:
+        print(f"\n{'='*20} Running for n_iter = {n_iter} {'='*20}")
 
-    # --- sort by exact prob descending so visuals line up ---
-    order = np.argsort(P_exact)[::-1]
-    P_exact_sorted = P_exact[order]
-    P_DMRG_full_sorted = P_dmrg_full[order]
-    P_RBM_full_sorted = P_rbm_full[order]
-    P_DMRG_sorted = P_dmrg_from_B[order]
-    P_RBM_sorted = P_rbm_eval[order]
-    P_count_sorted = P_sampled[order]
-    configs_sorted = unique_configs[order]
-    counts_sorted = counts[order]
+        # --- Calculate sample distribution for Fidelity_sampled_norm ---
+        unique_configs, unique_indices, inverse_indices, counts = np.unique(
+            samples_dmrg_01_basis, axis=0, return_index=True, return_inverse=True, return_counts=True
+        )
+        P_unique_samples = counts / counts.sum()
+        P_sample_sort = P_unique_samples[inverse_indices]
+        # Define a unique filename for each RBM training run
+        rbm_filename = os.path.join(model_storage_dir, f"rbm_L{model_params['Lx']}_J2_{model_params['J2']}_iter{n_iter}.mpack")
 
-    # 4. Plotting
-    fig, axes = plt.subplots(2, 3, figsize=(20, 10), sharex=True, sharey=False)
-    fig.suptitle(f"Probability Distributions Comparison (L={model_params.get('Lx','N/A')}, J2={model_params.get('J2','N/A')})", fontsize=16)
-    x_axis = np.arange(len(P_exact_sorted))
+        # --- RBM Training ---
+        RBM_vstate, _ = RBM_vstate_optimization(model_params, n_iter, filename=rbm_filename)
 
-    # --- Subplot 1: Exact Probability ---
-    axes[0, 0].bar(x_axis, P_exact_sorted, label='Exact', alpha=0.7, color='blue')
-    axes[0, 0].set_title('Exact Probability Distribution')
-    axes[0, 0].set_ylabel("Probability (log scale)")
-    axes[0, 0].legend()
-    axes[0, 0].grid(True, which="both", ls="--", alpha=0.6)
+        # --- Evaluate RBM amplitudes on the pre-sampled configurations ---
+        logpsi_RBM_sampled = logpsi_netket(RBM_vstate, samples_netket)
+        psi_RBM_sampled = np.exp(logpsi_RBM_sampled)
 
-    # --- Subplot 2: DMRG from full array ---
-    axes[0, 1].bar(x_axis, P_DMRG_full_sorted, label='DMRG (full array)', alpha=0.7, color='purple')
-    axes[0, 1].set_title('DMRG Probability (from full array)')
-    axes[0, 1].legend()
-    axes[0, 1].grid(True, which="both", ls="--", alpha=0.6)
+        # --- Compute full RBM wavefunction array ---
+        RBM_array = RBM_vstate.to_array()
 
-    # --- Subplot 3: RBM from full array ---
-    axes[0, 2].bar(x_axis, P_RBM_full_sorted, label='RBM (full array)', alpha=0.7, color='brown')
-    axes[0, 2].set_title('RBM Probability (from full array)')
-    axes[0, 2].legend()
-    axes[0, 2].grid(True, which="both", ls="--", alpha=0.6)
+        # --- Calculate and store fidelities ---
+        fidelity_exact_rbm_dmrg = Fidelity_exact(RBM_vstate, DMRG_vstate)
+        print(f"\nFidelity exact (RBM_Full vs DMRG_Full): {fidelity_exact_rbm_dmrg:.6f}")
+        exact_fidelities.append(fidelity_exact_rbm_dmrg)
 
-     # --- Subplot 6: DMRG Sampled Counts (linear scale) ---
-    axes[1, 0].bar(x_axis, counts_sorted, label='DMRG Sample Counts', alpha=0.7, color='red')
-    axes[1, 0].set_title('DMRG Sampled Counts')
-    axes[1, 0].set_xlabel("Unique Configuration Index (Sorted by Exact Prob.)")
-    axes[1, 0].set_ylabel("Number of Samples")
-    axes[1, 0].legend()
-    axes[1, 0].grid(True, which="both", ls="--", alpha=0.6)
-    axes[1, 0].set_yscale('log')
-
-    # --- Subplot 4: DMRG from tensors ---
-    axes[1, 1].bar(x_axis, P_DMRG_sorted, label='DMRG (tensors)', alpha=0.7, color='orange')
-    axes[1, 1].set_title('DMRG Probability (from tensors)')
-    axes[1, 1].set_xlabel("Unique Configuration Index (Sorted by Exact Prob.)")
-    axes[1, 1].set_ylabel("Probability (log scale)")
-    axes[1, 1].legend()
-    axes[1, 1].grid(True, which="both", ls="--", alpha=0.6)
-
-    # --- Subplot 5: RBM from model eval ---
-    axes[1, 2].bar(x_axis, P_RBM_sorted, label='RBM (model eval)', alpha=0.7, color='green')
-    axes[1, 2].set_title('RBM Probability (from model eval)')
-    axes[1, 2].set_xlabel("Unique Configuration Index (Sorted by Exact Prob.)")
-    axes[1, 2].legend()
-    axes[1, 2].grid(True, which="both", ls="--", alpha=0.6)
-
-   
-
-    # Compute log y-limits from the probability arrays while avoiding zeros
-    prob_arrays = [
-        np.asarray(P_exact_sorted),
-        np.asarray(P_DMRG_full_sorted),
-        np.asarray(P_RBM_full_sorted),
-        np.asarray(P_DMRG_sorted),
-        np.asarray(P_RBM_sorted)
-    ]
-    # find the global positive min and global max across these arrays
-    positive_vals = np.hstack([arr[arr > 0] for arr in prob_arrays if np.any(arr > 0)])
-    if positive_vals.size == 0:
-        # fallback to small positive number if everything is zero or negative (unlikely)
-        ymin = 1e-12
-        ymax = 1.0
-    else:
-        ymin = positive_vals.min() * 0.5  # a bit below the smallest positive value
-        ymax = max(arr.max() for arr in prob_arrays)*1.1
-
-    # Apply log scale and consistent y-limits to probability subplots (all except counts)
-    prob_axes = [axes[0,0], axes[0,1], axes[0,2], axes[1,1], axes[1,2]]
-    for ax in prob_axes:
-        ax.set_yscale('log')
-        ax.set_ylim(ymin, ymax)
+        fidelity_sampled_rbm_dmrg = Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled)
+        print(f"Fidelity sampled (RBM_sampled vs DMRG_sampled): {fidelity_sampled_rbm_dmrg:.6f}")
+        sampled_fidelities.append(fidelity_sampled_rbm_dmrg)
 
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        
 
-    # Create output directory following the existing pattern
-    Lx = model_params.get('Lx', 'N/A')
-    J2 = model_params.get('J2', 'N/A')
-    model_name_for_path = "DMRG_RBM_Comparison"
-    final_output_dir = os.path.join(base_output_dir, model_name_for_path, f"J={J2}", "distributions")
-    os.makedirs(final_output_dir, exist_ok=True)
+    # --- Final Plot: Fidelities vs. n_iter ---
+    plt.figure(figsize=(10, 6))
+    plt.plot(n_iter_values, exact_fidelities, 'o-', label='Fidelity (Exact)')
+    plt.plot(n_iter_values, sampled_fidelities, 's--', label='Fidelity (Sampled)')
+    plt.xlabel("Number of RBM Training Iterations (n_iter)")
+    plt.ylabel("Fidelity")
+    plt.title(f"Fidelity vs. RBM Training Iterations (L={model_params['Lx']}, J2={model_params['J2']})")
+    plt.legend()
+    plt.grid(True, which="both", ls="--", alpha=0.6)
+    plt.xscale('log') # Use log scale for iterations if they span orders of magnitude
 
-    plot_filename = os.path.join(final_output_dir, f"probability_distributions_comparison_{n_samples}.png")
-    plt.savefig(plot_filename, dpi=300)
-    print(f"✅ Probability distribution comparison plot saved to {plot_filename}")
+    # --- Save the final plot ---
+    plot_output_dir = "DMRG/plot/Fidelity_vs_Iterations"
+    os.makedirs(plot_output_dir, exist_ok=True)
+    final_plot_filename = os.path.join(plot_output_dir, f"fidelity_vs_n_iter_L{model_params['Lx']}_J2_{model_params['J2']}.png")
+    plt.savefig(final_plot_filename, dpi=300)
+    print(f"\n✅ Final fidelity plot saved to {final_plot_filename}")
     plt.close()
