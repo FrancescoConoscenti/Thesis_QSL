@@ -16,7 +16,7 @@ if __name__ == "__main__":
     }
 
     # Define a list of sample sizes to test
-    n_samples_values = [64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
+    n_samples_values = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
     n_iter = 500
     N_sites = model_params['Lx'] **2
 

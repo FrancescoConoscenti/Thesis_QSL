@@ -57,19 +57,7 @@ def Fidelity_exact(RBM_vstate, DMRG_vstate):
 
     return fidelity
 
-def Overlap_exact(RBM_vstate, DMRG_vstate):
-    """
-    Calculates the exact complex overlap <ψ_RBM | ψ_DMRG> between the full
-    RBM and DMRG wavefunctions.
-    """
-    # Ensure basis ordering is consistent between TenPy and NetKet
-    dmrg_array = get_full_wavefunction(DMRG_vstate, undo_sort_charge=True)
-    RBM_array = RBM_vstate.to_array(normalize=True)
 
-    # np.vdot(a, b) computes a.conj().T @ b, which is the standard inner product <a|b>
-    overlap = np.vdot(RBM_array, dmrg_array)
-
-    return overlap
 
 def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
 
@@ -102,96 +90,6 @@ def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
 
     return fidelity
 
-
-def Fidelity_sampled_norm(psi_DMRG_sampled, psi_RBM_sampled, P_samples):
-
-    """
-    The term np.mean(np.abs(psi_RBM_sampled)**2) is an estimate of Σ_s |ψ_DMRG(s)|^2 * |ψ_RBM(s)|^2.
-    This is not the squared norm ⟨ψ_RBM | ψ_RBM⟩. 
-    It's an overlap of probability distributions. 
-    Therefore, psi_RBM_sampled_norm is not correctly normalizing ψ_RBM to unit norm.
-    """
-    DMRG_norm1 =np.sqrt(np.mean((np.abs(psi_DMRG_sampled)**2)))
-    RBM_norm1 = np.sqrt(np.mean((np.abs(psi_RBM_sampled)**2)))
-    DMRG_norm = np.sqrt(np.mean((np.abs(psi_DMRG_sampled)**2)/P_samples))
-    RBM_norm = np.sqrt(np.mean((np.abs(psi_RBM_sampled)**2)/P_samples))
-    print("DMRG_norm",DMRG_norm)
-    print("RBM_norm",RBM_norm)
-    print("DMRG_norm1",DMRG_norm1)
-    print("RBM_norm1",RBM_norm1)
-
-    psi_DMRG_sampled_norm = psi_DMRG_sampled/ DMRG_norm
-    psi_RBM_sampled_norm = psi_RBM_sampled / RBM_norm
-    
-    # 1. Calculate the element-wise ratio X(sigma) = psi_RBM(sigma) / psi_DMRG(sigma)
-    ratio = psi_RBM_sampled_norm / psi_DMRG_sampled_norm
-    
-    # 2. Estimate the overlap <psi_DMRG | psi_RBM>
-    # This is the mean of the ratio: E[X]
-    overlap_est = np.mean(ratio)
-    # The numerator of the fidelity is the squared magnitude of the overlap.
-    fidelity = np.abs(overlap_est)**2 
-
-    return fidelity
-
-def fidelity_new(psi_DMRG_sampled, psi_NQS_sampled):
-    """
-    Compute the fidelity between two possibly unnormalized
-    complex wavefunctions represented as 1D numpy arrays.
-
-    Both arrays must have the same basis ordering.
-    """
-
-    # inner product <psi_NQS | psi_DMRG>
-    overlap = np.vdot(psi_NQS_sampled, psi_DMRG_sampled)    # vdot does conj(psi_NQS) * psi_DMRG
-
-    # norms
-    norm_D = np.vdot(psi_DMRG_sampled, psi_DMRG_sampled)
-    norm_N = np.vdot(psi_NQS_sampled,  psi_NQS_sampled)
-
-    # fidelity formula
-    F = np.abs(overlap)**2 / (norm_D * norm_N)
-
-    return F.real
-
-def Overlap_sampled(psi_proposal, psi_target):
-    """
-    Estimates the complex overlap <ψ_proposal | ψ_target> using importance sampling.
-    Samples are assumed to be drawn from the distribution |ψ_proposal(s)|².
-
-    The estimator is E_{s~|ψ_proposal|²}[ ψ_target(s) / ψ_proposal(s) ].
-
-    Args:
-        psi_proposal (np.ndarray): Amplitudes of the proposal wavefunction (from which we sampled).
-        psi_target (np.ndarray): Amplitudes of the target wavefunction evaluated on the same samples.
-    """
-
-    psi_proposal = psi_proposal / np.sqrt(np.mean(np.abs(psi_proposal)**2))
-    psi_target = psi_target / np.sqrt(np.mean(np.abs(psi_target)**2))
-    ratio = psi_target / psi_proposal
-    overlap_estimate = np.mean(ratio)
-
-    return overlap_estimate
-
-    
-    """
-    #RATIO MC
-    # Assuming psi_DMRG_sampled and psi_RBM_sampled are the UNNORMALIZED amplitudes
-    ratio = psi_RBM_sampled / psi_DMRG_sampled  # Element-wise division
-
-    # Estimate of the UNNORMALIZED overlap <psi_DMRG | psi_RBM>
-    # This is approximately the numerator in the formula above
-    overlap_numerator_est = np.mean(ratio)
-
-    # Estimate of the RBM norm squared <psi_RBM | psi_RBM>
-    # This is approximately the denominator in the formula above
-    norm_RBM_sq_est = np.mean(np.abs(ratio)**2)
-
-    # Calculate the improved fidelity estimate
-    fidelity_improved = np.abs(overlap_numerator_est)**2 / norm_RBM_sq_est
-
-    return fidelity_improved
-    """
 
 def Fidelity_sample_distr_vs_DMRG(P_DMRG_sampled, samples_dmrg_distr):
     overlap = np.mean(np.vdot(P_DMRG_sampled, samples_dmrg_distr))
@@ -300,11 +198,11 @@ if __name__ == "__main__":
         'Lx': 4,
         'Ly': 4,
         'J1': 1.0,
-        'J2': 0.6
+        'J2': 0.5
     }
 
-    n_samples = 2048 # Number of samples for importance sampling
-    n_iter_values = [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 400, 500, 600, 700, 800, 900, 1000  ] # RBM training iterations to test
+    n_samples = 1024 # Number of samples for importance sampling
+    n_iter_values = [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 5000  ] # RBM training iterations to test
     N_sites = model_params['Lx'] **2
 
     # --- Define file paths for saved models ---
@@ -376,8 +274,6 @@ if __name__ == "__main__":
         print(f"Fidelity sampled (RBM_sampled vs DMRG_sampled): {fidelity_sampled_rbm_dmrg:.6f}")
         sampled_fidelities.append(fidelity_sampled_rbm_dmrg)
 
-
-        
 
     # --- Final Plot: Fidelities vs. n_iter ---
     plt.figure(figsize=(10, 6))

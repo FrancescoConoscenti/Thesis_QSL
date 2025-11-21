@@ -8,34 +8,37 @@
 
 Fidelity exact (RBM_Full vs DMRG_Full): 0.544088
 
+==================== Running for n_samples = 32 ====================
+Fidelity sampled (RBM vs DMRG): 0.484029
+
 ==================== Running for n_samples = 64 ====================
-Fidelity sampled (RBM vs DMRG): 0.593450
+Fidelity sampled (RBM vs DMRG): 0.495552
 
 ==================== Running for n_samples = 128 ====================
-Fidelity sampled (RBM vs DMRG): 0.520338
+Fidelity sampled (RBM vs DMRG): 0.602195
 
 ==================== Running for n_samples = 256 ====================
-Fidelity sampled (RBM vs DMRG): 0.535869
+Fidelity sampled (RBM vs DMRG): 0.556706
 
 ==================== Running for n_samples = 512 ====================
-Fidelity sampled (RBM vs DMRG): 0.519471
+Fidelity sampled (RBM vs DMRG): 0.559367
 
 ==================== Running for n_samples = 1024 ====================
-Fidelity sampled (RBM vs DMRG): 0.541105
+Fidelity sampled (RBM vs DMRG): 0.561118
 
 ==================== Running for n_samples = 2048 ====================
-Fidelity sampled (RBM vs DMRG): 0.544503
+Fidelity sampled (RBM vs DMRG): 0.573447
 
 ==================== Running for n_samples = 4096 ====================
-Fidelity sampled (RBM vs DMRG): 0.562071
+Fidelity sampled (RBM vs DMRG): 0.549168
 
 ==================== Running for n_samples = 8192 ====================
-Fidelity sampled (RBM vs DMRG): 0.555568
+Fidelity sampled (RBM vs DMRG): 0.550296
 
 ==================== Running for n_samples = 16384 ====================
-Fidelity sampled (RBM vs DMRG): 0.553806
+Fidelity sampled (RBM vs DMRG): 0.553340
 
 ==================== Running for n_samples = 32768 ====================
-Fidelity sampled (RBM vs DMRG): 0.543282
+Fidelity sampled (RBM vs DMRG): 0.545134
 
 ✅ Final fidelity plot saved to DMRG/plot/Fidelity_vs_Samples/fidelity_vs_nsamples_L4_J2_0.5.png

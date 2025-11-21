@@ -42,8 +42,6 @@ def balanced_combinations_numpy(L):
     
     return np.array(combinations_list)
 
-import numpy as np
-
 def extract_config(ket_gs, hi, n):
     """
     Returns the n-th most probable configuration and its coefficient
@@ -132,22 +130,6 @@ class MarshallSignOperator(nk.operator.AbstractOperator):
     def is_hermitian(self):
         return True
 
-# vectorized function to compute Marshall sign per sample
-def _marshal_sign_MCMC(sigma, vstate):
-    #for samples in MCMC the dimension 1 is N, for samples in full hilbert the dimension 0 is N
-    N_sites = sigma.shape[1]
-    A_sites = sublattice_sites(N_sites)
-
-    #M_A = jnp.array([sum(sample[::2]) for sample in sigma]) #jnp.sum(0.5 * sigma[A_sites]) # Magn on A sublattice
-    M_A = jnp.array(0.5 * jnp.sum(sigma[:, A_sites], axis=1))
-    S_A = jnp.ones_like(M_A) * 0.5 * (N_sites // 2) # sum of the spins in the sublattice
-    
-    log_psi = vstate.log_value(sigma) #log coefficient of wf associated with sample sigma
-    psi = jnp.exp(log_psi)
-    sign = jnp.sign(jnp.real(psi)) * ((-1.0) ** (S_A - M_A))
-
-    return  sign
-
 
 def _marshal_sign_full_hilbert(vstate, hi):
     N_sites = hi.size
@@ -190,48 +172,10 @@ def _marshal_sign_exact(ket_gs, hi):
 
 #get_marshal_sign_MCMC= jax.vmap(_marshal_sign_single_MCMC, in_axes=0, out_axes=0)
 #get_marshal_sign_full_hilbert = jax.vmap(_marshal_sign_single_full_hilbert, in_axes=0, out_axes=0)
-get_marshal_sign_MCMC = lambda vstate: jax.vmap(lambda sigma: _marshal_sign_MCMC(sigma, vstate), in_axes=0, out_axes=0)
 get_marshal_sign_full_hilbert = lambda vstate: _marshal_sign_full_hilbert
-
-# local estimator
-def e_loc(logpsi, pars, sigma, extra_args, *, chunk_size=None):
-    return extra_args.astype(float)
-
-# with chunk_size (HFDS/clustered sampler)
-@nk.vqs.get_local_kernel.dispatch
-def get_local_kernel(vstate: nk.vqs.MCState, op: MarshallSignOperator, chunk_size: int):
-    return e_loc
-
-@nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignOperator):
-    sigma = vstate.samples
-    # wavefunction amplitudes at sampled σ
-    #log_psi = vstate.log_value(sigma)
-    #psi = jnp.exp(log_psi)
-    # compute marshall sign for each sample
-    sign = get_marshal_sign_MCMC(vstate)(sigma)
-    # return product: sign * amplitude
-    extra_args = sign #* psi
-    return sigma, extra_args
 
 
 #########################################################################################
-
-def Marshall_Sign_MCMC(marshall_op, vstate, folder_path, n_samples):
-    
-    number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
-    sign = np.zeros(number_models)
-    vstate.n_samples = n_samples
-
-    for i in range(number_models):
-        with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
-
-        # Compute expectation value MCMC
-        exp_val = vstate.expect(marshall_op)
-        sign[i] = exp_val.mean
-
-    return sign
 
 
 def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
@@ -245,6 +189,12 @@ def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
         sign[i], signs_vstate[i,:] = _marshal_sign_full_hilbert(vstate, hi) 
+
+    return sign,  signs_vstate
+
+def Marshall_Sign_full_hilbert_one(vstate, hi):
+
+    sign, signs_vstate = _marshal_sign_full_hilbert(vstate, hi) 
 
     return sign,  signs_vstate
 
@@ -312,20 +262,6 @@ def Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi):
         Overlap[i] = Amp_overlap_configs(ket_gs, vstate, hi)
 
     return Overlap
-
-def Sign_difference(sign_vstate, sign_exact):
-    """
-    Computes the difference between the variational sign and the exact sign.
-    sign_vstate: total sign from variational state at each model step (array of shape (number_models,))
-    sign_exact: total sign from exact state (scalar)
-    """
-
-    array = np.ones_like(sign_vstate) #
-    sign_exact_array = array * sign_exact
-
-    sign_error = np.abs(np.abs(sign_vstate) - np.abs(sign_exact_array))
-
-    return sign_error 
 
 
 def Sign_overlap(ket_gs, signs_vstate, signs_exact):
