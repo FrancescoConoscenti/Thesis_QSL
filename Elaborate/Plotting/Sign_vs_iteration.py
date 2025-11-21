@@ -418,7 +418,6 @@ def plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder_path, one_av
     fidelity = Fidelity_iteration(vstate, ket_gs, folder_path)
     sign_vstate, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact, signs_exact = Marshall_Sign_exact(ket_gs, hi)
-    #sign_err = Sign_difference(sign_vstate, sign_exact)
     sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
     Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
