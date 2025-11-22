@@ -198,7 +198,7 @@ if __name__ == "__main__":
         'Lx': 4,
         'Ly': 4,
         'J1': 1.0,
-        'J2': 0.5
+        'J2': 0.4
     }
 
     n_samples = 1024 # Number of samples for importance sampling
