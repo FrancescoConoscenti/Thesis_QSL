@@ -32,4 +32,6 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 
 #srun python -m DMRG.importance_sampling
 srun python -m DMRG.Fidelities
+#srun python -m DMRG.dmrg_sign_analysis
 #srun python -m DMRG.sampling_distribution
+#srun python -m DMRG.test_Observables_Fidelity
