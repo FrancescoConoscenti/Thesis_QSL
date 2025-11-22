@@ -202,7 +202,7 @@ if __name__ == "__main__":
     }
 
     n_samples = 1024 # Number of samples for importance sampling
-    n_iter_values = [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 5000  ] # RBM training iterations to test
+    n_iter_values = [40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000  ] # RBM training iterations to test
     N_sites = model_params['Lx'] **2
 
     # --- Define file paths for saved models ---

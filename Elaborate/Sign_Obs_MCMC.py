@@ -6,10 +6,15 @@ import numpy as np
 import netket as nk
 import flax
 import os
+
+from Elaborate.Sign_Obs import *
+
 from netket.experimental.observable import AbstractObservable
 
 from functools import partial  # partial(sum, axis=1)(x) == sum(x, axis=1)
 from netket.operator import AbstractOperator
+
+from tenpy.networks.mps import MPS
 
 
 class MarshallSignObs(AbstractOperator):
@@ -23,7 +28,10 @@ class MarshallSignObs(AbstractOperator):
 
 
 def e_loc(logpsi, pars, sigma, extra_args):
+
     sign = extra_args
+    #weights = jnp.exp(2.0 * jnp.real(logpsi))  # |psi|^2 weights
+    #return jnp.stack([sign, weights], axis=-1)
     return sign
 
 
@@ -59,24 +67,66 @@ def _marshal_sign_MCMC(sigma, vstate):
 
 get_marshal_sign_MCMC = lambda vstate: jax.vmap(lambda sigma: _marshal_sign_MCMC(sigma, vstate), in_axes=0, out_axes=0)
 
+#########################################################################################################################à
 
-##############################################################################################################################################################################
+def Sign_DMRG_full_hilbert(psi: MPS, hi):
+
+    hilbert_states = hi.all_states()
+    N_states = hi.n_states
+
+    A_sites = sublattice_sites(hi.size)        # array of A-sublattice indices
+    S_A = 0.5 * (len(A_sites))                 # scalar
+
+    signs_out = np.zeros(N_states, dtype=float)
+    amps_out = np.zeros(N_states, dtype=complex)
+
+    for i in range(N_states):
+
+        sample = hilbert_states[i]
+        M_A = 0.5 * np.sum(sample[A_sites])
+
+        # build product MPS of the sample and compute overlap amplitude <prod|psi>
+        prod_labels = [ "up" if s == 1 else "down" for s in sample ]
+        prod_mps = MPS.from_product_state(psi.sites, prod_labels, bc=psi.bc)
+        amp = psi.overlap(prod_mps)   # complex scalar
+
+        parity = (-1.0) ** (S_A - M_A)
+        sample_sign = np.sign(np.real(amp)) * parity
+
+        amps_out[i] = amp
+        signs_out[i] = sample_sign
+
+    return signs_out, amps_out
 
 
 
-def sublattice_sites(N_sites):
+def Sign_DMRG_samples(psi: MPS, sigma: np.ndarray):
     """
-    Returns the indices of the sites belonging to sublattice A, assuming a square lattice.
+    psi: tenpy MPS
+    sigma: ndarray shape (N_samples, N_sites) with entries +1/-1
+    returns: signs (N_samples,), amplitudes (N_samples,) complex
     """
-    L = np.sqrt(N_sites)
+    N_samples, N_sites = sigma.shape
+    A_sites = sublattice_sites(N_sites)        # array of A-sublattice indices
+    S_A = 0.5 * (len(A_sites))     # scalar
 
-    A_sites = []
-    for idx in range(N_sites):
-        x = idx % L
-        y = idx // L
-        if (x + y) % 2 == 0:
-            A_sites.append(idx)
-    A_sites = jnp.array(A_sites)
-    return A_sites
+    signs_out = np.zeros(N_samples, dtype=float)
+    amps_out = np.zeros(N_samples, dtype=complex)
 
+    for i in range(N_samples):
 
+        sample = sigma[i]
+        M_A = 0.5 * np.sum(sample[A_sites])
+
+        # build product MPS of the sample and compute overlap amplitude <prod|psi>
+        prod_labels = [ "up" if s == 1 else "down" for s in sample ]
+        prod_mps = MPS.from_product_state(psi.sites, prod_labels, bc=psi.bc)
+        amp = psi.overlap(prod_mps)   # complex scalar
+
+        parity = (-1.0) ** (S_A - M_A)
+        sample_sign = np.sign(np.real(amp)) * parity
+
+        amps_out[i] = amp
+        signs_out[i] = sample_sign
+
+    return signs_out, amps_out
