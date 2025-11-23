@@ -1,4 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CudaDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CudaDevice(id=0)]
-slurmstepd: error: *** JOB 10795110 ON th-cl-naples22 CANCELLED AT 2025-11-16T17:46:56 ***
-slurmstepd: error: *** STEP 10795110.0 ON th-cl-naples22 CANCELLED AT 2025-11-16T17:46:56 ***

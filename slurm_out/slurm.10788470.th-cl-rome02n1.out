@@ -1,4 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
-slurmstepd: error: *** JOB 10788470 ON th-cl-rome02n1 CANCELLED AT 2025-11-14T18:07:28 ***
-  0%|          | 0/1 [00:00<?, ?it/s]slurmstepd: error: *** STEP 10788470.0 ON th-cl-rome02n1 CANCELLED AT 2025-11-14T18:07:28 ***

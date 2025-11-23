@@ -105,13 +105,6 @@ def Amp_overlap_configs(ket_gs, vstate, hi):
     psi_var = psi_var / jnp.sqrt(jnp.sum(jnp.abs(psi_var) ** 2))
     psi_exact = psi_exact / jnp.sqrt(jnp.sum(jnp.abs(psi_exact) ** 2))
 
-    """
-    # Error difference amplitude
-    weights = jnp.abs(psi_exact) ** 2
-    diff = jnp.abs(jnp.abs(psi_exact)**2 - jnp.abs(psi_var)**2)
-    Error = jnp.sum(weights * diff)
-    """
-
     # Error product amplitude
     Overlap = jnp.sum(np.abs(psi_exact) * np.abs(psi_var))
 
