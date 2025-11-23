@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --gres=gpu:1
 
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --time=00-24:00:00
 ##SBATCH --array=0-50
 
@@ -31,7 +31,7 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
 
 #srun python -m DMRG.importance_sampling
-srun python -m DMRG.Fidelities
+srun python -m DMRG.tests.test_sign_overlap
 #srun python -m DMRG.dmrg_sign_analysis
 #srun python -m DMRG.sampling_distribution
 #srun python -m DMRG.test_Observables_Fidelity

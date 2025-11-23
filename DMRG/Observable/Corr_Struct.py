@@ -1,6 +1,6 @@
 # --- Calculate and plot correlations and structure factor ---
 import numpy as np
-from DMRG.Plotting import *
+from DMRG.plot.Plotting import *
 
 def Correlations_Structure_Factor(psi, model_params, model):    
     Sz_Sz = psi.correlation_function("Sz", "Sz")
