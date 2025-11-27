@@ -7,6 +7,7 @@ import netket as nk
 import flax
 import os
 from Elaborate.Statistics.Error_Stat import Fidelity
+from tenpy.networks.mps import MPS
 
 def sublattice_sites(N_sites):
     """
@@ -197,6 +198,39 @@ def Marshall_Sign_exact(ket_gs, hi):
     sign_expected, signs_exact = _marshal_sign_exact(ket_gs, hi)
 
     return sign_expected, signs_exact
+
+
+def Sign_DMRG_full_hilbert(psi: MPS, hi):
+
+    hilbert_states = hi.all_states()
+    N_states = hi.n_states
+
+    A_sites = sublattice_sites(hi.size)        # array of A-sublattice indices
+    S_A = 0.5 * (len(A_sites))                 # scalar
+
+    signs_out = np.zeros(N_states, dtype=float)
+    amps_out = np.zeros(N_states, dtype=complex)
+
+    for i in range(N_states):
+
+        sample = hilbert_states[i]
+        M_A = 0.5 * np.sum(sample[A_sites])
+
+        # build product MPS of the sample and compute overlap amplitude <prod|psi>
+        prod_labels = [ "up" if s == 1 else "down" for s in sample ]
+        prod_mps = MPS.from_product_state(psi.sites, prod_labels, bc=psi.bc)
+        amp = psi.overlap(prod_mps)   # complex scalar
+
+        parity = (-1.0) ** (S_A - M_A)
+        sample_sign = np.sign(np.real(amp)) * parity
+
+        amps_out[i] = amp
+        signs_out[i] = sample_sign
+    
+    prob_DMRG_full = np.abs(amps_out) **2
+    sign_DMRG_full = np.sum(prob_DMRG_full * signs_out.reshape(-1)) / np.sum(prob_DMRG_full)
+
+    return signs_out, amps_out, sign_DMRG_full
 
 
 def Fidelity_iteration(vstate, ket_gs, folder_path):

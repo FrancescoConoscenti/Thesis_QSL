@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # --- Simulation Parameters ---
     # Define the different numbers of training iterations to test
-    n_iter_values = [40, 100, 300, 1000]
+    n_iter_values = [40, 50, 60, 80, 100, 120, 140, 160, 180, 200, 300, 400, 500, 700, 1000]
     n_samples = 1024 # Number of samples for MCMC sign calculation
     N_sites = model_params['Lx'] * model_params['Ly']
 

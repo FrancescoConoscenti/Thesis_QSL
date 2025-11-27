@@ -1,20 +1,5 @@
-from tenpy.models.model import CouplingMPOModel
-from tenpy.models.lattice import Square
-from tenpy.networks.site import SpinSite
-from tenpy.networks.mps import MPS
-from tenpy.algorithms import dmrg
-from tenpy.tools import hdf5_io
-from numpy import linspace
-from random import shuffle
 import numpy as np
-from tenpy.networks.site import SpinHalfSite
-from tenpy.algorithms.exact_diag import get_full_wavefunction
 from DMRG.plot.Plotting import *
-from DMRG.Observable.Corr_Struct import Correlations_Structure_Factor
-
-from netket.experimental.driver import VMC_SR
-from scipy.sparse.linalg import eigsh
-
 
 from jax import numpy as jnp
 import matplotlib.pyplot as plt
@@ -24,9 +9,11 @@ import os
 
 from DMRG.DMRG import *
 from DMRG.Fidelities import *
-from Elaborate.Sign_Obs import *
+
 from Elaborate.Sign_Obs_MCMC import *
 from Elaborate.Sign_Obs import *
+from Elaborate.Sign_Obs_Importance import *
+
 
 
 
@@ -60,14 +47,8 @@ if __name__ == "__main__":
     hi = RBM_vstate.hilbert
     
     # --- Importance Sampling ---
-    ops_z = ['Sigmaz'] * N_sites  # or just 'Sigmaz' if measuring all sites
-    samples = np.zeros((n_samples, N_sites), dtype=int)
-    psi_DMRG_sampled = np.zeros(n_samples, dtype=np.complex128) 
-    for n in range(n_samples):
-        sigmas, psi_DMRG = DMRG_vstate.sample_measurements(first_site=0, last_site=N_sites-1, ops = ops_z, complex_amplitude=True)
-        samples[n, :] = sigmas
-        psi_DMRG_sampled[n] = psi_DMRG
-
+    samples, psi_DMRG_sampled = importance_Sampling_DMRG(DMRG_vstate, n_samples, N_sites)
+    
     samples_netket = samples # Keep original for RBM logpsi if needed
     samples_dmrg_01_basis = ((1 - np.asarray(samples_netket)) / 2).astype(int)
 
@@ -100,42 +81,24 @@ if __name__ == "__main__":
     print("MCMC RBM Marshall Sign:", sign_MCMC.mean)
 
     # --- Importance Sampled Sign RBM ---
-    SignObs = MarshallSignObs(hi)
-    kernel = nk.vqs.get_local_kernel(RBM_vstate, SignObs)
-    sigma_template, args_template = nk.vqs.get_local_kernel_arguments(RBM_vstate, SignObs)
-    logpsi_vals = RBM_vstate.log_value(samples_netket)
-    sign_RBM_samples = kernel(logpsi_vals, RBM_vstate.parameters, samples_netket, args_template)
-    
-    prob_samples = jnp.exp(2.0 * jnp.abs(logpsi_vals))
-    expectation = jnp.sum(prob_samples * sign_RBM_samples.reshape(-1)) / jnp.sum(prob_samples) # weighted mean
-    print("Importance Sampled RBM Marshall Sign:", expectation)
+    expectation = sign_NQS_importance_Sampled(RBM_vstate, samples_netket, hi)
+    print("Importance Sampled RBM Marshall Sign (function):", expectation)
 
     # --- DMRG Sign Full Hilbert ---
-    """
-    sign_DMRG_full, psi_DMRG_full = Sign_DMRG_full_hilbert(DMRG_vstate, hi)
-    prob_DMRG_full = np.abs(psi_DMRG_full) **2
-    sign_DMRG_full = np.sum(prob_DMRG_full * sign_DMRG_full.reshape(-1)) / np.sum(prob_DMRG_full)
-    print("\nFull Hilbert DMRG Marshall Sign:", sign_DMRG_full)
-    """
+    #sign_DMRG_full, psi_DMRG_full, sign_DMRG_full_expectation = Sign_DMRG_full_hilbert(DMRG_vstate, hi)
+    #print("\nFull Hilbert DMRG Marshall Sign:", sign_DMRG_full_expectaion)
+
     # ---DMRG Sign on sampled configurations---
-    sign_DMRG_samples, psi_DMRG_sampled_1 = Sign_DMRG_samples(DMRG_vstate, samples_netket)
-    prob_DMRG_samples = np.abs(psi_DMRG_sampled_1) **2
-    sign_DMRG = np.sum(prob_DMRG_samples * sign_DMRG_samples.reshape(-1)) / np.sum(prob_DMRG_samples)
-    print("Importance Sampled DMRG Marshall Sign:", sign_DMRG)
+    sign_DMRG = sign_DMRG_importance_Sampled(DMRG_vstate, samples_netket)
+    print("Importance Sampled DMRG Marshall Sign (function):", sign_DMRG)
+
 
     # --- DMRG RBM Sign Overlap on sampled configurations ---
-    Overlap_sign_samples = np.abs(np.sum(np.abs(psi_DMRG_sampled)**2 * sign_DMRG_samples.reshape(-1) * sign_RBM_samples.reshape(-1))) / np.sum(np.abs(psi_DMRG_sampled)**2)
-    print("\nSign Overlap (DMRG vs RBM) on sampled configurations:", Overlap_sign_samples)
-
+    Overlap_sign_samples = sign_overlap_Importance_Sampled(RBM_vstate, DMRG_vstate, samples_netket, hi)
+    print("Sign Overlap (DMRG vs RBM) on sampled configurations (function):", Overlap_sign_samples)
 
     # --- DMRG RBM Amplitudes Overlap on sampled configurations ---
-    logpsi_vals = RBM_vstate.log_value(samples_netket)
-    psi_RBM_samples = jnp.exp(logpsi_vals)
-    # Calculate the norms (L2 norm) of each wavefunction
-    norm_RBM = np.linalg.norm(psi_RBM_samples)
-    norm_DMRG = np.linalg.norm(psi_DMRG_sampled)
-    dot_product_mag = np.sum(np.abs(psi_RBM_samples) * np.abs(psi_DMRG_sampled))
-    Overlap_amp_samples = dot_product_mag / (norm_RBM * norm_DMRG)
-    print("\nAmp Overlap (DMRG vs RBM) on sampled configurations:", Overlap_amp_samples)
+    Overlap_amp_samples = amp_overlap_Importance_Sampled(RBM_vstate, psi_DMRG_sampled, samples_netket)
+    print("Amp Overlap (DMRG vs RBM) on sampled configurations (function):", Overlap_amp_samples)
 
     
