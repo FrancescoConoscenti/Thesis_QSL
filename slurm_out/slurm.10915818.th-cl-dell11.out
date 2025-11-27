@@ -1,0 +1,8 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [01:51<?, ?it/s, Energy=-7.21-0.00j ± 0.24 [σ²=4.4e+01, R̂=1.225]]  0%|          | 0/2 [01:38<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]                   50%|█████     | 1/2 [01:38<01:38, 98.59s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [01:38<00:00, 49.30s/it, Energy=nan+nanj ± nan [σ²=nan]]
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [01:38<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]  0%|          | 0/2 [01:37<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]] 50%|█████     | 1/2 [01:37<01:37, 97.80s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [01:37<00:00, 48.90s/it, Energy=nan+nanj ± nan [σ²=nan]]
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [01:38<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]  0%|          | 0/2 [01:38<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]] 50%|█████     | 1/2 [01:38<01:38, 98.84s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [01:38<00:00, 49.43s/it, Energy=nan+nanj ± nan [σ²=nan]]
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 10915818 ON th-cl-dell11 CANCELLED AT 2025-11-27T10:36:02 ***
+  0%|          | 0/2 [00:00<?, ?it/s]slurmstepd: error: *** STEP 10915818.0 ON th-cl-dell11 CANCELLED AT 2025-11-27T10:36:02 ***
