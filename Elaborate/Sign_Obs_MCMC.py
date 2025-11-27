@@ -69,67 +69,11 @@ get_marshal_sign_MCMC = lambda vstate: jax.vmap(lambda sigma: _marshal_sign_MCMC
 
 #########################################################################################################################à
 
-def Sign_DMRG_full_hilbert(psi: MPS, hi):
-
-    hilbert_states = hi.all_states()
-    N_states = hi.n_states
-
-    A_sites = sublattice_sites(hi.size)        # array of A-sublattice indices
-    S_A = 0.5 * (len(A_sites))                 # scalar
-
-    signs_out = np.zeros(N_states, dtype=float)
-    amps_out = np.zeros(N_states, dtype=complex)
-
-    for i in range(N_states):
-
-        sample = hilbert_states[i]
-        M_A = 0.5 * np.sum(sample[A_sites])
-
-        # build product MPS of the sample and compute overlap amplitude <prod|psi>
-        prod_labels = [ "up" if s == 1 else "down" for s in sample ]
-        prod_mps = MPS.from_product_state(psi.sites, prod_labels, bc=psi.bc)
-        amp = psi.overlap(prod_mps)   # complex scalar
-
-        parity = (-1.0) ** (S_A - M_A)
-        sample_sign = np.sign(np.real(amp)) * parity
-
-        amps_out[i] = amp
-        signs_out[i] = sample_sign
-
-    return signs_out, amps_out
 
 
 
-def Sign_DMRG_samples(psi: MPS, sigma: np.ndarray):
-    """
-    psi: tenpy MPS
-    sigma: ndarray shape (N_samples, N_sites) with entries +1/-1
-    returns: signs (N_samples,), amplitudes (N_samples,) complex
-    """
-    N_samples, N_sites = sigma.shape
-    A_sites = sublattice_sites(N_sites)        # array of A-sublattice indices
-    S_A = 0.5 * (len(A_sites))     # scalar
 
-    signs_out = np.zeros(N_samples, dtype=float)
-    amps_out = np.zeros(N_samples, dtype=complex)
 
-    for i in range(N_samples):
-
-        sample = sigma[i]
-        M_A = 0.5 * np.sum(sample[A_sites])
-
-        # build product MPS of the sample and compute overlap amplitude <prod|psi>
-        prod_labels = [ "up" if s == 1 else "down" for s in sample ]
-        prod_mps = MPS.from_product_state(psi.sites, prod_labels, bc=psi.bc)
-        amp = psi.overlap(prod_mps)   # complex scalar
-
-        parity = (-1.0) ** (S_A - M_A)
-        sample_sign = np.sign(np.real(amp)) * parity
-
-        amps_out[i] = amp
-        signs_out[i] = sample_sign
-
-    return signs_out, amps_out
 
 #%%
 

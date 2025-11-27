@@ -71,6 +71,12 @@ def DMRG_vstate_optimization(hamiltonian, model_params, filename=None):
         prod_state.append('up')
 
     DMRG_vstate = MPS.from_product_state(sites, prod_state)
+    #max sweeps:maximum number of DMRG sweeps
+    #trunc_params: parameters for the truncation of the Bond dimension during SVD 
+    #    Chi_max: the absolute maximum size allowed for the bond dimension
+    #    svd_min: minimum singular value to keep during the SVD truncation
+    #chi_list: dictionary defining the maximum bond dimension at specific sweeps
+
     dmrg_params = {
         'max_sweeps' : 20,
         'trunc_params' : {'chi_max' : 1024, 'svd_min': 1e-10},
