@@ -90,13 +90,14 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice):
 
 #################################################################################################################################################################################
 
-def update_orbitals(lattice, dtype):
+def update_orbitals_gmf(lattice, dtype):
   
   h = 0.055 #magnetic field
   phi = 0.1 #flux per plaquette
   positions = lattice.positions
   N_sites = len(lattice.positions)
   n_elecs = N_sites
+
 
   def initialize_real(n_elecs, sigmaz):
 
@@ -129,8 +130,11 @@ def update_orbitals(lattice, dtype):
     return mat_block
 
 
-  upmatrix = initialize_real(n_elecs, sigmaz = +1)
-  dnmatrix = initialize_real(n_elecs,sigmaz = -1)
+  upmatrix = initialize_real(n_elecs//2, sigmaz = +1)
+  dnmatrix = initialize_real(n_elecs//2, sigmaz = -1)
   mf = jnp.block([[upmatrix, jnp.zeros(upmatrix.shape)], [jnp.zeros(dnmatrix.shape),dnmatrix]]).T
+  jax.debug.print("n_elecs: {x}",x = n_elecs)
+  jax.debug.print("upmatrix shape: {x}",x = upmatrix.shape)
+  jax.debug.print("MF init orbitals shape: {x}",x = mf.shape)
 
   return dtype(mf)

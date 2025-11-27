@@ -154,8 +154,10 @@ def avarage_plots_seeds(folder, Js, plot_variance=True):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat1_sample1024_lr0.025_iter1_parityTrue_rotTrue_transFalse_InitFermi+random_typereal"
-    Js = [0.0, 0.2,0.5,0.55, 0.6, 0.7]
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex"
+    Js = [0.0, 0.2, 0.5, 0.7, 1]
 
     average_models_seeds(model_path, Js)
     avarage_plots_seeds(model_path, Js, plot_variance=True)
