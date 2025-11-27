@@ -1,0 +1,6 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:51<?, ?it/s, Energy=-6.92+0.00j ± 0.21 [σ²=2.6e+01, R̂=1.225]]  0%|          | 0/2 [00:43<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]                   50%|█████     | 1/2 [00:43<00:43, 43.24s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [00:43<00:00, 21.62s/it, Energy=nan+nanj ± nan [σ²=nan]]
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:42<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]  0%|          | 0/2 [00:43<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]] 50%|█████     | 1/2 [00:43<00:43, 43.18s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [00:43<00:00, 21.59s/it, Energy=nan+nanj ± nan [σ²=nan]]
+/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))

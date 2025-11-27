@@ -1,0 +1,13 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_new_1.py", line 120, in <module>
+    model = HiddenFermion_new_1(n_elecs=n_elecs,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/f/F.Conoscenti/netket_venv1/lib/python3.11/site-packages/flax/linen/kw_only_dataclasses.py", line 235, in init_wrapper
+    dataclass_init(self, *args, **kwargs)
+TypeError: HiddenFermion_new_1.__init__() got an unexpected keyword argument 'translation'
+srun: error: th-cl-dell05: task 0: Exited with exit code 1
+srun: Terminating StepId=10916321.0

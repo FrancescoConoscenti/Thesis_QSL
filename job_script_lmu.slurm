@@ -4,18 +4,18 @@
 #SBATCH --ntasks=1
 
 #SBATCH --cpus-per-task=32
-#SBATCH --gres=gpu:1
+##SBATCH --gres=gpu:1
 
-#SBATCH --mem=64G
+#SBATCH --mem=32G
 #SBATCH --time=00-24:00:00
-##SBATCH --array=0-50
+##SBATCH --array=0-1
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
-#export JAX_PLATFORMS=cpu
+export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.2 0.5 0.55 0.6 0.7)
-SEED_VALUES=(1 2 3 4)
+J_VALUES=(0.0 )
+SEED_VALUES=(1 )
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
@@ -28,10 +28,6 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 
 
 #srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
-#srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
+srun python -m HFDS_Heisenberg.run_spin_new_1 --seed "$SEED" --J2 "$J"
 
-#srun python -m DMRG.importance_sampling
-srun python -m DMRG.tests.test_sign_overlap
-#srun python -m DMRG.dmrg_sign_analysis
-#srun python -m DMRG.sampling_distribution
-#srun python -m DMRG.test_Observables_Fidelity
+#srun python -m DMRG.tests.test_amp_overlap

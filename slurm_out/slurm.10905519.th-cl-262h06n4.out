@@ -1,0 +1,6 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+usage: run_spin_3.py [-h] [--J2 J2] [--seed SEED]
+run_spin_3.py: error: argument --seed: invalid float value: ''
+srun: error: th-cl-262h06n4: task 0: Exited with exit code 2
+srun: Terminating StepId=10905519.0

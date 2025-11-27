@@ -1,0 +1,14 @@
+HFDS_spin, J=0.2, L=4, layers1_hidd2_feat16_sample1024_lr0.025_iter100
+hilbert space size =  16
+Total number of parameters: 1156
+Automatic SR implementation choice:  NTK
+Last value:  0.1259207847401175
+Exact ground state energy per site= -0.619873941529909
+Fidelity <vstate|exact> = [0.03623324]
+Relative error = 0.04661217039187666
+Magnetization = 0.0
+Variance = 510.6716900760223
+V-score = 1013.8748958918411
+params=1444
+Plotting S-matrix eigenvalues... (1156,)
+S-matrix eigenvalues saved to HFDS_Heisenberg/plot/spin_new/layers1_hidd2_feat16_sample1024_lr0.025_iter100_parityTrue_rotTrue_transFalse_InitFermi+random_typereal_old_2/J=0.2/seed_1/Sign_plot/S_matrix_eigenvalues.pkl using pickle.

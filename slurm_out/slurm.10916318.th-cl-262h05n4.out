@@ -1,0 +1,10 @@
+Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
+Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_new_1.py", line 35, in <module>
+    from HFDS_Heisenberg.HFDS_model_spin_new_1 import HiddenFermion_new
+ImportError: cannot import name 'HiddenFermion_new' from 'HFDS_Heisenberg.HFDS_model_spin_new_1' (/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin_new_1.py)
+srun: error: th-cl-262h05n4: task 0: Exited with exit code 1
+srun: Terminating StepId=10916318.0
