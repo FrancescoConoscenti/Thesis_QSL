@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import matplotlib.cm as cm
 import argparse
+import json
 
 def plot_initial_fidelity_vs_Js(model_paths: list[str]):
     """
@@ -102,12 +103,12 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
     ax.set_title(f"Initial Fidelity of Fermi Sea State vs. $J_2$", fontsize=14)
     ax.grid(True, linestyle='--', alpha=0.6)
     ax.legend(loc='best')
-    ax.set_yscale('log')
+    #ax.set_yscale('log')
     
     # Adjust y-axis to ensure error bars are fully visible
     if all_max_y:
         overall_max_y = max(all_max_y)
-        ax.set_ylim(bottom=0, top=overall_max_y * 1.1)
+        ax.set_ylim(bottom=0, top=min(1.0, overall_max_y * 1.1))
     else:
         ax.set_ylim(bottom=0, top=1.0)
 
@@ -123,14 +124,96 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
     print(f"✅ Plot saved to {save_path}")
     plt.show()
 
+def plot_initial_energy_vs_Js(model_paths: list[str]):
+    """
+    Loads energy data for different J values from multiple model directories
+    and plots the energy at the 0-th iteration (initial state) vs. J on a single graph.
+
+    Args:
+        model_paths (list[str]): A list of paths to the main model directories,
+                                  each containing J=... subfolders.
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Use a colormap to get distinct colors for each model
+    colors = cm.get_cmap('tab10', len(model_paths))
+
+    for model_idx, model_path in enumerate(model_paths):
+        base_path = Path(model_path)
+        if not base_path.is_dir():
+            print(f"❌ Error: Provided path '{model_path}' is not a valid directory. Skipping.")
+            continue
+
+        # --- Data collection for current model ---
+        j_values = []
+        initial_energies = []
+        initial_energy_errors = []
+
+        # --- Find and process J folders ---
+        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
+
+        if not j_folders:
+            print(f"🤷 No 'J=...' subdirectories found in '{model_path}'. Skipping.")
+            continue
+
+        for j_path in j_folders:
+            try:
+                j_value_str = j_path.name.split('=')[1]
+                j_value = float(j_value_str)
+            except (ValueError, IndexError):
+                print(f"⚠️ Warning: Could not parse J value from folder name: {j_path.name}. Skipping.")
+                continue
+
+            log_file_path = j_path / "log_average.json"
+            if not log_file_path.exists():
+                print(f"⚠️ Warning: '{log_file_path}' not found. Skipping J={j_value}.")
+                continue
+
+            # --- Load data and extract initial energy ---
+            with open(log_file_path, "r") as f:
+                log_data = [json.loads(line) for line in f]
+
+            if log_data:
+                initial_energy_data = log_data[0]['Energy']
+                j_values.append(j_value)
+                initial_energies.append(initial_energy_data['Mean'])
+                initial_energy_errors.append(initial_energy_data.get('Sigma', 0))
+
+        # --- Plotting for current model ---
+        if j_values:
+            # --- Custom Label Generation ---
+            model_label = ""
+            if "HFDS_Heisenberg" in model_path:
+                model_name = base_path.name
+                hidd_match = re.search(r'hidd(\d+)', model_name)
+                init_match = re.search(r'Init([A-Za-z0-9+]+)', model_name)
+                hidd_fermions = hidd_match.group(1) if hidd_match else '?'
+                init_type = init_match.group(1) if init_match else '?'
+                model_label = f"HFDS: {hidd_fermions} hidden, {init_type} Init"
+            else:
+                model_label = base_path.name # Fallback to full name
+            
+            ax.errorbar(j_values, initial_energies, yerr=initial_energy_errors,
+                        fmt='o', linestyle='-', color=colors(model_idx), capsize=5, markersize=8,
+                        label=model_label)
+
+    # --- Final plot styling ---
+    ax.set_xlabel("$J_2$", fontsize=12)
+    ax.set_ylabel("Initial Energy", fontsize=12)
+    ax.set_title(f"Initial Energy vs. $J_2$", fontsize=14)
+    ax.grid(True, linestyle='--', alpha=0.6)
+    ax.legend(loc='best')
+    plt.tight_layout()
+
+    save_path = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot") / "Initial_Energy_vs_J_Comparison.png"
+    plt.savefig(save_path, dpi=300)
+    print(f"✅ Plot saved to {save_path}")
+    plt.show()
+
 if __name__ == '__main__':
     model_path =[]
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat8_sample1024_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/Vision_new/layers2_d8_heads4_patch2_sample1024_lr0.0075_iter100_parityTrue_rotTrue")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat8_sample1024_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat8_sample1024_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi+random_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter1_parityTrue_rotTrue_transFalse_InitFermi+random_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample1024_lr0.025_iter1_parityTrue_rotTrue_transFalse_InitFermi+random_typereal")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat1_sample1024_lr0.025_iter1_parityTrue_rotTrue_transFalse_InitFermi+random_typereal")
+    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex")
+    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex")
+    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex")
     plot_initial_fidelity_vs_Js(model_path)
+    plot_initial_energy_vs_Js(model_path)
