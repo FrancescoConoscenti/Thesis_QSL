@@ -1,11 +1,12 @@
 import pickle
 import os
 import numpy as np
-import os
 from pathlib import Path
 import netket as nk
 
 import re
+import matplotlib.pyplot as plt
+
 import jax.numpy as jnp
 
 from Elaborate.Statistics.Error_Stat import *
@@ -14,9 +15,21 @@ from Elaborate.Sign_Obs import *
 #from Elaborate.Plotting.apply_function_models import *
 
 
-def average_models_seeds(folder, Js):
-    for J in Js:
-        base_dir = os.path.join(folder, f"J={J}")
+def average_models_seeds(folder):
+    try:
+        j_subfolders = sorted(
+            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            key=lambda p: float(p.name.split('=')[1])
+        )
+    except (ValueError, IndexError):
+        print(f"Warning: Could not correctly parse J-subfolders in {folder}. Skipping model.")
+        return
+
+    for j_folder in j_subfolders:
+        base_dir = str(j_folder)
+        if not j_folder.is_dir():
+            continue
+
         # --- Automatically detect all seed directories ---
         seed_dirs = sorted([d for d in os.listdir(base_dir) if d.startswith("seed_")])
         if not seed_dirs:
@@ -110,12 +123,25 @@ def average_models_seeds(folder, Js):
                 if base_key == "sign_vstate":
                     mean_val = np.mean(np.abs(values_stack), axis=0)
                     var_val = np.var(np.abs(values_stack), axis=0)
+                # Special handling for Energy_iter to get initial energy
+                elif base_key == "Energy_iter":
+                    # We only care about the first element (initial energy).
+                    # values_stack can be 1D (if Energy_iter was scalar) or 2D.
+                    if values_stack.ndim == 2:
+                        initial_energies = values_stack[:, 0]
+                    else: # ndim == 1
+                        initial_energies = values_stack
+                    results["E_init_mean"] = np.mean(initial_energies)
+                    results["E_init_var"] = np.var(initial_energies)
+                    continue # Skip creating Energy_iter_mean/var
                 else:
                     mean_val = np.mean(values_stack, axis=0)
                     var_val = np.var(values_stack, axis=0)
 
                 results[f"{base_key}_mean"] = mean_val
                 results[f"{base_key}_var"] = var_val
+
+                print(f"{base_key}_mean",mean_val)
 
             except Exception as e:
                 print(f"Skipping key '{key}' (error while processing): {e}")
@@ -133,13 +159,30 @@ def average_models_seeds(folder, Js):
         print("Saved keys:", ", ".join(sorted(results.keys())))
 
 
-def avarage_plots_seeds(folder, Js, plot_variance=True):
+def avarage_plots_seeds(folder, plot_variance=True):
 
     L=4
 
-    for J in Js:
+    try:
+        j_subfolders = sorted(
+            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            key=lambda p: float(p.name.split('=')[1])
+        )
+    except (ValueError, IndexError):
+        print(f"Warning: Could not correctly parse J-subfolders in {folder}. Skipping plots.")
+        return
+
+    for j_folder in j_subfolders:
+        avg_file_path = j_folder / "variables_average.pkl"
+        if not avg_file_path.exists():
+            # Try the old path for backward compatibility
+            avg_file_path = j_folder / "variables_average"
+        if not avg_file_path.exists():
+            print(f"Warning: Average data file not found, skipping plots for {j_folder.name}: {avg_file_path}")
+            continue
         
-        loaded_data = pickle.load(open(f'{folder}/J={J}/variables_average', 'rb')) 
+        with open(avg_file_path, 'rb') as f:
+            loaded_data = pickle.load(f)
 
         # sign_vstate_MCMC = loaded_data['sign_vstate_MCMC'] 
         #sign_vstate_full_mean = loaded_data['sign_vstate_full_mean']
@@ -165,7 +208,7 @@ def avarage_plots_seeds(folder, Js, plot_variance=True):
 
         # Find the first available seed directory to use as a base for saving plots.
         # This avoids hardcoding "seed_1".
-        base_dir = Path(folder) / f"J={J}"
+        base_dir = j_folder
         try:
             first_seed_dir = next(d for d in base_dir.iterdir() if d.is_dir() and d.name.startswith("seed_"))
             folder_to_plot = str(first_seed_dir)
@@ -181,22 +224,53 @@ def avarage_plots_seeds(folder, Js, plot_variance=True):
         #Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap_mean, fidelity_mean, sign_overlap_mean, folder_to_plot, one_avg = "avg", plot_variance=plot_variance, error_var=amp_overlap_var, fidelity_var=fidelity_var, sign_err_var=sign_err_var) # Existing call
         Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amp_overlap_mean, sign_overlap_mean, folder_to_plot, one_avg="avg", plot_variance=plot_variance, amplitude_overlap_var=amp_overlap_var, sign_overlap_var=sign_overlap_var)
         
+def output_variables_avarage(folder):
+    try:
+        j_subfolders = sorted(
+            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            key=lambda p: float(p.name.split('=')[1])
+        )
+    except (ValueError, IndexError):
+        print(f"Warning: Could not correctly parse J-subfolders in {folder}. Skipping output.")
+        return
+
+    for j_folder in j_subfolders:
+        avg_file_path = j_folder / "variables_average.pkl"
+        if not avg_file_path.exists():
+            # Try the old path for backward compatibility
+            avg_file_path = j_folder / "variables_average"
+        if not avg_file_path.exists():
+            print(f"Warning: Average data file not found, skipping output for {j_folder.name}: {avg_file_path}")
+            continue
+        
+        with open(avg_file_path, 'rb') as f:
+            loaded_data = pickle.load(f)
+
+        E_init_mean = loaded_data['E_init_mean']
+        E_exact = loaded_data['E_exact']
+        fidelity_mean = loaded_data['fidelity_mean']
+
+        print(f"{j_folder.name}: E_init_mean = {E_init_mean}, E_exact = {E_exact}, Fidelity_mean = {fidelity_mean}")
+
 
 if __name__ == "__main__":
 
     # Define a list of model paths to process
     model_paths = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex"
-    ]
-    
-    # Define the J values to process for each model
-    Js = [0.0, 0.2, 0.5, 0.7, 1.0]
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex",
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex"
 
+    ]       
+    
     # Loop through each model path and process it
     for model_path in model_paths:
         print(f"\n{'='*20} Processing Model: {Path(model_path).name} {'='*20}")
-        average_models_seeds(model_path, Js)
-        avarage_plots_seeds(model_path, Js, plot_variance=True)
+        average_models_seeds(model_path)
+        avarage_plots_seeds(model_path, plot_variance=True)
+        print(f"{'='*20} Finished Processing Model: {Path(model_path).name} {'='*20}\n")
+
+    for model_path in model_paths:
+        print(f"\n{'='*20} Processing Model: {Path(model_path).name} {'='*20}")
+        output_variables_avarage(model_path)
         print(f"{'='*20} Finished Processing Model: {Path(model_path).name} {'='*20}\n")
