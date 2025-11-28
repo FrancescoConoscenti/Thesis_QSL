@@ -17,6 +17,6 @@ def Energy(log, L, folder):
 def get_initial_energy(log, L):
     """Computes the energy of the initial (pre-optimization) variational state."""
     energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
-    initial_energy_val = energy_per_site[0] / (L * L * 4)  # Normalize by number of sites
+    initial_energy_val = energy_per_site[0] # Normalize by number of sites
     print("Initial energy: ", initial_energy_val)
     return initial_energy_val 

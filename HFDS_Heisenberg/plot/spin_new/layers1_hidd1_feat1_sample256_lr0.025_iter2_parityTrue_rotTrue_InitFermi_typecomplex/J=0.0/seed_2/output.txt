@@ -3,3 +3,14 @@ hilbert space size =  16
 MF init orbitals shape: (Array(32, dtype=int64), Array(16, dtype=int64))
 Total number of parameters: 594
 Automatic SR implementation choice:  NTK
+Initial energy:  -0.0016759742344912092
+Last value:  -0.11684628071541431
+Exact ground state energy per site= -0.7017802005268048
+Fidelity <vstate|exact> = [8.38376223e-05]
+Relative error = 0.03655836998821191
+Magnetization = 0.0
+Variance = 58.21422319145829
+V-score = -124.55300852331429
+params=594
+⟨Marshall Sign final vstate⟩ =  0.023774715499363146
+⟨Marshall sign exact gs⟩ = -1.0

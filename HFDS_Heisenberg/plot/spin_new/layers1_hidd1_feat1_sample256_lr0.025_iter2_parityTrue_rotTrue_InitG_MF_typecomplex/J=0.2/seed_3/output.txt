@@ -3,7 +3,18 @@ hilbert space size =  16
 MF init orbitals shape: (Array(32, dtype=int64), Array(16, dtype=int64))
 n_elecs: 16
 upmatrix shape: (Array(8, dtype=int64), Array(16, dtype=int64))
-MF energy: (-6.171801538670129+9.851266641922962e-17j)
-MF energy: (-6.171801538670128+1.4058507398610184e-16j)
+MF energy: (-6.171801538670132+1.6241179657246916e-17j)
+MF energy: (-6.17180153867013-1.9935064759258848e-17j)
 Total number of parameters: 594
 Automatic SR implementation choice:  NTK
+Initial energy:  -0.005110661324993815
+Last value:  -0.38811018887127424
+Exact ground state energy per site= -0.6198739415299094
+Fidelity <vstate|exact> = [0.13174117]
+Relative error = 0.014485234541164696
+Magnetization = 0.0
+Variance = 32.705929780119355
+V-score = -21.067425384551704
+params=594
+⟨Marshall Sign final vstate⟩ =  0.9140220374992255
+⟨Marshall sign exact gs⟩ = -1.0

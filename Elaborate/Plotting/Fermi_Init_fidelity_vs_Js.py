@@ -4,7 +4,6 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import matplotlib.cm as cm
 import argparse
 import json
 
@@ -20,7 +19,7 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Use a colormap to get distinct colors for each model
-    colors = cm.get_cmap('tab10', len(model_paths))
+    colors = plt.get_cmap('tab10', len(model_paths))
     all_max_y = []
 
     for model_idx, model_path in enumerate(model_paths):
@@ -49,7 +48,7 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
                 print(f"⚠️ Warning: Could not parse J value from folder name: {j_path.name}. Skipping.")
                 continue
 
-            avg_file_path = j_path / "variables_average"
+            avg_file_path = j_path / "variables_average.pkl"
             if not avg_file_path.exists():
                 print(f"⚠️ Warning: '{avg_file_path}' not found. Skipping J={j_value}.")
                 continue
@@ -116,174 +115,106 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
 
     # Generate a more generic save path for multiple models
     if len(model_paths) == 1:
-        save_path = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot") / f"Initial_Fidelity_vs_J_{Path(model_paths[0]).name}.png"
+        save_path = Path("/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot") / f"Initial_Fidelity_vs_J_{Path(model_paths[0]).name}.png"
     else:
-        save_path = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot") / "Initial_Fidelity_vs_J_Comparison.png"
+        save_path = Path("/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot") / "Initial_Fidelity_vs_J_Comparison.png"
 
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved to {save_path}")
     plt.show()
-
-
 
 def plot_initial_energy_vs_Js(model_paths: list[str]):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    colors = cm.get_cmap('tab10', len(model_paths))
+    """
+    Loads averaged initial energy data for different J values from multiple model directories
+    and plots the initial energy vs. J on a single graph.
 
-    # --- Pre-scan all models to find E_exact for each J value ---
-    all_exact_energies = {} # Dictionary to store {j_value: e_exact}
-    all_j_values_for_exact = set()
+    Args:
+        model_paths (list[str]): A list of paths to the main model directories,
+                                  each containing J=... subfolders.
+        output_dir (str): The directory where the plot will be saved.
+    """
+    output_dir = "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot"
+
+    # --- Create a wider figure ---
+    plt.figure(figsize=(12, 6))
+
+    # --- To store exact energies, collected only once ---
+    exact_energies = []
+    j_values_for_exact = []
+    collected_exact = False
+
+    # --- Define custom labels for the models ---
+    label_mapping = {
+        "InitFermi_typecomplex": "Fermi",
+        "InitG_MF_typecomplex": "DallaPiazza",
+        "Initrandom_typecomplex": "random"
+    }
 
     for model_path in model_paths:
-        base_path = Path(model_path)
-        if not base_path.is_dir():
-            continue
-        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
-        for j_path in j_folders:
-            try:
-                j_value = float(j_path.name.split('=')[1])
-                all_j_values_for_exact.add(j_value)
-                if j_value in all_exact_energies: # Already found it, skip
-                    continue
-
-                for fname in ("variables_average.pkl", "variables_average"):
-                    avg_file_path = j_path / fname
-                    if avg_file_path.exists():
-                        with open(avg_file_path, "rb") as f:
-                            loaded_data = pickle.load(f)
-                        if 'E_exact' in loaded_data:
-                            all_exact_energies[j_value] = loaded_data['E_exact']
-                        break # Found a file for this J, move to next J
-            except (ValueError, IndexError):
-                continue
-
-    for model_idx, model_path in enumerate(model_paths):
-        base_path = Path(model_path)
-        if not base_path.is_dir():
-            print(f"❌ Error: Provided path '{model_path}' is not a valid directory. Skipping.")
-            continue
-
-        j_values = []
         initial_energies = []
-        initial_energy_errors = []
+        j_values = []
+        initial_energy_errors = []  # New list to store errors
 
-        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
-        if not j_folders:
-            print(f"🤷 No 'J=...' subdirectories found in '{model_path}'. Skipping.")
+        # --- Discover J subfolders automatically and sort them numerically ---
+        try:
+            j_subfolders = sorted(
+                [p for p in Path(model_path).iterdir() if p.is_dir() and p.name.startswith("J=")],
+                key=lambda p: float(p.name.split('=')[1])
+            )
+        except (ValueError, IndexError):
+            print(f"Warning: Could not correctly parse J-subfolders in {model_path}. Skipping model.")
             continue
 
-        for j_path in j_folders:
-            try:
-                j_value_str = j_path.name.split('=')[1]
-                j_value = float(j_value_str)
-            except (ValueError, IndexError):
-                print(f"⚠️ Warning: Could not parse J value from folder name: {j_path.name}. Skipping.")
+        for j_folder in j_subfolders:
+            J = float(j_folder.name.split('=')[1])
+            avg_file_path = j_folder / "variables_average.pkl"
+            if not avg_file_path.exists():
+                avg_file_path = j_folder / "variables_average" # for backward compatibility
+            if not avg_file_path.exists():
+                print(f"❌ Warning: '{avg_file_path}' not found. Skipping J={J}.")
                 continue
-
-            # try both .pkl and no-extension names:
-            for fname in ("variables_average.pkl", "variables_average"):
-                avg_file_path = j_path / fname
-                if avg_file_path.exists():
-                    break
-            else:
-                print(f"⚠️ Warning: No averaged file found in {j_path}. Tried 'variables_average.pkl' and 'variables_average'. Skipping J={j_value}.")
-                continue
-
+            # --- Load data and extract initial energy ---
             with open(avg_file_path, "rb") as f:
                 loaded_data = pickle.load(f)
+            initial_energies.append(loaded_data["E_init_mean"])
+            j_values.append(J)
+            initial_energy_errors.append(loaded_data["E_init_var"]) 
+            
+            # --- Collect exact energy values just once (from the first model) ---
+            if not collected_exact:
+                exact_energies.append(loaded_data["E_exact"])
+                j_values_for_exact.append(J)
 
-            # Diagnostic: show keys present if energy keys missing
-            # Try several possible key names:
-            candidate_keys = [
-                "E_init_mean", "E_init", "E_init_mean_mean", "E_init_mean_var", "energy_init_mean", "energy_mean", "E_mean"
-            ]
-            found_key = None
-            for k in candidate_keys:
-                if k in loaded_data:
-                    found_key = k
-                    break
+        # --- Mark exact energies as collected after the first model is processed ---
+        if not collected_exact:
+            collected_exact = True
 
-            if found_key is None:
-                print(f"⚠️ Warning: No expected energy key found for J={j_value} in {avg_file_path}. Available keys: {sorted(list(loaded_data.keys()))}")
-                continue
+        # --- Plotting ---
+        model_name = Path(model_path).name
+        label = next((val for key, val in label_mapping.items() if key in model_name), model_name)
+        plt.errorbar(j_values, initial_energies, yerr=np.sqrt(initial_energy_errors), label=label, marker='o', capsize=5, linestyle='--')
 
-            # Extract numeric mean and variance robustly
-            mean_val = loaded_data.get(found_key)
-            var_val = None
-            # try possible var names
-            for var_candidate in (found_key.replace("_mean", "_var"), "E_init_var", "E_var", found_key + "_var"):
-                if var_candidate in loaded_data:
-                    var_val = loaded_data[var_candidate]
-                    break
-
-            # convert scalars to floats
-            try:
-                mean_scalar = float(np.array(mean_val).item()) if np.ndim(mean_val) == 0 or np.array(mean_val).size == 1 else np.array(mean_val)
-            except Exception:
-                mean_scalar = np.array(mean_val)
-
-            if np.isscalar(mean_scalar):
-                j_values.append(j_value)
-                initial_energies.append(float(mean_scalar))
-                if var_val is not None:
-                    try:
-                        err = float(np.sqrt(np.array(var_val).item()))
-                    except Exception:
-                        err = 0.0
-                else:
-                    err = 0.0
-                initial_energy_errors.append(err)
-            else:
-                # If mean is an array (e.g. per-iteration), try to take first element
-                if np.array(mean_scalar).size > 0:
-                    j_values.append(j_value)
-                    initial_energy_errors.append(0.0 if var_val is None else float(np.sqrt(np.array(var_val).flat[0])))
-                    initial_energies.append(float(np.array(mean_scalar).flat[0]))
-                else:
-                    print(f"⚠️ Warning: Mean for key {found_key} is empty for J={j_value}. Skipping.")
-                    continue
-
-        # Plot if we have data
-        if j_values:
-            # label generation (same as yours)
-            model_label = base_path.name
-            if "HFDS_Heisenberg" in model_path:
-                model_name = base_path.name
-                hidd_match = re.search(r'hidd(\d+)', model_name)
-                init_match = re.search(r'Init([A-Za-z0-9+]+)', model_name)
-                hidd_fermions = hidd_match.group(1) if hidd_match else '?'
-                init_type = init_match.group(1) if init_match else '?'
-                model_label = f"HFDS: {hidd_fermions} hidden, {init_type} Init"
-
-            ax.errorbar(j_values, initial_energies, yerr=initial_energy_errors,
-                        fmt='o-', linestyle='-', color=colors(model_idx), capsize=5, markersize=8,
-                        label=model_label)
-    
-    # --- Plot Exact Energy (only once, assuming it's the same for all models) ---
-    if all_exact_energies:
-        sorted_j = sorted(all_exact_energies.keys())
-        sorted_e_exact = [all_exact_energies[j] for j in sorted_j]
-        ax.plot(sorted_j, sorted_e_exact, 'k--', label='Exact Energy', zorder=10)
-    elif all_j_values_for_exact:
-        # If we found J folders but no E_exact values at all
-        print("⚠️ Warning: 'E_exact' was not found in any of the provided model data files.")
-
-    ax.set_xlabel("$J_2$", fontsize=12)
-    ax.set_ylabel("Initial Energy", fontsize=12)
-    ax.set_title("Initial Energy vs. $J_2$", fontsize=14)
-    ax.grid(True, linestyle='--', alpha=0.6)
-    ax.legend(loc='best')
-    plt.tight_layout()
-
-    save_path = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot") / "Initial_Energy_vs_J_Comparison.png"
-    plt.savefig(save_path, dpi=300)
-    print(f"✅ Plot saved to {save_path}")
+    # --- Plot exact energy once ---
+    if exact_energies:
+        plt.plot(j_values_for_exact, exact_energies, label='E_exact', marker='x', linestyle='-')
+        
+    plt.xlabel("J")
+    plt.ylabel("Average Initial Energy")
+    plt.title("Average Initial Energy vs J for Different Models")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(os.path.join(output_dir, "Initial_Energy_vs_J_models.png"))
     plt.show()
 
+
 if __name__ == '__main__':
-    model_path =[]
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex")
-    model_path.append("/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex")
+     
+    model_path = [
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex",
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex"
+    ]       
+    
     plot_initial_fidelity_vs_Js(model_path)
+
     plot_initial_energy_vs_Js(model_path)

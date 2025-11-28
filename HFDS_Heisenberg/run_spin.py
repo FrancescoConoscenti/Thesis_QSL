@@ -36,6 +36,7 @@ from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
 
+
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
@@ -70,9 +71,9 @@ hid_layers       = 1
 #Network param
 lr               = 0.025
 n_samples        = 256
-N_opt            = 2
+N_opt            = 1
 
-number_data_points = 2
+number_data_points = 1
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
@@ -188,7 +189,8 @@ with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
 
 
 
-E_init = get_initial_energy(vstate, ha, L)
+E_init = get_initial_energy(log, L)
+print(f"E_init = {E_init}")
 E_vs = Energy(log, L, folder)
 #Correlation function
 vstate.n_samples = 1024
@@ -225,7 +227,7 @@ sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight
 variables = {
         'E_init': E_init,
         'E_exact': E_exact,
-        'E_vs': E_vs,
+        'Energy_iter': E_vs, # Renamed from E_vs for clarity
         #'sign_vstate_MCMC': sign_vstate_MCMC,
         'sign_vstate': sign_vstate_full,
         'sign_exact': sign_exact,

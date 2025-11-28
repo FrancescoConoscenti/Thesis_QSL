@@ -1,24 +1,34 @@
 #!/bin/bash
-#SBATCH --job-name=ground_state
-#SBATCH --output=ViT.out
-#SBATCH --error=ViT.txt
+#SBATCH --job-name=HFDS_spin_true
+#SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
-#SBATCH --time=00:10:00
-#SBATCH --nodes=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=8G
 
-module load stack/2024-06
-module load gcc/12.2.0
-module load openmpi/4.1.6
-module load python/3.11.6
-source ~/netket_venv/bin/activate
+#SBATCH --cpus-per-task=8
+##SBATCH --gres=gpu:1
 
-# Force JAX to CPU
+#SBATCH --time=00-1:00:00
+##SBATCH --array=0-14
+
+source ../netket_venv/bin/activate
+
 export JAX_PLATFORMS=cpu
 
-srun python HFDS_Heisenberg/run.py
-#srun python ViT_Heisenberg/ground_state.py
+J_VALUES=(0.0 0.2 0.5 0.7 1.0)
+SEED_VALUES=(1 2 3)
+
+NUM_J=${#J_VALUES[@]}
+NUM_SEED=${#SEED_VALUES[@]}
+
+J_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_J ))
+SEED_INDEX=$(( SLURM_ARRAY_TASK_ID / NUM_J ))
+
+J=${J_VALUES[$J_INDEX]}
+SEED=${SEED_VALUES[$SEED_INDEX]}
 
 
+#srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
+#srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
+
+#srun python -m Elaborate.Plotting.plot_avarage_models
+srun python -m Elaborate.Plotting.Fermi_Init_fidelity_vs_Js
 

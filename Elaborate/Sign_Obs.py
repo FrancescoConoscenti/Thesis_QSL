@@ -9,6 +9,7 @@ import os
 from Elaborate.Statistics.Error_Stat import Fidelity
 from tenpy.networks.mps import MPS
 
+
 def sublattice_sites(N_sites):
     """
     Returns the indices of the sites belonging to sublattice A, assuming a square lattice.
