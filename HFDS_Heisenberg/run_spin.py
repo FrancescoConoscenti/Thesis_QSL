@@ -61,11 +61,10 @@ determinant_type = "hidden"
 bounds  = "PBC"
 parity = True
 rotation = True
-translation = False
 
 #Varaitional state param
 n_hid_ferm       = 1
-features         = 2    #hidden units per layer
+features         = 1    #hidden units per layer
 hid_layers       = 1
 
 #Network param
@@ -78,10 +77,9 @@ save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
 n_chains         = n_samples//2
-chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_trans{translation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -125,7 +123,7 @@ model = HiddenFermion(n_elecs=n_elecs,
                    bounds=bounds,
                    parity=parity,
                    rotation=rotation,
-                   dtype=dtype_)
+                   dtype=dtype_,)
 
 
 # ------------- define Hamiltonian ------------------------
@@ -159,7 +157,7 @@ vstate = nk.vqs.MCState(
     model, 
     n_samples=n_samples, 
     seed=pkey,
-    chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
+    n_discard_per_chain=128) #defines the variational state object
 
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
@@ -190,7 +188,7 @@ with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
 
 
 
-#Energy
+E_init = get_initial_energy(vstate, ha, L)
 E_vs = Energy(log, L, folder)
 #Correlation function
 vstate.n_samples = 1024
@@ -198,9 +196,8 @@ Corr_Struct(lattice, vstate, L, folder, hi)
 #exact diagonalization
 E_exact, ket_gs = Exact_gs(L, J2, ha, J1J2, spin)
 #Fidelity
-if J1J2 == True:
-    fidelity = Fidelity(vstate, ket_gs)
-    print(f"Fidelity <vstate|exact> = {fidelity}")
+fidelity = Fidelity(vstate, ket_gs)
+print(f"Fidelity <vstate|exact> = {fidelity}")
 #Rel Error
 Relative_Error(E_vs, E_exact, L)
 #magnetization
@@ -226,8 +223,11 @@ amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_
 sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder, "one")
 
 variables = {
+        'E_init': E_init,
+        'E_exact': E_exact,
+        'E_vs': E_vs,
         #'sign_vstate_MCMC': sign_vstate_MCMC,
-        #'sign_vstate_full': sign_vstate_full,
+        'sign_vstate': sign_vstate_full,
         'sign_exact': sign_exact,
         'fidelity': fidelity,
         'configs': configs,

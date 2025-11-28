@@ -124,19 +124,38 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
     print(f"✅ Plot saved to {save_path}")
     plt.show()
 
+
+
 def plot_initial_energy_vs_Js(model_paths: list[str]):
-    """
-    Loads energy data for different J values from multiple model directories
-    and plots the energy at the 0-th iteration (initial state) vs. J on a single graph.
-
-    Args:
-        model_paths (list[str]): A list of paths to the main model directories,
-                                  each containing J=... subfolders.
-    """
     fig, ax = plt.subplots(figsize=(10, 6))
-
-    # Use a colormap to get distinct colors for each model
     colors = cm.get_cmap('tab10', len(model_paths))
+
+    # --- Pre-scan all models to find E_exact for each J value ---
+    all_exact_energies = {} # Dictionary to store {j_value: e_exact}
+    all_j_values_for_exact = set()
+
+    for model_path in model_paths:
+        base_path = Path(model_path)
+        if not base_path.is_dir():
+            continue
+        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
+        for j_path in j_folders:
+            try:
+                j_value = float(j_path.name.split('=')[1])
+                all_j_values_for_exact.add(j_value)
+                if j_value in all_exact_energies: # Already found it, skip
+                    continue
+
+                for fname in ("variables_average.pkl", "variables_average"):
+                    avg_file_path = j_path / fname
+                    if avg_file_path.exists():
+                        with open(avg_file_path, "rb") as f:
+                            loaded_data = pickle.load(f)
+                        if 'E_exact' in loaded_data:
+                            all_exact_energies[j_value] = loaded_data['E_exact']
+                        break # Found a file for this J, move to next J
+            except (ValueError, IndexError):
+                continue
 
     for model_idx, model_path in enumerate(model_paths):
         base_path = Path(model_path)
@@ -144,14 +163,11 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
             print(f"❌ Error: Provided path '{model_path}' is not a valid directory. Skipping.")
             continue
 
-        # --- Data collection for current model ---
         j_values = []
         initial_energies = []
         initial_energy_errors = []
 
-        # --- Find and process J folders ---
         j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
-
         if not j_folders:
             print(f"🤷 No 'J=...' subdirectories found in '{model_path}'. Skipping.")
             continue
@@ -164,25 +180,73 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
                 print(f"⚠️ Warning: Could not parse J value from folder name: {j_path.name}. Skipping.")
                 continue
 
-            log_file_path = j_path / "log_average.json"
-            if not log_file_path.exists():
-                print(f"⚠️ Warning: '{log_file_path}' not found. Skipping J={j_value}.")
+            # try both .pkl and no-extension names:
+            for fname in ("variables_average.pkl", "variables_average"):
+                avg_file_path = j_path / fname
+                if avg_file_path.exists():
+                    break
+            else:
+                print(f"⚠️ Warning: No averaged file found in {j_path}. Tried 'variables_average.pkl' and 'variables_average'. Skipping J={j_value}.")
                 continue
 
-            # --- Load data and extract initial energy ---
-            with open(log_file_path, "r") as f:
-                log_data = [json.loads(line) for line in f]
+            with open(avg_file_path, "rb") as f:
+                loaded_data = pickle.load(f)
 
-            if log_data:
-                initial_energy_data = log_data[0]['Energy']
+            # Diagnostic: show keys present if energy keys missing
+            # Try several possible key names:
+            candidate_keys = [
+                "E_init_mean", "E_init", "E_init_mean_mean", "E_init_mean_var", "energy_init_mean", "energy_mean", "E_mean"
+            ]
+            found_key = None
+            for k in candidate_keys:
+                if k in loaded_data:
+                    found_key = k
+                    break
+
+            if found_key is None:
+                print(f"⚠️ Warning: No expected energy key found for J={j_value} in {avg_file_path}. Available keys: {sorted(list(loaded_data.keys()))}")
+                continue
+
+            # Extract numeric mean and variance robustly
+            mean_val = loaded_data.get(found_key)
+            var_val = None
+            # try possible var names
+            for var_candidate in (found_key.replace("_mean", "_var"), "E_init_var", "E_var", found_key + "_var"):
+                if var_candidate in loaded_data:
+                    var_val = loaded_data[var_candidate]
+                    break
+
+            # convert scalars to floats
+            try:
+                mean_scalar = float(np.array(mean_val).item()) if np.ndim(mean_val) == 0 or np.array(mean_val).size == 1 else np.array(mean_val)
+            except Exception:
+                mean_scalar = np.array(mean_val)
+
+            if np.isscalar(mean_scalar):
                 j_values.append(j_value)
-                initial_energies.append(initial_energy_data['Mean'])
-                initial_energy_errors.append(initial_energy_data.get('Sigma', 0))
+                initial_energies.append(float(mean_scalar))
+                if var_val is not None:
+                    try:
+                        err = float(np.sqrt(np.array(var_val).item()))
+                    except Exception:
+                        err = 0.0
+                else:
+                    err = 0.0
+                initial_energy_errors.append(err)
+            else:
+                # If mean is an array (e.g. per-iteration), try to take first element
+                if np.array(mean_scalar).size > 0:
+                    j_values.append(j_value)
+                    initial_energy_errors.append(0.0 if var_val is None else float(np.sqrt(np.array(var_val).flat[0])))
+                    initial_energies.append(float(np.array(mean_scalar).flat[0]))
+                else:
+                    print(f"⚠️ Warning: Mean for key {found_key} is empty for J={j_value}. Skipping.")
+                    continue
 
-        # --- Plotting for current model ---
+        # Plot if we have data
         if j_values:
-            # --- Custom Label Generation ---
-            model_label = ""
+            # label generation (same as yours)
+            model_label = base_path.name
             if "HFDS_Heisenberg" in model_path:
                 model_name = base_path.name
                 hidd_match = re.search(r'hidd(\d+)', model_name)
@@ -190,17 +254,23 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
                 hidd_fermions = hidd_match.group(1) if hidd_match else '?'
                 init_type = init_match.group(1) if init_match else '?'
                 model_label = f"HFDS: {hidd_fermions} hidden, {init_type} Init"
-            else:
-                model_label = base_path.name # Fallback to full name
-            
-            ax.errorbar(j_values, initial_energies, yerr=initial_energy_errors,
-                        fmt='o', linestyle='-', color=colors(model_idx), capsize=5, markersize=8,
-                        label=model_label)
 
-    # --- Final plot styling ---
+            ax.errorbar(j_values, initial_energies, yerr=initial_energy_errors,
+                        fmt='o-', linestyle='-', color=colors(model_idx), capsize=5, markersize=8,
+                        label=model_label)
+    
+    # --- Plot Exact Energy (only once, assuming it's the same for all models) ---
+    if all_exact_energies:
+        sorted_j = sorted(all_exact_energies.keys())
+        sorted_e_exact = [all_exact_energies[j] for j in sorted_j]
+        ax.plot(sorted_j, sorted_e_exact, 'k--', label='Exact Energy', zorder=10)
+    elif all_j_values_for_exact:
+        # If we found J folders but no E_exact values at all
+        print("⚠️ Warning: 'E_exact' was not found in any of the provided model data files.")
+
     ax.set_xlabel("$J_2$", fontsize=12)
     ax.set_ylabel("Initial Energy", fontsize=12)
-    ax.set_title(f"Initial Energy vs. $J_2$", fontsize=14)
+    ax.set_title("Initial Energy vs. $J_2$", fontsize=14)
     ax.grid(True, linestyle='--', alpha=0.6)
     ax.legend(loc='best')
     plt.tight_layout()

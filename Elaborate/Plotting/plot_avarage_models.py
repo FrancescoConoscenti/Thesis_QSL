@@ -15,92 +15,122 @@ from Elaborate.Sign_Obs import *
 
 
 def average_models_seeds(folder, Js):
-
     for J in Js:
-        base_dir = folder+f"/J={J}"
+        base_dir = os.path.join(folder, f"J={J}")
         # --- Automatically detect all seed directories ---
         seed_dirs = sorted([d for d in os.listdir(base_dir) if d.startswith("seed_")])
         if not seed_dirs:
-            raise FileNotFoundError("No seed directories found in base directory.")
+            raise FileNotFoundError(f"No seed directories found in base directory: {base_dir}")
 
         # --- Load all variables.pkl files ---
         data_list = []
         for seed_dir in seed_dirs:
+            # try both "variables" and "variables.pkl"
             seed_path = os.path.join(base_dir, seed_dir, "variables")
             if not os.path.exists(seed_path):
-                #seed_path = os.path.join(base_dir, seed_dir, "variables.pkl") 
-                if not os.path.exists(seed_path):
-                    print(f"Warning: {seed_path} not found, skipping.")
-                    continue
+                seed_path = os.path.join(base_dir, seed_dir, "variables.pkl")
+            if not os.path.exists(seed_path):
+                print(f"Warning: {seed_path} not found, skipping {seed_dir}.")
+                continue
             with open(seed_path, "rb") as f:
                 loaded_data = pickle.load(f)
                 data_list.append(loaded_data)
 
         if not data_list:
-            raise FileNotFoundError("No valid variables.pkl files found.")
+            raise FileNotFoundError(f"No valid variables files found under {base_dir} for seeds: {seed_dirs}")
 
-        # --- Calculate sign_err_var ---
-        # Truncate arrays to the minimum length before stacking to avoid shape errors.
-        sign_vstate_arrays = [np.array(d['sign_vstate']) for d in data_list]
-        min_len_sign = min(len(arr) for arr in sign_vstate_arrays)
-        truncated_sign_arrays = [arr[:min_len_sign] for arr in sign_vstate_arrays]
-        sign_vstate_full_values = np.stack(truncated_sign_arrays)
+        # --- Calculate sign_err_var (keep your logic) ---
+        # Make sure keys exist before indexing
+        if all('sign_vstate' in d for d in data_list) and all('sign_exact' in d for d in data_list):
+            sign_vstate_arrays = [np.array(d['sign_vstate']) for d in data_list]
+            min_len_sign = min(len(arr) for arr in sign_vstate_arrays)
+            truncated_sign_arrays = [arr[:min_len_sign] for arr in sign_vstate_arrays]
+            sign_vstate_full_values = np.stack(truncated_sign_arrays)
 
-        sign_exact_values = np.stack([np.array(d['sign_exact']) for d in data_list])[:, np.newaxis]
-        sign_err_values = np.abs(np.abs(sign_vstate_full_values) - np.abs(sign_exact_values))
-        sign_err_var = np.var(sign_err_values, axis=0)
+            sign_exact_values = np.stack([np.array(d['sign_exact']) for d in data_list])[:, np.newaxis]
+            sign_err_values = np.abs(np.abs(sign_vstate_full_values) - np.abs(sign_exact_values))
+            sign_err_var = np.var(sign_err_values, axis=0)
+        else:
+            sign_err_var = None
+            print("Warning: 'sign_vstate' or 'sign_exact' missing in some seeds; sign_err_var set to None.")
 
         # --- Compute average and variance for each variable ---
-        keys = data_list[0].keys()
+        # We'll iterate all keys that appear in ANY file and try to handle them robustly
+        all_keys = sorted({k for d in data_list for k in d.keys()})
         results = {}
 
-        for key in keys:
+        for key in all_keys:
+            # skip configs copying later
             try:
-                all_data = [np.array(d[key]) for d in data_list]
-                first_item = all_data[0]
+                # gather only numeric-like arrays for this key
+                values = []
+                for d in data_list:
+                    if key not in d:
+                        # skip seeds that don't have the key
+                        continue
+                    values.append(np.array(d[key]))
 
-                # Handle different data shapes: 0D (scalar), 1D, and 2D arrays
-                if first_item.ndim == 0:
-                    # Case 1: Scalar data (e.g., 'sign_exact')
-                    values_stack = np.stack(all_data)
-                elif first_item.ndim == 1:
-                    # Case 2: 1D array data (e.g., 'fidelity' over iterations)
-                    min_len = min(len(arr) for arr in all_data)
-                    truncated_arrays = [arr[:min_len] for arr in all_data]
-                    values_stack = np.stack(truncated_arrays)
-                elif first_item.ndim == 2:
-                    # Case 3: 2D array data (e.g., 'sign_vstate_config')
-                    # We truncate along the second axis (iterations)
-                    min_len_inner = min(arr.shape[1] for arr in all_data)
-                    truncated_arrays = [arr[:, :min_len_inner] for arr in all_data]
-                    values_stack = np.stack(truncated_arrays)
-                else:
-                    print(f"Skipping key '{key}': Unsupported array dimension {first_item.ndim}.")
+                if not values:
                     continue
 
-                if key == "configs":
-                    results[key] = data_list[0][key]
+                # Convert scalars to 1D arrays for consistent stacking
+                if values[0].ndim == 0:
+                    values_stack = np.stack(values)   # shape (n_seeds,)
+                elif values[0].ndim == 1:
+                    min_len = min(arr.shape[0] for arr in values)
+                    truncated = [arr[:min_len] for arr in values]
+                    values_stack = np.stack(truncated)  # shape (n_seeds, min_len)
+                elif values[0].ndim == 2:
+                    min_len_inner = min(arr.shape[1] for arr in values)
+                    truncated = [arr[:, :min_len_inner] for arr in values]
+                    values_stack = np.stack(truncated)  # shape (n_seeds, dim0, min_len_inner)
                 else:
-                    if key == "sign_vstate_full":
-                        mean_val = np.mean(np.abs(values_stack), axis=0)
-                        var_val = np.var(np.abs(values_stack), axis=0)  
-                    else:
-                        mean_val = np.mean(values_stack, axis=0)
-                        var_val = np.var(values_stack, axis=0)
+                    # unsupported dimension, skip
+                    print(f"Skipping key '{key}': unsupported ndim {values[0].ndim}")
+                    continue
 
-                    results[key + "_mean"] = mean_val
-                    results[key + "_var"] = var_val
+                # Avoid double-suffixing if key already ends with _mean/_var
+                base_key = key
+                if base_key.endswith("_mean"):
+                    base_key = base_key[:-5]
+                if base_key.endswith("_var"):
+                    base_key = base_key[:-4]
+
+                # special-case configs: keep original (non-numeric)
+                if base_key == "configs":
+                    results["configs"] = data_list[0].get("configs")
+                    continue
+                
+                # E_exact is a constant, so just copy it from the first seed
+                if base_key == "E_exact":
+                    results["E_exact"] = data_list[0].get("E_exact")
+                    continue
+
+                # For sign_vstate we want stats on absolute values (as in your original code)
+                if base_key == "sign_vstate":
+                    mean_val = np.mean(np.abs(values_stack), axis=0)
+                    var_val = np.var(np.abs(values_stack), axis=0)
+                else:
+                    mean_val = np.mean(values_stack, axis=0)
+                    var_val = np.var(values_stack, axis=0)
+
+                results[f"{base_key}_mean"] = mean_val
+                results[f"{base_key}_var"] = var_val
 
             except Exception as e:
-                print(f"Skipping key '{key}' (non-numeric or incompatible type): {e}")
+                print(f"Skipping key '{key}' (error while processing): {e}")
+
+        # include sign_err_var if computed
         results["sign_err_var"] = sign_err_var
 
-        # --- Save the averaged and variance data ---
-        output_path = os.path.join(base_dir, "variables_average")
+        # Save the averaged and variance data (use .pkl for clarity)
+        output_path = os.path.join(base_dir, "variables_average.pkl")
         with open(output_path, "wb") as f:
             pickle.dump(results, f)
 
-        print(f"\n✅ Averaged and variance data saved to: {output_path}")
+        # diagnostic print: show top-level keys saved
+        print(f"\n✅ Averaged data saved to: {output_path}")
+        print("Saved keys:", ", ".join(sorted(results.keys())))
 
 
 def avarage_plots_seeds(folder, Js, plot_variance=True):
@@ -154,10 +184,19 @@ def avarage_plots_seeds(folder, Js, plot_variance=True):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex"
-    Js = [0.0, 0.2, 0.5, 0.7, 1]
+    # Define a list of model paths to process
+    model_paths = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample512_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex"
+    ]
+    
+    # Define the J values to process for each model
+    Js = [0.0, 0.2, 0.5, 0.7, 1.0]
 
-    average_models_seeds(model_path, Js)
-    avarage_plots_seeds(model_path, Js, plot_variance=True)
+    # Loop through each model path and process it
+    for model_path in model_paths:
+        print(f"\n{'='*20} Processing Model: {Path(model_path).name} {'='*20}")
+        average_models_seeds(model_path, Js)
+        avarage_plots_seeds(model_path, Js, plot_variance=True)
+        print(f"{'='*20} Finished Processing Model: {Path(model_path).name} {'='*20}\n")
