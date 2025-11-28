@@ -22,15 +22,11 @@ import netket as nk
 import os
 import flax
 os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
-
 import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
-
 from netket.experimental.driver import VMC_SR
-import netket.operator as op
-
-from HFDS_Heisenberg.HFDS_model_spin_new import HiddenFermion
+from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 
 from Elaborate.Statistics.Energy import *
 from Elaborate.Statistics.Corr_Struct import *
@@ -59,20 +55,21 @@ J1J2 = True
 J2 = args.J2
 seed = int(args.seed)
 
-dtype   = "real"  #real or complex
-MFinitialization = "Fermi" #G_MF #random #Fermi
+dtype   = "complex"
+MFinitialization = "G_MF" #G_MF#random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
 parity = True
 rotation = True
+translation = False
 
 #Varaitional state param
-n_hid_ferm       = 4
-features         = 32 #hidden units per layer
+n_hid_ferm       = 1
+features         = 2    #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
+lr               = 0.025
 n_samples        = 256
 N_opt            = 2
 
@@ -84,11 +81,11 @@ n_chains         = n_samples//2
 chunk_size       =  n_samples#//4   #chunk size for the sampling
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_old_Fermi"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_trans{translation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
-   model_path = f'HFDS_Heisenberg/plot/spin_Init/{model_name}/{J_value}'
+   model_path = f'HFDS_Heisenberg/plot/spin_new/{model_name}/{J_value}'
    folder = f'{model_path}/{seed_str}'
    save_model = f"{model_path}/{seed_str}/models"
 else:
@@ -132,7 +129,19 @@ model = HiddenFermion(n_elecs=n_elecs,
 
 
 # ------------- define Hamiltonian ------------------------
-ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
+
+if J1J2==True:
+    # Heisenberg J1-J2 spin ha
+    ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
+else:
+    #ising hamiltonian
+    ha = nk.operator.Ising(hilbert=hi, graph=lattice, h = J2, J=1.0, dtype=jnp.float64).to_jax_operator()
+    """ha = op.LocalOperator(hi)
+    for i, j in lattice.edges():
+        ha += -1 * op.spin.sigmaz(hi, i) * op.spin.sigmaz(hi, j)
+    for i in range(L*L):
+        ha += -h * op.spin.sigmax(hi, i)"""
+
 
 # ---------- define sampler ------------------------
 sampler = nk.sampler.MetropolisExchange(
@@ -145,7 +154,6 @@ sampler = nk.sampler.MetropolisExchange(
 
 key = jax.random.key(seed)
 key, pkey, skey = jax.random.split(key, 3)
-# ---------- define variational state ------------------------
 vstate = nk.vqs.MCState(
     sampler, 
     model, 
@@ -153,7 +161,9 @@ vstate = nk.vqs.MCState(
     seed=pkey,
     chunk_size=chunk_size, n_discard_per_chain=128) #defines the variational state object
 
-# ---------- define optimizer ------------------------
+total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
+print(f'Total number of parameters: {total_params}')
+
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 vmc = VMC_SR(
@@ -167,7 +177,6 @@ vmc = VMC_SR(
 log = nk.logging.RuntimeLog()
 
 
-# ---------- VMC Optimization ------------------------
 for i in range(block_iter):
      #Save
     with open(save_model +"/model_"+ f"{i}"+".mpack", "wb") as f:
@@ -178,6 +187,7 @@ for i in range(block_iter):
     
 with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
     f.write(flax.serialization.to_bytes(vstate.variables))
+
 
 
 #Energy
@@ -205,11 +215,10 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 #Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
-#sign_vstate_MCMC, sign_vstate = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-#sign_vstate, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+#sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
+sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
 #amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
 
-"""
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
 configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 8, L, folder, one_avg = "one")
 amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
@@ -218,7 +227,7 @@ sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
-        'sign_vstate': sign_vstate,
+        #'sign_vstate_full': sign_vstate_full,
         'sign_exact': sign_exact,
         'fidelity': fidelity,
         'configs': configs,
@@ -234,7 +243,7 @@ with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)
 
 vstate.n_samples = 256
-S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
-"""
+#S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+   
 
 sys.stdout.close()
