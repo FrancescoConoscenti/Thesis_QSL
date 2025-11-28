@@ -1,0 +1,17 @@
+HFDS_spin, J=1.0, L=4, layers1_hidd1_feat2_sample256_lr0.025_iter2
+hilbert space size =  16
+MF init orbitals shape: (Array(32, dtype=int64), Array(16, dtype=int64))
+Total number of parameters: 627
+Automatic SR implementation choice:  NTK
+Initial Energy (iteration 0): -8.991084187544372
+E_init  = -0.1404856904303808
+Last value:  -0.11061487846907878
+Exact ground state energy per site= -0.7684681385064063
+Fidelity <vstate|exact> = [0.00160977]
+Relative error = 0.04111582875233297
+Magnetization = 0.0
+Variance = 123.45734217421519
+V-score = -279.0251724787782
+params=627
+⟨Marshall Sign final vstate⟩ =  0.04447723786105597
+⟨Marshall sign exact gs⟩ = -0.06421470542957049

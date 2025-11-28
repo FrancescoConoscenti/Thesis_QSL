@@ -7,13 +7,14 @@ MF energy: (-6.171801538670132+1.6241179657246916e-17j)
 MF energy: (-6.17180153867013-1.9935064759258848e-17j)
 Total number of parameters: 627
 Automatic SR implementation choice:  NTK
-Last value:  -0.24913012693034592
-Exact ground state energy per site= -0.5286202094621766
-Fidelity <vstate|exact> = [0.06175833]
-Relative error = 0.017468130158239416
+Initial Energy (iteration 0): -17.603771011525602LLast value:  -0.2544644253089491
+Exact ground state energy per site= -0.5286202094621785
+Fidelity <vstate|exact> = [0.07322264]
+Relative error = 0.017134736509576837
 Magnetization = 0.0
-Variance = 153.5963227324839
-V-score = -154.13262601458453
+Variance = 58.70987427779704
+V-score = -57.67984484129412
 params=627
-⟨Marshall Sign final vstate⟩ =  0.8074187536834146
-⟨Marshall sign exact gs⟩ = -0.9745380645577973
+⟨Marshall Sign final vstate⟩ =  0.8749045291795126
+⟨Marshall sign exact gs⟩ = -0.9745380645577977
+

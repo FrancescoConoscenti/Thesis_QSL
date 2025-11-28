@@ -86,10 +86,7 @@ class HiddenFermion(nn.Module):
     x_rot2 = x_rot1[:, self.idx_rot]
     x_rot3 = x_rot2[:, self.idx_rot]
     return (x_rot1, x_rot2, x_rot3)
-  
-  def gen_translated_samples(self, x):
-    x_tra = x[:, self.idx_trans]
-    return x_tra
+
 
   
   def gen_sym_samples(self, x):

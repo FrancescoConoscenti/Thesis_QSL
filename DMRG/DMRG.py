@@ -35,7 +35,9 @@ class J1J2Heisenberg(CouplingMPOModel):
         Lx = model_params.get('Lx', 4)
         Ly = model_params.get('Ly', 4)
         site = self.init_sites(model_params=model_params)
-        return Square(Lx=Lx, Ly=Ly, site=site, bc='periodic', bc_MPS='finite')
+        #Torus geometry
+        return Square(Lx=Lx, Ly=Ly, site=site, bc='periodic', bc_MPS='finite') 
+        #bc = ['open', 'periodic'] for cylinder geometry
 
     def init_terms(self, model_params):
         J1 = model_params.get('J1', 1.0)
