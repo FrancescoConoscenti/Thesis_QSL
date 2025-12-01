@@ -1,0 +1,36 @@
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py:23: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.
+  colors = cm.get_cmap('tab10', len(model_paths))
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py:105: UserWarning: No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+  ax.legend(loc='best')
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py", line 288, in <module>
+    plot_initial_fidelity_vs_Js(model_path)
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py", line 123, in plot_initial_fidelity_vs_Js
+    plt.savefig(save_path, dpi=300)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/pyplot.py", line 1251, in savefig
+    res = fig.savefig(*args, **kwargs)  # type: ignore[func-returns-value]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/figure.py", line 3490, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/backend_bases.py", line 2186, in print_figure
+    result = print_method(
+             ^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/backend_bases.py", line 2042, in <lambda>
+    print_method = functools.wraps(meth)(lambda *args, **kwargs: meth(
+                                                                 ^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/backends/backend_agg.py", line 481, in print_png
+    self._print_pil(filename_or_obj, "png", pil_kwargs, metadata)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/backends/backend_agg.py", line 430, in _print_pil
+    mpl.image.imsave(
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/matplotlib/image.py", line 1657, in imsave
+    image.save(fname, **pil_kwargs)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/PIL/Image.py", line 2583, in save
+    fp = builtins.open(filename, "w+b")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Initial_Fidelity_vs_J_Comparison.png'
+❌ Error: Provided path '/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitFermi_typecomplex' is not a valid directory. Skipping.
+❌ Error: Provided path '/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_InitG_MF_typecomplex' is not a valid directory. Skipping.
+❌ Error: Provided path '/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat2_sample256_lr0.025_iter2_parityTrue_rotTrue_transFalse_Initrandom_typecomplex' is not a valid directory. Skipping.
+srun: error: eu-g5-010-4: task 0: Exited with exit code 1

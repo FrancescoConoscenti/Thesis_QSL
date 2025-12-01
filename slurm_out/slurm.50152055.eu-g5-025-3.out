@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py", line 388, in <module>
+    plot_initial_energy_vs_Js(model_path)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'plot_initial_energy_vs_Js' is not defined. Did you mean: 'plot_initial_fidelity_vs_Js'?
+✅ Plot saved to /cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Initial_Fidelity_vs_J_Comparison.png
+srun: error: eu-g5-025-3: task 0: Exited with exit code 1

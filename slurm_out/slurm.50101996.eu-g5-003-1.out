@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 35, in <module>
+    from Elaborate.Plotting.Sign_vs_iteration import *
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py", line 34, in <module>
+    from Elaborate.Sign_Obs import *
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Sign_Obs.py", line 10, in <module>
+    from tenpy.networks.mps import MPS
+ModuleNotFoundError: No module named 'tenpy'
+srun: error: eu-g5-003-1: task 0: Exited with exit code 1

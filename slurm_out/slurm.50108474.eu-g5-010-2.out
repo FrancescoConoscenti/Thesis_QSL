@@ -1,0 +1,8 @@
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py:23: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.
+  colors = cm.get_cmap('tab10', len(model_paths))
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py:131: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.
+  colors = cm.get_cmap('tab10', len(model_paths))
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Fermi_Init_fidelity_vs_Js.py:258: UserWarning: linestyle is redundantly defined by the 'linestyle' keyword argument and the fmt string "o-" (-> linestyle='-'). The keyword argument will take precedence.
+  ax.errorbar(j_values, initial_energies, yerr=initial_energy_errors,
+✅ Plot saved to /cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Initial_Fidelity_vs_J_Comparison.png
+✅ Plot saved to /cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Initial_Energy_vs_J_Comparison.png

@@ -1,0 +1,435 @@
+
+==================== Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex ====================
+E_init_mean -0.001606826600655052
+E_vs_mean -0.11209319880285638
+amp_overlap_mean [0.48466965 0.66177835 0.70402926]
+fidelity_mean [4.45291671e-05 3.13004955e-05 1.21990678e-04]
+sign_exact_mean -1.0
+sign_overlap_mean [0.24847914 0.15377199 0.11895441]
+sign_vstate_mean [0.0091116  0.01321479 0.01741644]
+sign_vstate_config_mean [[ 1.          0.33333333  1.        ]
+ [ 1.          0.33333333  1.        ]
+ [ 0.33333333 -1.         -1.        ]
+ [-0.33333333 -0.33333333  0.33333333]
+ [ 0.33333333  0.33333333  0.33333333]
+ [ 0.33333333  0.33333333 -0.33333333]
+ [ 0.33333333  0.33333333  0.33333333]
+ [-0.33333333 -0.33333333  0.33333333]]
+weight_exact_mean [0.08259392 0.08259392 0.00336283 0.00336283 0.00336283 0.00336283
+ 0.00336283 0.00336283]
+weight_vstate_mean [[1.81679167e-35 3.96847449e-05 2.30156605e-04]
+ [1.81679167e-35 3.96847449e-05 2.30156605e-04]
+ [1.88483386e-05 3.32790487e-05 7.57081648e-05]
+ [5.73827975e-06 6.53906649e-05 2.01921154e-04]
+ [6.65365796e-05 2.43090836e-04 4.70757974e-04]
+ [1.37952338e-05 1.94966829e-04 3.68743781e-04]
+ [6.65365796e-05 2.43090836e-04 4.70757974e-04]
+ [5.73827975e-06 6.53906649e-05 2.01921154e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex/J=0.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0014643134205594122
+E_vs_mean -0.09910811492345135
+amp_overlap_mean [0.47294796 0.61496876 0.6573934 ]
+fidelity_mean [5.57633383e-05 2.72936603e-05 7.36014075e-05]
+sign_exact_mean -1.0
+sign_overlap_mean [0.21887713 0.13685239 0.13113498]
+sign_vstate_mean [0.0091116  0.01282109 0.01045239]
+sign_vstate_config_mean [[ 1.          0.33333333  0.33333333]
+ [ 1.          0.33333333  0.33333333]
+ [ 1.         -0.33333333 -0.33333333]
+ [-0.33333333 -1.         -0.33333333]
+ [ 1.          0.33333333  0.33333333]
+ [ 1.         -0.33333333 -0.33333333]
+ [ 1.          0.33333333  0.33333333]
+ [ 0.33333333 -1.         -1.        ]]
+weight_exact_mean [0.06984087 0.06984087 0.00337643 0.00337643 0.00337643 0.00337643
+ 0.00337643 0.00337643]
+weight_vstate_mean [[1.81679167e-35 2.76606591e-05 1.02087822e-04]
+ [1.81679167e-35 2.76606591e-05 1.02087822e-04]
+ [8.07004437e-06 1.72226939e-04 4.52201515e-04]
+ [2.66279043e-05 2.02964230e-04 4.84874036e-04]
+ [1.30852864e-05 1.13869485e-04 1.78823953e-04]
+ [8.07004437e-06 1.72226939e-04 4.52201515e-04]
+ [1.30852864e-05 1.13869485e-04 1.78823953e-04]
+ [1.88483386e-05 1.73031084e-05 3.07342937e-05]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex/J=0.2/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0012505436504159535
+E_vs_mean -0.08498303183169491
+amp_overlap_mean [0.33815568 0.44848888 0.46922372]
+fidelity_mean [1.37567372e-04 8.46221918e-05 1.76498476e-04]
+sign_exact_mean -0.9745380645577973
+sign_overlap_mean [0.11192464 0.06549569 0.06783026]
+sign_vstate_mean [0.0091116  0.01614989 0.01302607]
+sign_vstate_config_mean [[ 1.          0.33333333  0.33333333]
+ [ 1.          0.33333333  0.33333333]
+ [-0.33333333  1.         -0.33333333]
+ [-0.33333333  1.         -0.33333333]
+ [-0.33333333 -0.33333333 -1.        ]
+ [-0.33333333 -0.33333333 -1.        ]
+ [-0.33333333 -0.33333333 -1.        ]
+ [-0.33333333  1.         -0.33333333]]
+weight_exact_mean [0.02657907 0.02657907 0.0079405  0.0079405  0.0079405  0.0079405
+ 0.0079405  0.0079405 ]
+weight_vstate_mean [[1.81679167e-35 1.21833011e-05 2.94267873e-05]
+ [1.81679167e-35 1.21833011e-05 2.94267873e-05]
+ [2.66542204e-36 7.69124143e-06 2.37393393e-05]
+ [2.66542204e-36 7.69124143e-06 2.37393393e-05]
+ [1.45091842e-36 1.27060944e-05 3.54832685e-05]
+ [1.45091842e-36 1.27060944e-05 3.54832685e-05]
+ [1.45091842e-36 1.27060944e-05 3.54832685e-05]
+ [2.66542204e-36 7.69124143e-06 2.37393393e-05]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex/J=0.5/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0011080304703203145
+E_vs_mean -0.08631715370832933
+amp_overlap_mean [0.43738715 0.53277831 0.53630922]
+fidelity_mean [0.0003006  0.00053111 0.00139676]
+sign_exact_mean -0.2902015534169397
+sign_overlap_mean [0.11261163 0.17122849 0.15629176]
+sign_vstate_mean [0.0091116  0.01530263 0.02645264]
+sign_vstate_config_mean [[ 0.         -1.         -1.        ]
+ [ 0.         -1.         -1.        ]
+ [ 0.         -1.         -1.        ]
+ [ 0.         -1.         -1.        ]
+ [-0.33333333 -0.33333333 -0.33333333]
+ [-0.33333333  1.         -0.33333333]
+ [-0.33333333 -0.33333333 -0.33333333]
+ [-0.33333333  1.         -0.33333333]]
+weight_exact_mean [0.03842756 0.03842756 0.03842756 0.03842756 0.00265912 0.00265912
+ 0.00265912 0.00265912]
+weight_vstate_mean [[0.00000000e+00 1.62198903e-08 4.33337936e-08]
+ [0.00000000e+00 1.62198903e-08 4.33337936e-08]
+ [0.00000000e+00 1.62198903e-08 4.33337936e-08]
+ [0.00000000e+00 1.62198903e-08 4.33337936e-08]
+ [1.45091842e-36 2.59904372e-05 2.56157021e-05]
+ [2.66542204e-36 9.29514214e-06 1.25746140e-05]
+ [1.45091842e-36 2.59904372e-05 2.56157021e-05]
+ [2.66542204e-36 9.29514214e-06 1.25746140e-05]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex/J=0.7/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0008942607001768558
+E_vs_mean -0.1061618000428271
+amp_overlap_mean [0.3471436  0.42868785 0.43887706]
+fidelity_mean [0.00016465 0.00035536 0.00168059]
+sign_exact_mean -0.06421470542957049
+sign_overlap_mean [0.1274069  0.2047953  0.22275514]
+sign_vstate_mean [0.0091116  0.02192916 0.04223437]
+sign_vstate_config_mean [[ 0.          0.33333333 -0.33333333]
+ [ 0.          0.33333333 -0.33333333]
+ [ 0.          0.33333333 -0.33333333]
+ [ 0.          0.33333333 -0.33333333]
+ [ 0.33333333  0.33333333  0.33333333]
+ [-1.          1.          1.        ]
+ [ 0.33333333 -0.33333333 -0.33333333]
+ [-1.         -0.33333333 -0.33333333]]
+weight_exact_mean [0.04091171 0.04091171 0.04091171 0.04091171 0.0022074  0.0022074
+ 0.0022074  0.0022074 ]
+weight_vstate_mean [[0.00000000e+00 1.43822619e-07 2.94599801e-06]
+ [0.00000000e+00 1.43822619e-07 2.94599801e-06]
+ [0.00000000e+00 1.43822619e-07 2.94599801e-06]
+ [0.00000000e+00 1.43822619e-07 2.94599801e-06]
+ [3.13260612e-38 1.83691970e-05 3.10005893e-05]
+ [9.03789831e-38 8.40141802e-06 6.86805268e-06]
+ [6.74500949e-38 2.15072792e-05 2.02830338e-05]
+ [1.00390074e-37 3.91989212e-06 1.29326017e-05]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex/J=1.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+==================== Finished Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter2_parityTrue_rotTrue_InitFermi_typecomplex ====================
+
+
+==================== Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex ====================
+E_init_mean -0.43557856819731816
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.65215197 0.57740752]
+fidelity_mean [0.10505132 0.16777822]
+sign_exact_mean -1.0
+sign_overlap_mean [0.1558103  0.22138023]
+sign_vstate_mean [0.73007006 0.93381287]
+sign_vstate_config_mean [[ 1.          1.        ]
+ [ 1.          1.        ]
+ [ 0.33333333  1.        ]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [-0.33333333 -0.33333333]]
+weight_exact_mean [0.08259392 0.08259392 0.00336283 0.00336283 0.00336283 0.00336283
+ 0.00336283 0.00336283]
+weight_vstate_mean [[3.83040512e-01 4.50608699e-01]
+ [3.83040512e-01 4.50608699e-01]
+ [8.39626321e-04 4.56727013e-04]
+ [4.33116427e-04 3.11444187e-04]
+ [7.95538908e-04 1.17539413e-03]
+ [8.06338768e-04 1.19007141e-03]
+ [7.95538908e-04 1.17539413e-03]
+ [4.33116427e-04 3.11444187e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex/J=0.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.35936867771738296
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.61549964 0.56731774]
+fidelity_mean [0.08945418 0.13813122]
+sign_exact_mean -1.0
+sign_overlap_mean [0.16461494 0.20201594]
+sign_vstate_mean [0.73007006 0.89978659]
+sign_vstate_config_mean [[ 1.          1.        ]
+ [ 1.          1.        ]
+ [-0.33333333 -0.33333333]
+ [-0.33333333  0.33333333]
+ [-0.33333333  0.33333333]
+ [-0.33333333 -0.33333333]
+ [-0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]]
+weight_exact_mean [0.06984087 0.06984087 0.00337643 0.00337643 0.00337643 0.00337643
+ 0.00337643 0.00337643]
+weight_vstate_mean [[3.83040512e-01 4.32765324e-01]
+ [3.83040512e-01 4.32765324e-01]
+ [1.71423063e-04 4.74343433e-04]
+ [7.20957653e-04 1.52009299e-03]
+ [1.89033896e-03 1.47453433e-03]
+ [1.71423063e-04 4.74343433e-04]
+ [1.89033896e-03 1.47453433e-03]
+ [8.39626321e-04 5.47464497e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex/J=0.2/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.24505384199748015
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.41457477 0.43069342]
+fidelity_mean [0.04857241 0.06450343]
+sign_exact_mean -0.9745380645577973
+sign_overlap_mean [0.30475391 0.33074886]
+sign_vstate_mean [0.73007006 0.77327998]
+sign_vstate_config_mean [[1. 1.]
+ [1. 1.]
+ [1. 1.]
+ [1. 1.]
+ [1. 1.]
+ [1. 1.]
+ [1. 1.]
+ [1. 1.]]
+weight_exact_mean [0.02657907 0.02657907 0.0079405  0.0079405  0.0079405  0.0079405
+ 0.0079405  0.0079405 ]
+weight_vstate_mean [[3.83040512e-01 3.75851947e-01]
+ [3.83040512e-01 3.75851947e-01]
+ [1.39962640e-04 8.58341050e-05]
+ [1.39962640e-04 8.58341050e-05]
+ [1.32538049e-04 7.07511623e-05]
+ [1.32538049e-04 7.07511623e-05]
+ [1.32538049e-04 7.07511623e-05]
+ [1.39962640e-04 8.58341050e-05]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex/J=0.5/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.16884395151754517
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.14409756 0.18561223]
+fidelity_mean [0.01184132 0.01800777]
+sign_exact_mean -0.2902015534169397
+sign_overlap_mean [0.47217226 0.4597656 ]
+sign_vstate_mean [0.73007006 0.62090474]
+sign_vstate_config_mean [[ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 1.          1.        ]
+ [ 1.          1.        ]
+ [ 1.          1.        ]
+ [ 1.          1.        ]]
+weight_exact_mean [0.03842756 0.03842756 0.03842756 0.03842756 0.00265912 0.00265912
+ 0.00265912 0.00265912]
+weight_vstate_mean [[2.58212785e-96 7.64282090e-12]
+ [2.58212785e-96 7.64282090e-12]
+ [2.58212785e-96 7.64282090e-12]
+ [2.58212785e-96 7.64282090e-12]
+ [1.32538049e-04 1.60882409e-04]
+ [1.39962640e-04 2.02317919e-04]
+ [1.32538049e-04 1.60882409e-04]
+ [1.39962640e-04 2.02317919e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex/J=0.7/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0545291157976423
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.05848568 0.12453706]
+fidelity_mean [0.00231615 0.00930997]
+sign_exact_mean -0.06421470542957049
+sign_overlap_mean [0.54471498 0.43755245]
+sign_vstate_mean [0.73007006 0.34507481]
+sign_vstate_config_mean [[ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [-0.33333333 -1.        ]
+ [-0.33333333 -1.        ]
+ [-1.         -0.33333333]
+ [-1.         -0.33333333]]
+weight_exact_mean [0.04091171 0.04091171 0.04091171 0.04091171 0.0022074  0.0022074
+ 0.0022074  0.0022074 ]
+weight_vstate_mean [[2.58212785e-96 1.30173004e-10]
+ [2.58212785e-96 1.30173004e-10]
+ [2.58212785e-96 1.30173004e-10]
+ [2.58212785e-96 1.30173004e-10]
+ [1.66659716e-36 1.56232168e-09]
+ [2.42582157e-36 6.08087928e-09]
+ [1.03900079e-36 1.09803283e-08]
+ [1.57373686e-36 1.97408733e-08]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex/J=1.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+==================== Finished Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex ====================
+
+
+==================== Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex ====================
+E_init_mean -0.009730664276086475
+E_vs_mean -0.02529124214268102
+Skipping key 'Energy_iter' (error while processing): too many indices for array: array is 1-dimensional, but 2 were indexed
+amp_overlap_mean [0.55123746 0.61012234]
+fidelity_mean [0.00031236 0.00104025]
+sign_exact_mean -1.0
+sign_overlap_mean [0.09247728 0.14957808]
+sign_vstate_mean [0.04880902 0.06814344]
+sign_vstate_config_mean [[-0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 1.          1.        ]
+ [-0.33333333 -1.        ]
+ [-0.33333333 -0.33333333]
+ [-0.33333333 -1.        ]
+ [ 1.          1.        ]]
+weight_exact_mean [0.08259392 0.08259392 0.00336283 0.00336283 0.00336283 0.00336283
+ 0.00336283 0.00336283]
+weight_vstate_mean [[2.37364243e-04 5.01521637e-04]
+ [2.37364243e-04 5.01521637e-04]
+ [3.52226986e-05 1.90266942e-04]
+ [7.05183116e-05 2.20181329e-04]
+ [5.95542489e-05 2.54989153e-04]
+ [1.13177454e-04 2.03346024e-04]
+ [5.95542489e-05 2.54989153e-04]
+ [7.05183116e-05 2.20181329e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex/J=0.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0005268673392648253
+E_vs_mean -0.03371950971294882
+amp_overlap_mean [0.50943708 0.56820183]
+fidelity_mean [0.00034221 0.00121654]
+sign_exact_mean -1.0
+sign_overlap_mean [0.06719382 0.13148678]
+sign_vstate_mean [0.04880902 0.05915978]
+sign_vstate_config_mean [[-0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 1.          1.        ]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333 -0.33333333]]
+weight_exact_mean [0.06984087 0.06984087 0.00337643 0.00337643 0.00337643 0.00337643
+ 0.00337643 0.00337643]
+weight_vstate_mean [[2.37364243e-04 4.62873381e-04]
+ [2.37364243e-04 4.62873381e-04]
+ [4.79668509e-05 5.25527420e-05]
+ [1.07447933e-04 3.04217404e-04]
+ [8.88163910e-05 1.31770807e-04]
+ [4.79668509e-05 5.25527420e-05]
+ [8.88163910e-05 1.31770807e-04]
+ [3.52226986e-05 2.00381351e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex/J=0.2/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0007001048653756361
+E_vs_mean -0.04480671138404071
+amp_overlap_mean [0.4051229  0.45753624]
+fidelity_mean [0.00047393 0.00156453]
+sign_exact_mean -0.9745380645577973
+sign_overlap_mean [0.0775584  0.08049155]
+sign_vstate_mean [0.04880902 0.05129663]
+sign_vstate_config_mean [[-0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]]
+weight_exact_mean [0.02657907 0.02657907 0.0079405  0.0079405  0.0079405  0.0079405
+ 0.0079405  0.0079405 ]
+weight_vstate_mean [[2.37364243e-04 4.08735842e-04]
+ [2.37364243e-04 4.08735842e-04]
+ [3.41464632e-04 7.28326760e-04]
+ [3.41464632e-04 7.28326760e-04]
+ [1.96253773e-05 6.29770492e-05]
+ [1.96253773e-05 6.29770492e-05]
+ [1.96253773e-05 6.29770492e-05]
+ [3.41464632e-04 7.28326760e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex/J=0.5/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0008155965494495099
+E_vs_mean -0.052198179164768634
+amp_overlap_mean [0.52902853 0.5679884 ]
+fidelity_mean [0.00035079 0.0006116 ]
+sign_exact_mean -0.2902015534169397
+sign_overlap_mean [0.16422689 0.18316203]
+sign_vstate_mean [0.04880902 0.05759627]
+sign_vstate_config_mean [[ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]]
+weight_exact_mean [0.03842756 0.03842756 0.03842756 0.03842756 0.00265912 0.00265912
+ 0.00265912 0.00265912]
+weight_vstate_mean [[6.70679217e-05 1.16178953e-04]
+ [6.70679217e-05 1.16178953e-04]
+ [6.70679217e-05 1.16178953e-04]
+ [6.70679217e-05 1.16178953e-04]
+ [1.96253773e-05 6.91415048e-05]
+ [3.41464632e-04 6.61568532e-04]
+ [1.96253773e-05 6.91415048e-05]
+ [3.41464632e-04 6.61568532e-04]]
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex/J=0.7/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+E_init_mean -0.0009888340755603209
+E_vs_mean -0.06328538083586054
+amp_overlap_mean [0.45160202 0.48710697]
+fidelity_mean [0.00023955 0.00100307]
+sign_exact_mean -0.06421470542957049
+sign_overlap_mean [0.13796067 0.19961004]
+sign_vstate_mean [0.04880902 0.06168967]
+sign_vstate_config_mean [[ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333  0.33333333]
+ [ 0.33333333 -0.33333333]
+ [-0.33333333 -0.33333333]
+ [ 0.33333333  0.33333333]
+ [-0.33333333  0.33333333]]
+weight_exact_mean [0.04091171 0.04091171 0.04091171 0.04091171 0.0022074  0.0022074
+ 0.0022074  0.0022074 ]
+weight_vstate_mean [[6.70679217e-05 1.28506685e-04]
+ [6.70679217e-05 1.28506685e-04]
+ [6.70679217e-05 1.28506685e-04]
+ [6.70679217e-05 1.28506685e-04]
+ [4.69505142e-05 7.73472215e-05]
+ [1.61776100e-05 1.11855315e-04]
+ [6.85981521e-05 9.49665704e-05]
+ [5.22835286e-05 8.68591572e-05]]
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:498: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+  plt.figure(figsize=(10, 6))
+
+✅ Averaged data saved to: /cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex/J=1.0/variables_average.pkl
+Saved keys: E_exact, E_init_mean, E_init_var, E_vs_mean, E_vs_var, amp_overlap_mean, amp_overlap_var, configs, fidelity_mean, fidelity_var, sign_err_var, sign_exact_mean, sign_exact_var, sign_overlap_mean, sign_overlap_var, sign_vstate_config_mean, sign_vstate_config_var, sign_vstate_mean, sign_vstate_var, weight_exact_mean, weight_exact_var, weight_vstate_mean, weight_vstate_var
+==================== Finished Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex ====================
+

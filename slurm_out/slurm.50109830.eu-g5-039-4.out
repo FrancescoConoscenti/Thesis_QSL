@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/plot_avarage_models.py", line 201, in <module>
+    average_models_seeds(model_path, Js)
+  File "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/plot_avarage_models.py", line 21, in average_models_seeds
+    seed_dirs = sorted([d for d in os.listdir(base_dir) if d.startswith("seed_")])
+                                   ^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitFermi_typecomplex/J=0.0'
+
+==================== Processing Model: layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitFermi_typecomplex ====================
+srun: error: eu-g5-039-4: task 0: Exited with exit code 1
