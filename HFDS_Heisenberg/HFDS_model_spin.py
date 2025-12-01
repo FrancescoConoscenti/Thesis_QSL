@@ -1,26 +1,18 @@
 from jax import numpy as jnp
 import netket as nk
 import jax
-from jax.random import PRNGKey, choice, split
-from functools import partial
 from flax import linen as nn
-from jax.nn.initializers import zeros, normal, constant
-from netket.utils.dispatch import dispatch
-from netket import experimental as nkx
-from netket.jax import apply_chunked
 import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert 
 from netket.jax import logsumexp_cplx
 
-from HFDS_Heisenberg.MF_Init import init_orbitals_mf
-from HFDS_Heisenberg.Gutzwiller_MF_Init import update_orbitals_gmf
+from HFDS_Heisenberg.Init_orbitals import Orbitals
+
 
 class HiddenFermion(nn.Module):
-  n_elecs: int
+  lattice: nk.graph.Graph
   network: str
   n_hid: int
-  Lx: int
-  Ly: int
   layers: int
   features: int
   MFinit: str
@@ -35,8 +27,9 @@ class HiddenFermion(nn.Module):
 
   def setup(self):
     # orbital Initialization
-    self.n_modes = 2*self.Lx*self.Ly
-    self.orbitals = Orbitals(self.n_elecs,self.n_hid,self.Lx, self.Ly, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
+    self.n_modes = 2*self.lattice.n_nodes
+    self.n_elecs = self.lattice.n_nodes
+    self.orbitals = Orbitals(self.lattice, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
@@ -45,7 +38,8 @@ class HiddenFermion(nn.Module):
         raise NotImplementedError()
     # Rotation symmetry indices
     if self.rotation:
-      idx = jnp.arange(self.Lx * self.Ly).reshape(self.Ly, self.Lx)
+      L = int(np.sqrt(self.lattice.n_nodes))
+      idx = jnp.arange(self.lattice.n_nodes).reshape(L, L)
       self.idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
 
 
@@ -114,56 +108,3 @@ class HiddenFermion(nn.Module):
     log_det, log_sign = jax.vmap(self.calc_psi)(jnp.stack(x_sym))
     log_psi_sym = log_det + log_sign
     return logsumexp_cplx(log_psi_sym, axis=0)
-
-
-class Orbitals(nn.Module):
-  n_elecs: int
-  n_hid: int
-  Lx: int
-  Ly: int
-  MFinit: str
-  stop_grad_mf: bool
-  bounds: str
-  dtype: type = jnp.float64
-  U: float=8.0
-
-  def _init_gutzwiller(self, key, shape, dtype):
-    return update_orbitals_gmf(lattice=nk.graph.Hypercube(length=self.Lx, n_dim=2, pbc=True), dtype=dtype)
-      
-  def _init_mf(self, key, shape, dtype):
-    return init_orbitals_mf(L=self.Lx, bounds=self.bounds, dtype=dtype)
-   
-
-
-  @nn.compact
-  def __call__(self,x):
-
-    n_samples, N_sites = x.shape
-
-    if self.MFinit=="Fermi":
-        orbitals_mfmf = self.param('orbitals_mf',self._init_mf,(N_sites,self.n_elecs), self.dtype)
-    elif self.MFinit=="G_MF":
-        orbitals_mfmf = self.param('orbitals_mf', self._init_gutzwiller, (N_sites, self.n_elecs), self.dtype)
-    elif self.MFinit=="random":
-        orbitals_mfmf = self.param('orbitals_mf', normal(0.1),(2*self.Lx*self.Ly,self.n_elecs), self.dtype)
-    else:
-        raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
-    
-    #orbitals_mfhf = self.param('orbitals_hf', zeros,(2*self.Lx*self.Ly,self.n_hid), self.dtype)
-    orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*self.Lx*self.Ly,self.n_hid), self.dtype)
-    orbitals_full = jnp.concatenate((orbitals_mfmf, orbitals_mfhf), axis=1)
-    
-    #1.  Convert {-1,+1} → 0/1 occupancy for spin-up, spin-down orbitals
-    spin_up = (x == 1).astype(self.dtype)
-    spin_dn = (x == -1).astype(self.dtype)
-    x_flat = jnp.concatenate([spin_up, spin_dn], axis=1) 
-
-    #2 & 3. Select occupied orbitals using advanced indexing
-    # x_flat: (n_samples, 2*N_sites), with 0/1 occupancy
-    mask = x_flat.astype(bool)  # (n_samples, 2*N_sites)
-    # Get indices of the 1s using top_k
-    # Since entries are 0/1, top_k will pick exactly the N_sites "1"s
-    _, idx = jax.lax.top_k(mask, k=N_sites)   # shape (n_samples, N_sites)
-    orbitals_selected = jax.vmap(lambda i: orbitals_full[i, :])(idx)
-
-    return orbitals_selected # shape: (n_samples, n_elecs, n_orbitals)

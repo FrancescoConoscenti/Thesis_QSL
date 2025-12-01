@@ -24,7 +24,7 @@ from netket.hilbert.homogeneous import HomogeneousHilbert
 
 
 
-def Hk(sigmaz, phi, h, N_sites, positions, lattice):
+def Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype):
 
   def determine_nns(graph):
     positions =  graph.positions
@@ -56,7 +56,7 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice):
   
 
 
-  H = jnp.zeros([N_sites,N_sites],dtype=jnp.complex128)
+  H = jnp.zeros([N_sites,N_sites],dtype=dtype)
   nearest_neighbors = determine_nns(lattice)
 
   for i, (x,y) in enumerate(positions):
@@ -80,7 +80,7 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice):
   H = (H + H.transpose().conjugate())/2 # ensure Hermiticity
 
   # Compute eigenvalues and eigenvectors
-  energies, eigenvectors = jnp.linalg.eig(H)
+  energies, eigenvectors = jnp.linalg.eigh(H)
   # Sort eigenvalues and eigenvectors
   indices = jnp.argsort(energies) 
   energies = energies[indices]
@@ -90,22 +90,19 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice):
 
 #################################################################################################################################################################################
 
-def update_orbitals_gmf(lattice, dtype):
+def update_orbitals_gmf(lattice, dtype, h, phi):
   
-  h = 0.055 #magnetic field
-  phi = 0.1 #flux per plaquette
   positions = lattice.positions
   N_sites = len(lattice.positions)
   n_elecs = N_sites
 
 
   def initialize_real(n_elecs, sigmaz):
-
     # Initialize the matrix and the Energy with zeros
-    mat = jnp.zeros((n_elecs, len(positions)), dtype=jnp.complex128)
+    mat = jnp.zeros((n_elecs, len(positions)), dtype=dtype)
     E = 0
     # Get single particle eigenenergies and states solving the MF Hamiltonian
-    energies, eigenstates = Hk(sigmaz, phi, h, N_sites, positions, lattice)
+    energies, eigenstates = Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype)
 
     def body_fn(i, x):
         mat_block, E, eigenstates, energies = x
