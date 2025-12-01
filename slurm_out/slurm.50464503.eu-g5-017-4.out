@@ -1,0 +1,42 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 146, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 108, in __call__
+    log_det, log_sign = jax.vmap(self.calc_psi)(jnp.stack(x_sym))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 56, in calc_psi
+    orbitals = self.orbitals(x)
+               ^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Init_orbitals.py", line 57, in __call__
+    orbitals_mfmf = self.param('orbitals_mf', self._init_gutzwiller, (N_sites, self.n_elecs), self.dtype)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Init_orbitals.py", line 42, in _init_gutzwiller
+    mf = update_orbitals_gmf(self.lattice, dtype=dtype, h=h_opt, phi=phi_opt)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 130, in update_orbitals_gmf
+    upmatrix = initialize_real(n_elecs//2, sigmaz = +1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 105, in initialize_real
+    energies, eigenstates = Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 69, in Hk
+    H = hopping_x_conditions((H,x,y,ix[r]))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 44, in hopping_x_conditions
+    flux = (-1)**(jnp.floor(x) + jnp.floor(y)) * 1j * phi * jnp.pi 
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: Only integer scalar arrays can be converted to a scalar index.
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: eu-g5-017-4: task 0: Exited with exit code 1

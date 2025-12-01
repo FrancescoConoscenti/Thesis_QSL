@@ -71,7 +71,7 @@ hid_layers       = 1
 #Network param
 lr               = 0.025
 n_samples        = 256
-N_opt            = 1
+N_opt            = 2
 
 number_data_points = 1
 save_every       = N_opt//number_data_points
@@ -107,14 +107,20 @@ hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
 print(f"hilbert space size = ",hi.size)
 
 
+# ------------- define Hamiltonian ------------------------
+ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
+
+# --- Calculate exact ground state before model initialization ---
+_, ket_gs_exact = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+
+
+
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
 
-model = HiddenFermion(n_elecs=n_elecs,
+model = HiddenFermion(lattice=lattice,
                    network="FFNN",
                    n_hid=n_hid_ferm,
-                   Lx=L,
-                   Ly=L,
                    layers=hid_layers,
                    features=features,
                    MFinit=MFinitialization,
@@ -125,23 +131,7 @@ model = HiddenFermion(n_elecs=n_elecs,
                    parity=parity,
                    rotation=rotation,
                    dtype=dtype_,)
-
-
-# ------------- define Hamiltonian ------------------------
-
-if J1J2==True:
-    # Heisenberg J1-J2 spin ha
-    ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
-else:
-    #ising hamiltonian
-    ha = nk.operator.Ising(hilbert=hi, graph=lattice, h = J2, J=1.0, dtype=jnp.float64).to_jax_operator()
-    """ha = op.LocalOperator(hi)
-    for i, j in lattice.edges():
-        ha += -1 * op.spin.sigmaz(hi, i) * op.spin.sigmaz(hi, j)
-    for i in range(L*L):
-        ha += -h * op.spin.sigmax(hi, i)"""
-
-
+                
 # ---------- define sampler ------------------------
 sampler = nk.sampler.MetropolisExchange(
     hilbert=hi,
@@ -170,7 +160,7 @@ vmc = VMC_SR(
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    mode = 'real'
+    mode = 'complex'
 ) 
 
 log = nk.logging.RuntimeLog()

@@ -1,0 +1,9 @@
+HFDS_spin, J=0.0, L=4, layers1_hidd2_feat4_sample1024_lr0.025_iter100
+hilbert space size =  16
+MF init orbitals shape: (Array(32, dtype=int64), Array(16, dtype=int64))
+n_elecs: 16
+upmatrix shape: (Array(8, dtype=int64), Array(16, dtype=int64))
+MF energy: (-6.171801538670132+1.6241179657246916e-17j)
+MF energy: (-6.17180153867013-1.9935064759258848e-17j)
+Total number of parameters: 820
+Automatic SR implementation choice:  QGT

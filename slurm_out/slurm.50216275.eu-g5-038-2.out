@@ -1,0 +1,44 @@
+  0%|          | 0/5 [00:00<?, ?it/s]  0%|          | 0/5 [00:05<?, ?it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 321, in <module>
+    vmc.run(n_iter=save_every, out=log)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/driver/abstract_variational_driver.py", line 345, in run
+    for step in self.iter(n_iter, step_size):
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/driver/abstract_variational_driver.py", line 230, in iter
+    self._dp = self._forward_and_backward()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/utils/timing.py", line 292, in timed_function
+    result = fun(*args, **kwargs)  # type: ignore[misc]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/experimental/driver/vmc_sr.py", line 366, in _forward_and_backward
+    self._dp, self._old_updates, self.info = compute_sr_update_fun(
+                                             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/utils/timing.py", line 292, in timed_function
+    result = fun(*args, **kwargs)  # type: ignore[misc]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/_src/ngd/sr_srt_common.py", line 115, in _sr_srt_common
+    jacobians = nkjax.jacobian(
+                ^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/utils/timing.py", line 292, in timed_function
+    result = fun(*args, **kwargs)  # type: ignore[misc]
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/jax/_jacobian/logic.py", line 373, in jacobian
+    jacobians = jacobian_fun(Partial(f), params, samples)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/jax/sharding.py", line 462, in _fun
+    res = _f(*args)
+          ^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/jax/sharding.py", line 437, in _f
+    res = f(*args_treedef.unflatten(args))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/jax/_utils_tree.py", line 279, in <lambda>
+    return lambda *args, **kwargs: f(g(*args, **kwargs))
+                                     ^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/jax/_jacobian/jacobian_pytree.py", line 72, in _jacobian_cplx
+    raise TypeError("Cannot build the complex jacobian for a real-valued function.")
+TypeError: Cannot build the complex jacobian for a real-valued function.
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: eu-g5-038-2: task 0: Segmentation fault
