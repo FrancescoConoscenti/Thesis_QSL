@@ -1,0 +1,4 @@
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:34<?, ?it/s, Energy=-20.93+0.44j ± 0.78 [σ²=1.3e+02, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 23.49it/s, Energy=-20.93+0.44j ± 0.78 [σ²=1.3e+02, R̂=1.225]]
+  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:33<?, ?it/s, Energy=-24.84+0.51j ± 0.41 [σ²=3.3e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1849.34it/s, Energy=-24.84+0.51j ± 0.41 [σ²=3.3e+01, R̂=1.225]]
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
