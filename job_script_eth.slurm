@@ -7,7 +7,7 @@
 ##SBATCH --gres=gpu:1
 
 #SBATCH --time=00-2:00:00
-##SBATCH --array=0-14
+#SBATCH --array=0-14
 
 source ../netket_venv/bin/activate
 

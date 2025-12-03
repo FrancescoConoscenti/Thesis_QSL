@@ -1,0 +1,7 @@
+  0%|          | 0/2 [00:00<?, ?it/s]  0%|          | 0/2 [00:47<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]]  0%|          | 0/2 [00:33<?, ?it/s, Energy=nan+nanj ± nan [σ²=nan]] 50%|█████     | 1/2 [00:33<00:33, 33.54s/it, Energy=nan+nanj ± nan [σ²=nan]]100%|██████████| 2/2 [00:33<00:00, 16.77s/it, Energy=nan+nanj ± nan [σ²=nan]]
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets

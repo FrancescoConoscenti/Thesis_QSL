@@ -20,8 +20,11 @@ from netket.utils.dispatch import dispatch
 from netket import experimental as nkx
 from netket.jax import apply_chunked
 import numpy as np
+import logging
 from netket.hilbert.homogeneous import HomogeneousHilbert
 
+
+logger = logging.getLogger(__name__)
 
 
 def Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype):
@@ -74,15 +77,15 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype):
       # staggered magnetic field terms
       H = H.at[i, i].add(jnp.where((x + y) % 2 == 0, -sigmaz * h, sigmaz * h))
 
-      #pert = 1e-5*i/N  # add small perturbation to lift degeneracy
-      #H = H.at[i, i].add(jnp.where((x + y) % 2 == 0, -sigmaz * pert, sigmaz * pert)) 
+      pert = (1e-7*i/N_sites) # add small perturbation to lift degeneracy
+      H = H.at[i, i].add(jnp.where((x + y) % 2 == 0, -sigmaz * pert, sigmaz * pert)) 
 
   H = (H + H.transpose().conjugate())/2 # ensure Hermiticity
 
   # Compute eigenvalues and eigenvectors
   energies, eigenvectors = jnp.linalg.eigh(H)
   # Sort eigenvalues and eigenvectors
-  indices = jnp.argsort(energies) 
+  indices = jax.lax.stop_gradient(jnp.argsort(energies))
   energies = energies[indices]
   eigenvectors = eigenvectors[:, indices]
   
@@ -91,6 +94,7 @@ def Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype):
 #################################################################################################################################################################################
 
 def update_orbitals_gmf(lattice, dtype, h, phi):
+  #logger.info(f"Updating Gutzwiller MF orbitals with h={h}, phi={phi}.")
   
   positions = lattice.positions
   N_sites = len(lattice.positions)
@@ -122,7 +126,8 @@ def update_orbitals_gmf(lattice, dtype, h, phi):
 
     mat_block, E, eigenstates, energies = x
     E += np.sum(energies[:n_elecs])
-    jax.debug.print("MF energy: {E}", E=E)
+
+    logger.info(f"MF energy Initialize orbitals: {E}")
 
     return mat_block
 
@@ -130,8 +135,6 @@ def update_orbitals_gmf(lattice, dtype, h, phi):
   upmatrix = initialize_real(n_elecs//2, sigmaz = +1)
   dnmatrix = initialize_real(n_elecs//2, sigmaz = -1)
   mf = jnp.block([[upmatrix, jnp.zeros(upmatrix.shape)], [jnp.zeros(dnmatrix.shape),dnmatrix]]).T
-  jax.debug.print("n_elecs: {x}",x = n_elecs)
-  jax.debug.print("upmatrix shape: {x}",x = upmatrix.shape)
-  jax.debug.print("MF init orbitals shape: {x}",x = mf.shape)
 
+  logger.info("Finished updating Gutzwiller MF orbitals.")
   return dtype(mf)

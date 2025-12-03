@@ -21,12 +21,14 @@ from jax import numpy as jnp
 import netket as nk
 import os
 import flax
+import logging
 os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
 import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
 from netket.experimental.driver import VMC_SR
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
+from HFDS_Heisenberg.Optimized_Gutwiller_MF_Init import optimized_gutzwiller_params
 
 from Elaborate.Statistics.Energy import *
 from Elaborate.Statistics.Corr_Struct import *
@@ -36,10 +38,16 @@ from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
 
+# Setup logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
+logger.info("Parsing command-line arguments.")
 args = parser.parse_args()
 
 spin = True
@@ -54,6 +62,7 @@ n_dim = 2
 
 J1J2 = True
 J2 = args.J2
+logger.info(f"J2 coupling parameter set to: {J2}")
 seed = int(args.seed)
 
 dtype   = "complex"
@@ -62,6 +71,7 @@ determinant_type = "hidden"
 bounds  = "PBC"
 parity = True
 rotation = True
+logger.info("Physical and model parameters set.")
 
 #Varaitional state param
 n_hid_ferm       = 1
@@ -71,7 +81,7 @@ hid_layers       = 1
 #Network param
 lr               = 0.025
 n_samples        = 256
-N_opt            = 2
+N_opt            = 3
 
 number_data_points = 1
 save_every       = N_opt//number_data_points
@@ -79,6 +89,7 @@ block_iter       = N_opt//save_every
 
 n_chains         = n_samples//2
 
+logger.info("Script starting execution.")
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
@@ -97,6 +108,7 @@ os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
+logger.info(f"Output will be saved to: {folder}")
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
@@ -104,19 +116,28 @@ print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{featu
 boundary_conditions = 'pbc' 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
+logger.info("Hilbert space created.")
 print(f"hilbert space size = ",hi.size)
 
 
 # ------------- define Hamiltonian ------------------------
 ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
+logger.info("Hamiltonian created.")
 
 # --- Calculate exact ground state before model initialization ---
 _, ket_gs_exact = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
-
-
+logger.info("Exact ground state calculated.")
 
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
+
+h_opt, phi_opt = 0.06, 0.1
+if MFinitialization == "G_MF":
+    logger.info("Starting Gutzwiller parameter optimization before VMC.")
+    opt_params = optimized_gutzwiller_params(lattice, ha, output_folder=folder)
+    h_opt = float(jnp.real(opt_params["h"]))
+    phi_opt = float(jnp.real(opt_params["phi"]))
+    logger.info(f"Gutzwiller optimization finished. Using h={h_opt}, phi={phi_opt}")
 
 model = HiddenFermion(lattice=lattice,
                    network="FFNN",
@@ -130,7 +151,11 @@ model = HiddenFermion(lattice=lattice,
                    bounds=bounds,
                    parity=parity,
                    rotation=rotation,
-                   dtype=dtype_,)
+                   dtype=dtype_,
+                   h_opt=h_opt,
+                   phi_opt=phi_opt)
+
+logger.info("HiddenFermion model initialized.")
                 
 # ---------- define sampler ------------------------
 sampler = nk.sampler.MetropolisExchange(
@@ -140,6 +165,7 @@ sampler = nk.sampler.MetropolisExchange(
     n_chains=n_chains,
     sweep_size=lattice.n_nodes,
 )
+logger.info("MetropolisExchange sampler created.")
 
 key = jax.random.key(seed)
 key, pkey, skey = jax.random.split(key, 3)
@@ -149,6 +175,7 @@ vstate = nk.vqs.MCState(
     n_samples=n_samples, 
     seed=pkey,
     n_discard_per_chain=128) #defines the variational state object
+logger.info("MCState (vstate) created.")
 
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
@@ -162,10 +189,12 @@ vmc = VMC_SR(
     variational_state=vstate,
     mode = 'complex'
 ) 
+logger.info("VMC_SR driver created.")
 
 log = nk.logging.RuntimeLog()
 
 
+logger.info(f"Starting VMC optimization for {N_opt} iterations.")
 for i in range(block_iter):
      #Save
     with open(save_model +"/model_"+ f"{i}"+".mpack", "wb") as f:
@@ -173,11 +202,13 @@ for i in range(block_iter):
         f.write(bytes_out)
 
     vmc.run(n_iter=save_every, out=log)
+logger.info("VMC optimization finished.")
     
 with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
     f.write(flax.serialization.to_bytes(vstate.variables))
 
 
+logger.info("Starting post-simulation analysis.")
 
 E_init = get_initial_energy(log, L)
 print(f"E_init = {E_init}")
@@ -215,6 +246,7 @@ amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_
 sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder, "one")
 
 variables = {
+        'log': log.data,
         'E_init': E_init,
         'E_exact': E_exact,
         'Energy_iter': E_vs, # Renamed from E_vs for clarity
@@ -234,8 +266,10 @@ variables = {
 with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)
 
+logger.info("Analysis variables saved to pickle file.")
+
 vstate.n_samples = 256
 #S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
    
-
+logger.info("Script finished successfully.")
 sys.stdout.close()
