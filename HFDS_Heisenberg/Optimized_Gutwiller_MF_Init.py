@@ -98,6 +98,70 @@ def plot_gutzwiller_optimization_history(iterations, energy_history, h_history, 
 def optimized_gutzwiller_params(lattice, ha, output_folder=None):
     logger.info("Starting optimization of Gutzwiller parameters.")
 
+    # Initial guess for parameters
+    params = {"h": jnp.array(0.06, dtype=jnp.float64),
+              "phi": jnp.array(0.1, dtype=jnp.float64)}
+    
+    n_iterations = 2000 # Increased for better convergence
+    n_samples = 1024
+    dtype = jnp.complex128
+    
+    # Define a simple model and vstate for Eloc calculation
+    gutz_model = GutzwillerWaveFunction(lattice=lattice, dtype=dtype)
+    hi = nk.hilbert.Spin(s=1/2, N=lattice.n_nodes, total_sz=0)
+    sampler = nk.sampler.MetropolisLocal(hilbert=hi)
+    vstate = nk.vqs.MCState(sampler, gutz_model, n_samples=n_samples)
+    vstate.parameters = params # Set initial parameters
+
+    # Use NetKet's built-in functionality for optimization
+    # This replaces the manual gradient calculation and parameter updates.
+    # We can use different learning rates for different parameters with optax.
+    import optax
+    # Use a single Adam optimizer for all parameters
+    optimizer = optax.adam(learning_rate=0.001)
+
+    # Lists to store history for plotting
+    energy_history = []
+    h_history = []
+    phi_history = []
+
+    logger.info(f"Running Gutzwiller optimization for {n_iterations} iterations.")
+    opt_state = optimizer.init(vstate.parameters)
+
+    for i in range(n_iterations):
+        # This one line computes the mean energy and its gradient
+        e_mean, Egrads = vstate.expect_and_grad(ha)
+        e_var = vstate.expect(ha @ ha).mean.real - e_mean.mean.real**2
+
+        logger.info(f"Iteration {i}: Mean Energy = {e_mean}, Variance = {e_var}")
+        logger.info(f"Iteration {i}: Gradients = {Egrads}")
+        
+        # Update the optimizer state and parameters
+        updates, opt_state = optimizer.update(Egrads, opt_state, vstate.parameters)
+        vstate.parameters = optax.apply_updates(vstate.parameters, updates)
+
+        logger.info(f"Iteration {i}: Updated params = {vstate.parameters}")
+
+        # Store values for plotting
+        energy_history.append(e_mean.mean.real)
+        h_history.append(vstate.parameters["h"])
+        phi_history.append(vstate.parameters["phi"])
+
+
+    logger.info(f"Gutzwiller optimization finished. Final params: {params}")
+
+    if output_folder:
+        os.makedirs(output_folder, exist_ok=True)
+        
+        plot_gutzwiller_optimization_history(range(n_iterations), energy_history, h_history, phi_history, output_folder)
+            
+    return vstate.parameters
+
+
+"""
+def optimized_gutzwiller_params(lattice, ha, output_folder=None):
+    logger.info("Starting optimization of Gutzwiller parameters.")
+
     def get_log_psi(params, x, L, dtype):
 
         # x is a batch of samples, shape (n_samples, n_sites)
@@ -167,7 +231,7 @@ def optimized_gutzwiller_params(lattice, ha, output_folder=None):
     learning_rate = 0.001
     learning_rate_h = learning_rate
     learning_rate_phi = learning_rate*100
-    n_iterations = 200 # Increased for better convergence
+    n_iterations = 2000 # Increased for better convergence
     n_samples = 1024
     dtype = jnp.complex128
     
@@ -220,3 +284,5 @@ def optimized_gutzwiller_params(lattice, ha, output_folder=None):
         plot_gutzwiller_optimization_history(range(n_iterations), energy_history, h_history, phi_history, output_folder)
             
     return params
+
+"""

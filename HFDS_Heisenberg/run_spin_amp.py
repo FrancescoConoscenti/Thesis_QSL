@@ -45,6 +45,7 @@ from jax.nn.initializers import zeros, normal, constant
 from netket.utils.dispatch import dispatch
 from netket import experimental as nkx
 from netket.jax import apply_chunked
+from netket.jax import logdet_cmplx
 import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert 
 from netket.jax import logsumexp_cplx
@@ -53,12 +54,19 @@ from jax import Array
 from HFDS_Heisenberg.MF_Init import init_orbitals_mf
 from HFDS_Heisenberg.Gutzwiller_MF_Init import update_orbitals_gmf
 
+import logging
+# Setup logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
+logger = logging.getLogger(__name__)
+
 from HFDS_Heisenberg.HFDS_model_spin import Orbitals
 
 
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
@@ -84,23 +92,23 @@ parity = True
 rotation = True
 
 #Varaitional state param
-n_hid_ferm       = 2
-features         = 4    #hidden units per layer
+n_hid_ferm       = 1
+features         = 2    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.025
 n_samples        = 1024
-N_opt            = 100
+N_opt            = 2
 
-number_data_points = 20
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
 n_chains         = n_samples//2
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_amp"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_normal"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -133,9 +141,13 @@ ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[F
 # --- Calculate exact ground state before model initialization ---
 _, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
 
+logger.info(f"ket_gs outside model (first 10): {ket_gs.flatten()[:10]}")
+logger.info(f"ket_gs shape: {ket_gs.shape}")
 
+############################################################################################################
 
 class HiddenFermion_amp(nn.Module):
+  lattice: nk.graph.Graph
   n_elecs: int
   network: str
   n_hid: int
@@ -152,11 +164,13 @@ class HiddenFermion_amp(nn.Module):
   rotation: bool = False
   dtype: type = jnp.float64
   U: float=8.0
+  h_opt: float = 0.0
+  phi_opt: float = 0.0
 
   def setup(self):
     # orbital Initialization
     self.n_modes = 2*self.Lx*self.Ly
-    self.orbitals = Orbitals(self.n_elecs,self.n_hid,self.Lx, self.Ly, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
+    self.orbitals = Orbitals(self.lattice, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U, self.h_opt, self.phi_opt)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
@@ -192,6 +206,7 @@ class HiddenFermion_amp(nn.Module):
     # 5. Concatenate the MF orbitals and the NN outputs
     x = jnp.concatenate((orbitals,x_),axis=1)
     sign, logx = jnp.linalg.slogdet(x)
+    #logdetx = logdet_cmplx(x)
     return logx, jnp.log(sign + 0j)
 
 
@@ -235,32 +250,37 @@ class HiddenFermion_amp(nn.Module):
   @nn.compact
   def __call__(self,x):
 
-    #x_sym = self.gen_sym_samples(x)
+    #sign, logx = jnp.linalg.slogdet(x)
+    #return logx, jnp.log(sign + 0j)
     log_amp, log_sign = self.calc_psi(x)
+    # This will print during JAX-compiled execution
+    jax.debug.print("ket_gs inside model (first 10): {x}", x=ket_gs.flatten()[:10])
 
     # --- EXACT LOOKUP ---
     exact_log_amps = jnp.log(jnp.array(np.abs(ket_gs), dtype=self.dtype) + 0j)
-    exact_log_signs = jnp.angle(ket_gs)
+    exact_phases = jnp.angle(ket_gs)
 
-    x_bits = (x + 1) / 2
-    powers = 2**jnp.arange(x.shape[-1] - 1, -1, -1)
-    indices = jnp.sum(x_bits * powers, axis=-1).astype(int)
+    # Correctly map spin configurations to indices in the constrained Hilbert space
+    indices = self.hilbert.states_to_numbers(x)
     
     exact_log_amp = exact_log_amps[indices].reshape(-1) 
-    exact_log_sign = exact_log_signs[indices].reshape(-1)
-    #exact_log_amp = jnp.repeat(exact_log_amp[None, :], repeats=8, axis=0)
+    exact_phase = exact_phases[indices].reshape(-1)
 
-    log_psi_exact_sign = log_amp  + 1j * exact_log_sign
-    log_psi_exact_amp = exact_log_amp + 1j * log_sign
+    log_psi_exact_sign = log_amp  +  1j * exact_phase
+    log_psi_exact_amp = exact_log_amp +  log_sign
+    log_psi = log_amp + log_sign
 
     return log_psi_exact_amp
-
+  
+###########################################################################################################
 
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
 
 
-model = HiddenFermion_amp(n_elecs=n_elecs,
+model = HiddenFermion_amp(
+                        lattice=lattice,
+                        n_elecs=n_elecs,
                         network="FFNN",
                         n_hid=n_hid_ferm,
                         Lx=L,
@@ -274,7 +294,9 @@ model = HiddenFermion_amp(n_elecs=n_elecs,
                         bounds=bounds,
                         parity=parity,
                         rotation=rotation,
-                        dtype=dtype_,)
+                        dtype=dtype_,
+                        h_opt=0.0, # Added h_opt
+                        phi_opt=0.0) # Added phi_opt
 
 
 
@@ -381,11 +403,7 @@ with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)
 
 vstate.n_samples = 256
-#S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
    
 
 sys.stdout.close()
-
-
-
-

@@ -59,13 +59,13 @@ parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 200
+N_opt           = 50
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_latest_model"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'

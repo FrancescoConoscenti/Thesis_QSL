@@ -6563,3 +6563,61 @@
 2025-12-03 16:56:27,282 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
 2025-12-03 16:56:27,450 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
 2025-12-03 16:56:27,451 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:56:56,483 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:56:56,484 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:56:56,492 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:56:56,655 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:56:56,821 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:56:56,821 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:56:56,885 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:56:56,886 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:56:56,894 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:56:57,060 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:56:57,225 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:56:57,226 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:48,440 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:48,441 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:48,450 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:48,690 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:48,905 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:48,906 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+2025-12-03 16:57:50,279 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:50,280 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:50,288 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:50,454 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:50,618 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:50,619 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:50,681 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:50,682 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:50,690 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:50,854 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:51,018 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:51,019 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:51,924 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:51,927 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:51,938 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:52,135 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:52,334 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:52,335 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:54,860 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:54,863 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:54,873 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:55,057 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:55,241 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:55,242 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Statistics/Error_Stat.py:54: RuntimeWarning: invalid value encountered in divide
+  fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+2025-12-03 16:57:58,783 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:58,785 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:58,794 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=nan, phi=nan
+2025-12-03 16:57:58,984 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:59,176 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:59,177 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:605: RuntimeWarning: invalid value encountered in divide
+  psi_vstate_norm = psi_vstate_unnorm / norm_vstate
+2025-12-03 16:58:22,928 - __main__ - INFO - Analysis variables saved to pickle file.
+2025-12-03 16:58:22,928 - __main__ - INFO - Script finished successfully.

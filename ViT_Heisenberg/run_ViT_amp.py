@@ -22,10 +22,17 @@ print(jax.devices())
 import flax
 from flax import linen as nn
 from netket.operator.spin import sigmax, sigmaz, sigmay
+import logging
 import sys
 import os
 import argparse
 import pickle
+
+# Setup logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
@@ -38,8 +45,10 @@ from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
-parser.add_argument("--seed", type=float, default=0, help="seed")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2", required=False)
+parser.add_argument("--seed", type=float, default=0, help="seed", required=False)
+
+logger.info("Parsing command-line arguments.")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
@@ -50,22 +59,24 @@ n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
+logger.info(f"Script parameters: J2={J2}, seed={seed}")
+
 num_layers      = 2     # number of Tranformer layers
 d_model         = 8   # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 100
+N_opt           = 25
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_sign"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_amp2"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'
@@ -78,22 +89,29 @@ os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
+logger.info(f"Output will be saved to: {folder}")
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph
+logger.info("Creating Hilbert space and Hamiltonian...")
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
+logger.info(f"Hilbert space size = {hilbert.size}")
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
     hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
 ).to_jax_operator()  # No Marshall sign rule
+logger.info("Hamiltonian created.")
 
 # --- Calculate exact ground state before model initialization ---
+logger.info("Calculating exact ground state...")
 _, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
+logger.info(f"Exact ground state calculated. Shape: {ket_gs.shape}")
+logger.info(f"ket_gs values out ViT (first 10): {ket_gs.flatten()[:10]}")
 
-
+####################################################################################################################
 
 import matplotlib.pyplot as plt
 import netket as nk
@@ -378,26 +396,32 @@ class ViT(nn.Module):
 
         log_psi = OuputHead(d_model=self.d_model)(y)
 
-        log_amp = np.real(log_psi)
-        log_sign = np.imag(log_psi)
+        
+        # This will print the content of ket_gs during the JAX-compiled execution of the model.
+        # The output will appear in your terminal/logfile, prefixed with information about the device it ran on.
+        jax.debug.print("{ket_gs}", ket_gs=ket_gs)
+        #logger.info(f"ket_gs values (first 10): {ket_gs.flatten()[:10]}")
+
+
+        log_psi_amp = np.real(log_psi)
+        log_psi_sign = np.imag(log_psi)
 
         # --- EXACT LOOKUP ---
-        exact_log_amps = jnp.log(jnp.array(np.abs(ket_gs)) + 0j)
-        exact_log_signs = jnp.angle(ket_gs)
+        log_psi_exact_amps = jnp.log(jnp.abs(ket_gs)) # Safe log of amplitude
+        log_psi_exact_signs = jnp.angle(ket_gs) # Phase
 
         # Use original spins for indexing, not the embedded 'x'
-        x_bits = (spins + 1) / 2
-        powers = 2**jnp.arange(spins.shape[-1] - 1, -1, -1)
-        indices = jnp.sum(x_bits * powers, axis=-1).astype(int)
+        indices = self.hilbert.states_to_numbers(x)
         
-        exact_log_amp = exact_log_amps[indices].reshape(-1) 
-        exact_log_sign = exact_log_signs[indices].reshape(-1)
+        log_psi_exact_amp = log_psi_exact_amps[indices].reshape(-1) 
+        log_psi_exact_sign = log_psi_exact_signs[indices].reshape(-1)
 
 
-        log_psi_exact_sign = log_amp + 1j * exact_log_sign
-        log_psi_exact_amp = exact_log_amp + 1j * log_sign
+        log_psi_exact_sign_tot = log_psi_amp +  log_psi_exact_sign
+        log_psi_exact_amp_tot = log_psi_exact_amp +  log_psi_sign
+        
 
-        return log_psi_exact_sign # or log_psi_exact_sign
+        return log_psi_exact_sign_tot
     
 
 
@@ -466,7 +490,9 @@ class ViT_sym(nn.Module):
 
 
 
+####################################################################################################################
 
+logger.info("Initializing ViT model...")
 # Intiialize the ViT variational wave function
 vit_module = ViT_sym(
     L=L,
@@ -485,6 +511,7 @@ spin_configs = jax.random.randint(subkey, shape=(M, L * L), minval=0, maxval=1) 
 params = vit_module.init(subkey, spin_configs)
 
 # Metropolis Local Sampling
+logger.info("Creating sampler...")
 sampler = nk.sampler.MetropolisExchange(
     hilbert=hilbert,
     graph=lattice,
@@ -496,6 +523,7 @@ sampler = nk.sampler.MetropolisExchange(
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 key, subkey = jax.random.split(key, 2)
+logger.info("Creating MCState (vstate)...")
 vstate = nk.vqs.MCState(
     sampler=sampler,
     model=vit_module,
@@ -598,4 +626,5 @@ vstate.n_samples = 256
 S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
 
 
+logger.info("Script finished successfully.")
 sys.stdout.close()

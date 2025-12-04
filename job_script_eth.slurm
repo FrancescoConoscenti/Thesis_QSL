@@ -6,15 +6,15 @@
 #SBATCH --cpus-per-task=32
 ##SBATCH --gres=gpu:1
 
-#SBATCH --time=00-2:00:00
-#SBATCH --array=0-14
+#SBATCH --time=00-24:00:00
+#SBATCH --array=0-3
 
 source ../netket_venv/bin/activate
 
 export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.0 0.2 0.5 0.7 1.0)
-SEED_VALUES=(1 2 3)
+J_VALUES=(0.0 0.2)
+SEED_VALUES=(1 2)
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
@@ -27,7 +27,7 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 
 
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J"
-srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
+srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J"
 
 #srun python -m Elaborate.Plotting.plot_avarage_models
 #srun python -m Elaborate.Plotting.Fermi_Init_fidelity_vs_Js

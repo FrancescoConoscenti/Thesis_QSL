@@ -80,7 +80,7 @@ hid_layers       = 1
 
 #Network param
 lr               = 0.025
-n_samples        = 256
+n_samples        = 1024
 N_opt            = 3
 
 number_data_points = 1
@@ -91,7 +91,7 @@ n_chains         = n_samples//2
 
 logger.info("Script starting execution.")
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_new_phi"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -110,7 +110,7 @@ os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
 logger.info(f"Output will be saved to: {folder}")
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
-print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
+print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
 
 # Hilbert space of spins on the graph
 boundary_conditions = 'pbc' 
@@ -131,13 +131,14 @@ logger.info("Exact ground state calculated.")
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
 
-h_opt, phi_opt = 0.06, 0.1
-if MFinitialization == "G_MF":
+h_opt, phi_opt = 0.055, 0.1*np.pi
+
+"""if MFinitialization == "G_MF":
     logger.info("Starting Gutzwiller parameter optimization before VMC.")
     opt_params = optimized_gutzwiller_params(lattice, ha, output_folder=folder)
     h_opt = float(jnp.real(opt_params["h"]))
     phi_opt = float(jnp.real(opt_params["phi"]))
-    logger.info(f"Gutzwiller optimization finished. Using h={h_opt}, phi={phi_opt}")
+    logger.info(f"Gutzwiller optimization finished. Using h={h_opt}, phi={phi_opt}")"""
 
 model = HiddenFermion(lattice=lattice,
                    network="FFNN",

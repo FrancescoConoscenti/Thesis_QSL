@@ -9315,3 +9315,76 @@
 2025-12-03 16:56:23,294 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
 2025-12-03 16:56:23,454 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
 2025-12-03 16:56:23,455 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:33,329 - __main__ - INFO - VMC optimization finished.
+  0%|          | 0/3 [00:00<?, ?it/s]  0%|          | 0/3 [00:53<?, ?it/s, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]]  0%|          | 0/3 [00:35<?, ?it/s, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]] 33%|███▎      | 1/3 [00:35<01:11, 35.92s/it, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]] 33%|███▎      | 1/3 [01:10<01:11, 35.92s/it, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]] 67%|██████▋   | 2/3 [01:10<00:34, 35.00s/it, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]]100%|██████████| 3/3 [01:10<00:00, 23.42s/it, Energy=-1.597869794929832165664+0.005652189258544776038j ± 0.000000000000000000063 e+01 [σ²=1.0e-34, R̂=1.225]]
+2025-12-03 16:57:33,364 - __main__ - INFO - Starting post-simulation analysis.
+2025-12-03 16:57:33,546 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:33,548 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:33,558 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:57:33,714 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:34,765 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:34,765 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:35,853 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:35,854 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:35,863 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:57:36,029 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:36,198 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:36,199 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:57:36,313 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:57:36,315 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:57:36,323 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:57:36,490 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:36,656 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:57:36,657 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:58:08,463 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:58:08,464 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:58:08,472 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:58:08,636 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:58:08,801 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:58:08,802 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:58:08,863 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:58:08,865 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:58:08,873 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:58:09,037 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:58:09,199 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:58:09,200 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:04,336 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:04,338 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:04,347 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:04,579 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:04,784 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:04,785 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:06,272 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:06,273 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:06,282 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:06,448 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:06,614 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:06,615 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:06,678 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:06,679 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:06,687 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:06,856 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:07,023 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:07,023 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:08,043 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:08,046 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:08,056 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:08,260 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:08,474 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:08,475 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:10,358 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:10,361 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:10,369 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:12,130 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:12,322 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:12,323 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 16:59:16,180 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 16:59:16,183 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 16:59:16,195 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=2.469136339137213, phi=-81165.0106480796
+2025-12-03 16:59:16,383 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:16,570 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 16:59:16,571 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+2025-12-03 16:59:43,882 - __main__ - INFO - Analysis variables saved to pickle file.
+2025-12-03 16:59:43,882 - __main__ - INFO - Script finished successfully.
