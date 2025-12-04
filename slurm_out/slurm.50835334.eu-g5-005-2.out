@@ -1,0 +1,93 @@
+2025-12-04 18:17:04,202 - __main__ - INFO - ket_gs outside model (first 10): [-0.00075158 -0.00134471  0.00087267 -0.00134471  0.00286136  0.00087267
+ -0.00069366  0.00087267 -0.00134471  0.00087267]
+2025-12-04 18:17:04,202 - __main__ - INFO - ket_gs shape: (12870, 1)
+2025-12-04 18:17:04,531 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.0, phi=0.0
+2025-12-04 18:17:04,723 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:17:04,899 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:17:04,902 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-04 18:17:06,578 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.0, phi=0.0
+2025-12-04 18:17:06,740 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:17:06,904 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:17:06,905 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+Traceback (most recent call last):
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 218, in _broadcast_shapes_uncached
+    return _try_broadcast_shapes(*rank_promoted_shapes, name='broadcast_shapes')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 135, in _try_broadcast_shapes
+    raise TypeError(f'{name} got incompatible shapes for broadcasting: '
+TypeError: broadcast_shapes got incompatible shapes for broadcasting: (1, 8, 512), (8, 512, 1).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 196, in broadcast_shapes
+    return _broadcast_shapes_cached(*shapes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/util.py", line 337, in wrapper
+    return cached(config.trace_context() if trace_context_in_key else _ignore(),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/util.py", line 331, in cached
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 202, in _broadcast_shapes_cached
+    return _broadcast_shapes_uncached(*shapes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 221, in _broadcast_shapes_uncached
+    raise ValueError(f"Incompatible shapes for broadcasting: shapes={list(shapes)}") from err
+ValueError: Incompatible shapes for broadcasting: shapes=[(8, 512), (8, 512, 1)]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 218, in _broadcast_shapes_uncached
+    return _try_broadcast_shapes(*rank_promoted_shapes, name='broadcast_shapes')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/lax/lax.py", line 135, in _try_broadcast_shapes
+    raise TypeError(f'{name} got incompatible shapes for broadcasting: '
+TypeError: broadcast_shapes got incompatible shapes for broadcasting: (1, 8, 512), (8, 512, 1).
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 314, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 286, in __init__
+    self.sampler = sampler
+    ^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 382, in sampler
+    self.sampler_state = self.sampler.init_state(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/sampler/base.py", line 254, in init_state
+    return self._init_state(wrap_afun(machine), parameters, key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/sampler/metropolis.py", line 360, in _init_state
+    output_dtype = jax.eval_shape(machine.apply, parameters, σ).dtype
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 270, in __call__
+    log_psi_sym = log_amps + 1j * exact_phases_sym
+                  ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/array_methods.py", line 1060, in op
+    return getattr(self.aval, f"_{name}")(self, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/array_methods.py", line 579, in deferring_binary_op
+    return binary_op(*args)
+           ^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/ufunc_api.py", line 180, in __call__
+    return call(*args)
+           ^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/ufuncs.py", line 1214, in add
+    x, y = promote_args("add", x, y)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/util.py", line 227, in promote_args
+    return promote_shapes(fun_name, *promote_dtypes(*args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/jax/_src/numpy/util.py", line 63, in promote_shapes
+    result_rank = len(lax.broadcast_shapes(*shapes))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Incompatible shapes for broadcasting: shapes=[(8, 512), (8, 512, 1)]
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: eu-g5-005-2: task 0: Exited with exit code 1

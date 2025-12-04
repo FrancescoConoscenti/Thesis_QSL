@@ -1,0 +1,16 @@
+HFDS_spin, J=0.2, L=4, layers1_hidd1_feat1_sample256_lr0.025_iter3_try1
+hilbert space size =  16
+Total number of parameters: 594
+Automatic SR implementation choice:  NTK
+Initial energy:  -0.39756335167618434
+E_init = -0.39756335167618434
+Last value:  -0.45481603603397747
+Exact ground state energy per site= -0.6198739415299099
+Fidelity <vstate|exact> = [0.26808809]
+Relative error = 0.01031611909349578
+Magnetization = 0.0
+Variance = 39.58212841187597
+V-score = -21.757219004981913
+params=594
+⟨Marshall Sign final vstate⟩ =  0.9929667167369193
+⟨Marshall sign exact gs⟩ = -1.0

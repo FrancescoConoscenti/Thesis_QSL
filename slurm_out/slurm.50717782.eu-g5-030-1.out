@@ -1,0 +1,822 @@
+2025-12-03 18:29:32,175 - __main__ - INFO - Parsing command-line arguments.
+2025-12-03 18:29:32,175 - __main__ - INFO - J2 coupling parameter set to: 0.7
+2025-12-03 18:29:32,175 - __main__ - INFO - Physical and model parameters set.
+2025-12-03 18:29:32,175 - __main__ - INFO - Script starting execution.
+2025-12-03 18:29:32,181 - __main__ - INFO - Output will be saved to: HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_1/J=0.7/seed_4
+2025-12-03 18:29:32,200 - __main__ - INFO - Hilbert space created.
+2025-12-03 18:29:32,205 - __main__ - INFO - Hamiltonian created.
+2025-12-03 18:29:36,867 - __main__ - INFO - Exact ground state calculated.
+2025-12-03 18:29:36,867 - __main__ - INFO - Starting Gutzwiller parameter optimization before VMC.
+2025-12-03 18:29:36,867 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Starting optimization of Gutzwiller parameters.
+2025-12-03 18:29:37,216 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:37,367 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:37,369 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:37,704 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:37,853 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:37,854 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:38,079 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Running Gutzwiller optimization for 200 iterations.
+2025-12-03 18:29:38,480 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:38,629 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:38,629 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:39,934 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:40,147 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:40,148 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:45,205 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:45,416 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:45,417 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:50,666 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:50,818 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:50,818 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:50,994 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:51,147 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:51,147 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:51,359 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:51,513 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:29:51,513 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:52,152 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<JVPTrace> with
+  primal = Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+  tangent = Traced<ShapedArray(float64[])>with<JaxprTrace> with
+    pval = (ShapedArray(float64[]), None)
+    recipe = JaxprEqnRecipe(eqn_id=<object object at 0x154603043dc0>, in_tracers=(Traced<ShapedArray(float64[]):JaxprTrace>,), out_tracer_refs=[<weakref at 0x154602ec3330; to 'JaxprTracer' at 0x154602ec19e0>], out_avals=[ShapedArray(float64[])], primitive=pjit, params={'jaxpr': { lambda ; a:f64[]. let  in (a,) }, 'in_shardings': (UnspecifiedValue,), 'out_shardings': (UnspecifiedValue,), 'in_layouts': (None,), 'out_layouts': (None,), 'donated_invars': (False,), 'ctx_mesh': None, 'name': 'add', 'keep_unused': False, 'inline': True, 'compiler_options_kvs': ()}, effects=set(), source_info=<jax._src.source_info_util.SourceInfo object at 0x154602ed9300>, ctx=JaxprEqnContext(compute_type=None, threefry_partitionable=True, cur_abstract_mesh=AbstractMesh((), axis_types=()), xla_metadata=None))
+2025-12-03 18:29:52,513 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<JVPTrace> with
+  primal = Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+  tangent = Traced<ShapedArray(float64[])>with<JaxprTrace> with
+    pval = (ShapedArray(float64[]), None)
+    recipe = JaxprEqnRecipe(eqn_id=<object object at 0x154602c847a0>, in_tracers=(Traced<ShapedArray(float64[]):JaxprTrace>,), out_tracer_refs=[<weakref at 0x154602c92980; to 'JaxprTracer' at 0x154602c928e0>], out_avals=[ShapedArray(float64[])], primitive=pjit, params={'jaxpr': { lambda ; a:f64[]. let  in (a,) }, 'in_shardings': (UnspecifiedValue,), 'out_shardings': (UnspecifiedValue,), 'in_layouts': (None,), 'out_layouts': (None,), 'donated_invars': (False,), 'ctx_mesh': None, 'name': 'add', 'keep_unused': False, 'inline': True, 'compiler_options_kvs': ()}, effects=set(), source_info=<jax._src.source_info_util.SourceInfo object at 0x154602c83d30>, ctx=JaxprEqnContext(compute_type=None, threefry_partitionable=True, cur_abstract_mesh=AbstractMesh((), axis_types=()), xla_metadata=None))
+2025-12-03 18:29:52,518 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:29:52,981 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<JVPTrace> with
+  primal = Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+  tangent = Traced<ShapedArray(float64[])>with<JaxprTrace> with
+    pval = (ShapedArray(float64[]), None)
+    recipe = JaxprEqnRecipe(eqn_id=<object object at 0x154602bbec90>, in_tracers=(Traced<ShapedArray(float64[]):JaxprTrace>,), out_tracer_refs=[<weakref at 0x154602c755d0; to 'JaxprTracer' at 0x154602c74680>], out_avals=[ShapedArray(float64[])], primitive=pjit, params={'jaxpr': { lambda ; a:f64[]. let  in (a,) }, 'in_shardings': (UnspecifiedValue,), 'out_shardings': (UnspecifiedValue,), 'in_layouts': (None,), 'out_layouts': (None,), 'donated_invars': (False,), 'ctx_mesh': None, 'name': 'add', 'keep_unused': False, 'inline': True, 'compiler_options_kvs': ()}, effects=set(), source_info=<jax._src.source_info_util.SourceInfo object at 0x15460290f6a0>, ctx=JaxprEqnContext(compute_type=None, threefry_partitionable=True, cur_abstract_mesh=AbstractMesh((), axis_types=()), xla_metadata=None))
+2025-12-03 18:29:53,342 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<JVPTrace> with
+  primal = Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+  tangent = Traced<ShapedArray(float64[])>with<JaxprTrace> with
+    pval = (ShapedArray(float64[]), None)
+    recipe = JaxprEqnRecipe(eqn_id=<object object at 0x1546028676b0>, in_tracers=(Traced<ShapedArray(float64[]):JaxprTrace>,), out_tracer_refs=[<weakref at 0x154602708680; to 'JaxprTracer' at 0x15460270bbf0>], out_avals=[ShapedArray(float64[])], primitive=pjit, params={'jaxpr': { lambda ; a:f64[]. let  in (a,) }, 'in_shardings': (UnspecifiedValue,), 'out_shardings': (UnspecifiedValue,), 'in_layouts': (None,), 'out_layouts': (None,), 'donated_invars': (False,), 'ctx_mesh': None, 'name': 'add', 'keep_unused': False, 'inline': True, 'compiler_options_kvs': ()}, effects=set(), source_info=<jax._src.source_info_util.SourceInfo object at 0x15460270fd30>, ctx=JaxprEqnContext(compute_type=None, threefry_partitionable=True, cur_abstract_mesh=AbstractMesh((), axis_types=()), xla_metadata=None))
+2025-12-03 18:29:53,343 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:30:08,695 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:30:08,847 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:30:08,848 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:30:09,007 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:30:09,158 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 18:30:09,158 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 18:30:41,018 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 0: Mean Energy = -27.1+0.0j ± 1.2 [σ²=7.9e+02, R̂=1.409], Variance = -384.31114760760533
+2025-12-03 18:30:41,100 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 0: Gradients = {'h': Array(-14.65492208, dtype=float64), 'phi': Array(2.41756745e-07, dtype=float64)}
+2025-12-03 18:30:42,052 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 0: Updated params = {'h': Array(0.061, dtype=float64), 'phi': Array(0.09903972, dtype=float64)}
+2025-12-03 18:31:16,328 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 1: Mean Energy = -27.1-0.0j ± 1.2 [σ²=8.0e+02, R̂=1.409], Variance = -386.9210850095669
+2025-12-03 18:31:16,330 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 1: Gradients = {'h': Array(-14.6553845, dtype=float64), 'phi': Array(-1.66599372e-07, dtype=float64)}
+2025-12-03 18:31:16,334 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 1: Updated params = {'h': Array(0.062, dtype=float64), 'phi': Array(0.0989164, dtype=float64)}
+2025-12-03 18:31:49,983 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 2: Mean Energy = -27.1-0.0j ± 1.2 [σ²=8.0e+02, R̂=1.409], Variance = -389.5389430060884
+2025-12-03 18:31:49,984 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 2: Gradients = {'h': Array(-14.65577378, dtype=float64), 'phi': Array(3.33516415e-08, dtype=float64)}
+2025-12-03 18:31:49,987 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 2: Updated params = {'h': Array(0.063, dtype=float64), 'phi': Array(0.09875446, dtype=float64)}
+2025-12-03 18:32:24,942 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 3: Mean Energy = -27.2-0.0j ± 1.3 [σ²=8.0e+02, R̂=1.409], Variance = -392.16464725620216
+2025-12-03 18:32:24,943 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 3: Gradients = {'h': Array(-14.65609398, dtype=float64), 'phi': Array(2.14000328e-09, dtype=float64)}
+2025-12-03 18:32:24,946 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 3: Updated params = {'h': Array(0.06400001, dtype=float64), 'phi': Array(0.09861899, dtype=float64)}
+2025-12-03 18:32:59,476 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 4: Mean Energy = -27.2+0.0j ± 1.3 [σ²=8.1e+02, R̂=1.409], Variance = -394.79838430312395
+2025-12-03 18:32:59,477 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 4: Gradients = {'h': Array(-14.65634204, dtype=float64), 'phi': Array(-9.27336239e-08, dtype=float64)}
+2025-12-03 18:32:59,481 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 4: Updated params = {'h': Array(0.06500001, dtype=float64), 'phi': Array(0.0986628, dtype=float64)}
+2025-12-03 18:33:33,984 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 5: Mean Energy = -27.2-0.0j ± 1.3 [σ²=8.1e+02, R̂=1.409], Variance = -397.44001285280206
+2025-12-03 18:33:33,984 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 5: Gradients = {'h': Array(-14.65652196, dtype=float64), 'phi': Array(1.41066101e-07, dtype=float64)}
+2025-12-03 18:33:33,986 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 5: Updated params = {'h': Array(0.06600002, dtype=float64), 'phi': Array(0.09849491, dtype=float64)}
+2025-12-03 18:34:08,614 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 6: Mean Energy = -27.2-0.0j ± 1.3 [σ²=8.1e+02, R̂=1.409], Variance = -400.08968115893833
+2025-12-03 18:34:08,615 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 6: Gradients = {'h': Array(-14.65662667, dtype=float64), 'phi': Array(-8.22659627e-08, dtype=float64)}
+2025-12-03 18:34:08,619 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 6: Updated params = {'h': Array(0.06700003, dtype=float64), 'phi': Array(0.09846375, dtype=float64)}
+2025-12-03 18:34:42,737 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 7: Mean Energy = -27.2+0.0j ± 1.3 [σ²=8.1e+02, R̂=1.409], Variance = -402.7473612015408
+2025-12-03 18:34:42,738 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 7: Gradients = {'h': Array(-14.65666253, dtype=float64), 'phi': Array(1.50709972e-07, dtype=float64)}
+2025-12-03 18:34:42,742 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 7: Updated params = {'h': Array(0.06800003, dtype=float64), 'phi': Array(0.09825562, dtype=float64)}
+2025-12-03 18:35:16,970 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 8: Mean Energy = -27.2-0.0j ± 1.3 [σ²=8.2e+02, R̂=1.409], Variance = -405.413052422043
+2025-12-03 18:35:16,971 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 8: Gradients = {'h': Array(-14.65662674, dtype=float64), 'phi': Array(-7.85112116e-09, dtype=float64)}
+2025-12-03 18:35:16,975 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 8: Updated params = {'h': Array(0.06900004, dtype=float64), 'phi': Array(0.09808103, dtype=float64)}
+2025-12-03 18:35:51,070 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 9: Mean Energy = -27.3-0.0j ± 1.3 [σ²=8.2e+02, R̂=1.409], Variance = -408.08684794451244
+2025-12-03 18:35:51,071 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 9: Gradients = {'h': Array(-14.65651962, dtype=float64), 'phi': Array(5.7361637e-07, dtype=float64)}
+2025-12-03 18:35:51,075 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 9: Updated params = {'h': Array(0.07000005, dtype=float64), 'phi': Array(0.09760612, dtype=float64)}
+2025-12-03 18:36:26,122 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 10: Mean Energy = -27.3-0.0j ± 1.3 [σ²=8.2e+02, R̂=1.409], Variance = -410.7687329661597
+2025-12-03 18:36:26,122 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 10: Gradients = {'h': Array(-14.65634082, dtype=float64), 'phi': Array(3.15920429e-07, dtype=float64)}
+2025-12-03 18:36:26,126 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 10: Updated params = {'h': Array(0.07100006, dtype=float64), 'phi': Array(0.09702575, dtype=float64)}
+2025-12-03 18:37:00,902 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 11: Mean Energy = -27.3-0.0j ± 1.3 [σ²=8.2e+02, R̂=1.409], Variance = -413.4587194519674
+2025-12-03 18:37:00,903 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 11: Gradients = {'h': Array(-14.65608961, dtype=float64), 'phi': Array(7.28962599e-07, dtype=float64)}
+2025-12-03 18:37:00,907 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 11: Updated params = {'h': Array(0.07200007, dtype=float64), 'phi': Array(0.09632263, dtype=float64)}
+2025-12-03 18:37:35,161 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 12: Mean Energy = -27.3+0.0j ± 1.3 [σ²=8.3e+02, R̂=1.409], Variance = -416.1568547201127
+2025-12-03 18:37:35,162 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 12: Gradients = {'h': Array(-14.65576697, dtype=float64), 'phi': Array(4.66882373e-07, dtype=float64)}
+2025-12-03 18:37:35,166 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 12: Updated params = {'h': Array(0.07300007, dtype=float64), 'phi': Array(0.09555265, dtype=float64)}
+2025-12-03 18:38:10,122 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 13: Mean Energy = -27.3-0.0j ± 1.3 [σ²=8.3e+02, R̂=1.409], Variance = -418.8632477307192
+2025-12-03 18:38:10,123 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 13: Gradients = {'h': Array(-14.65536843, dtype=float64), 'phi': Array(1.61887619e-07, dtype=float64)}
+2025-12-03 18:38:10,127 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 13: Updated params = {'h': Array(0.07400008, dtype=float64), 'phi': Array(0.09479904, dtype=float64)}
+2025-12-03 18:38:44,715 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 14: Mean Energy = -27.3+0.0j ± 1.3 [σ²=8.3e+02, R̂=1.409], Variance = -421.5777257042639
+2025-12-03 18:38:44,716 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 14: Gradients = {'h': Array(-14.65490151, dtype=float64), 'phi': Array(4.09076812e-07, dtype=float64)}
+2025-12-03 18:38:44,719 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 14: Updated params = {'h': Array(0.07500007, dtype=float64), 'phi': Array(0.09399862, dtype=float64)}
+2025-12-03 18:39:19,609 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 15: Mean Energy = -27.4-0.0j ± 1.3 [σ²=8.4e+02, R̂=1.409], Variance = -424.30051410902416
+2025-12-03 18:39:19,610 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 15: Gradients = {'h': Array(-14.65435929, dtype=float64), 'phi': Array(7.74129816e-08, dtype=float64)}
+2025-12-03 18:39:19,614 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 15: Updated params = {'h': Array(0.07600006, dtype=float64), 'phi': Array(0.09324557, dtype=float64)}
+2025-12-03 18:39:54,982 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 16: Mean Energy = -27.4-0.0j ± 1.3 [σ²=8.4e+02, R̂=1.409], Variance = -427.0315078370993
+2025-12-03 18:39:54,983 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 16: Gradients = {'h': Array(-14.65374378, dtype=float64), 'phi': Array(4.45950679e-07, dtype=float64)}
+2025-12-03 18:39:54,987 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 16: Updated params = {'h': Array(0.07700004, dtype=float64), 'phi': Array(0.09243978, dtype=float64)}
+2025-12-03 18:40:30,072 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 17: Mean Energy = -27.4+0.0j ± 1.3 [σ²=8.4e+02, R̂=1.409], Variance = -429.7708506374158
+2025-12-03 18:40:30,073 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 17: Gradients = {'h': Array(-14.65305503, dtype=float64), 'phi': Array(1.90372848e-07, dtype=float64)}
+2025-12-03 18:40:30,077 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 17: Updated params = {'h': Array(0.07800002, dtype=float64), 'phi': Array(0.09164668, dtype=float64)}
+2025-12-03 18:41:04,455 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 18: Mean Energy = -27.4+0.0j ± 1.3 [σ²=8.4e+02, R̂=1.409], Variance = -432.518286425223
+2025-12-03 18:41:04,456 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 18: Gradients = {'h': Array(-14.65229804, dtype=float64), 'phi': Array(1.45780254e-07, dtype=float64)}
+2025-12-03 18:41:04,460 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 18: Updated params = {'h': Array(0.07899998, dtype=float64), 'phi': Array(0.09087741, dtype=float64)}
+2025-12-03 18:41:38,684 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 19: Mean Energy = -27.4-0.0j ± 1.3 [σ²=8.5e+02, R̂=1.409], Variance = -435.2742205428921
+2025-12-03 18:41:38,685 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 19: Gradients = {'h': Array(-14.65146144, dtype=float64), 'phi': Array(1.30455536e-07, dtype=float64)}
+2025-12-03 18:41:38,689 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 19: Updated params = {'h': Array(0.07999993, dtype=float64), 'phi': Array(0.09013374, dtype=float64)}
+2025-12-03 18:42:13,188 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 20: Mean Energy = -27.4-0.0j ± 1.3 [σ²=8.5e+02, R̂=1.409], Variance = -438.0384210043086
+2025-12-03 18:42:13,189 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 20: Gradients = {'h': Array(-14.65055367, dtype=float64), 'phi': Array(2.00059591e-07, dtype=float64)}
+2025-12-03 18:42:13,193 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 20: Updated params = {'h': Array(0.08099986, dtype=float64), 'phi': Array(0.08939144, dtype=float64)}
+2025-12-03 18:42:47,544 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 21: Mean Energy = -27.5+0.0j ± 1.3 [σ²=8.5e+02, R̂=1.409], Variance = -440.81098848039056
+2025-12-03 18:42:47,545 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 21: Gradients = {'h': Array(-14.64957126, dtype=float64), 'phi': Array(4.13418528e-07, dtype=float64)}
+2025-12-03 18:42:47,547 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 21: Updated params = {'h': Array(0.08199978, dtype=float64), 'phi': Array(0.08859817, dtype=float64)}
+2025-12-03 18:43:21,845 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 22: Mean Energy = -27.5-0.0j ± 1.3 [σ²=8.6e+02, R̂=1.409], Variance = -443.5920008954441
+2025-12-03 18:43:21,846 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 22: Gradients = {'h': Array(-14.64851414, dtype=float64), 'phi': Array(1.01161313e-07, dtype=float64)}
+2025-12-03 18:43:21,848 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 22: Updated params = {'h': Array(0.08299968, dtype=float64), 'phi': Array(0.08784198, dtype=float64)}
+2025-12-03 18:43:56,187 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 23: Mean Energy = -27.5-0.0j ± 1.3 [σ²=8.6e+02, R̂=1.409], Variance = -446.38135877529743
+2025-12-03 18:43:56,188 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 23: Gradients = {'h': Array(-14.64738417, dtype=float64), 'phi': Array(-9.77593073e-08, dtype=float64)}
+2025-12-03 18:43:56,190 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 23: Updated params = {'h': Array(0.08399956, dtype=float64), 'phi': Array(0.08719068, dtype=float64)}
+2025-12-03 18:44:31,109 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 24: Mean Energy = -27.5-0.0j ± 1.3 [σ²=8.6e+02, R̂=1.409], Variance = -449.1791583129951
+2025-12-03 18:44:31,110 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 24: Gradients = {'h': Array(-14.64617883, dtype=float64), 'phi': Array(1.04202287e-07, dtype=float64)}
+2025-12-03 18:44:31,113 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 24: Updated params = {'h': Array(0.08499941, dtype=float64), 'phi': Array(0.0865614, dtype=float64)}
+2025-12-03 18:45:05,703 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 25: Mean Energy = -27.5-0.0j ± 1.3 [σ²=8.7e+02, R̂=1.409], Variance = -451.9853867288339
+2025-12-03 18:45:05,704 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 25: Gradients = {'h': Array(-14.64489947, dtype=float64), 'phi': Array(1.62111877e-07, dtype=float64)}
+2025-12-03 18:45:05,708 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 25: Updated params = {'h': Array(0.08599924, dtype=float64), 'phi': Array(0.08593269, dtype=float64)}
+2025-12-03 18:45:39,909 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 26: Mean Energy = -27.5+0.0j ± 1.3 [σ²=8.7e+02, R̂=1.409], Variance = -454.80010800041987
+2025-12-03 18:45:39,910 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 26: Gradients = {'h': Array(-14.64354487, dtype=float64), 'phi': Array(2.18416483e-07, dtype=float64)}
+2025-12-03 18:45:39,912 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 26: Updated params = {'h': Array(0.08699904, dtype=float64), 'phi': Array(0.08528656, dtype=float64)}
+2025-12-03 18:46:13,823 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 27: Mean Energy = -27.6-0.0j ± 1.3 [σ²=8.7e+02, R̂=1.409], Variance = -457.623319761148
+2025-12-03 18:46:13,824 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 27: Gradients = {'h': Array(-14.64211507, dtype=float64), 'phi': Array(-4.74453732e-07, dtype=float64)}
+2025-12-03 18:46:13,827 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 27: Updated params = {'h': Array(0.08799881, dtype=float64), 'phi': Array(0.08489413, dtype=float64)}
+2025-12-03 18:46:47,603 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 28: Mean Energy = -27.6+0.0j ± 1.3 [σ²=8.7e+02, R̂=1.409], Variance = -460.45506667740847
+2025-12-03 18:46:47,604 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 28: Gradients = {'h': Array(-14.64060977, dtype=float64), 'phi': Array(1.85269489e-07, dtype=float64)}
+2025-12-03 18:46:47,608 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 28: Updated params = {'h': Array(0.08899854, dtype=float64), 'phi': Array(0.08447365, dtype=float64)}
+2025-12-03 18:47:22,012 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 29: Mean Energy = -27.6-0.0j ± 1.3 [σ²=8.8e+02, R̂=1.409], Variance = -463.29532604142275
+2025-12-03 18:47:22,013 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 29: Gradients = {'h': Array(-14.63902997, dtype=float64), 'phi': Array(-1.94822009e-07, dtype=float64)}
+2025-12-03 18:47:22,017 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 29: Updated params = {'h': Array(0.08999824, dtype=float64), 'phi': Array(0.08416307, dtype=float64)}
+2025-12-03 18:47:55,831 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 30: Mean Energy = -27.6-0.0j ± 1.3 [σ²=8.8e+02, R̂=1.409], Variance = -466.14415727699475
+2025-12-03 18:47:55,832 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 30: Gradients = {'h': Array(-14.63737298, dtype=float64), 'phi': Array(3.71902821e-07, dtype=float64)}
+2025-12-03 18:47:55,836 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 30: Updated params = {'h': Array(0.0909979, dtype=float64), 'phi': Array(0.0837576, dtype=float64)}
+2025-12-03 18:48:29,685 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 31: Mean Energy = -27.6+0.0j ± 1.3 [σ²=8.8e+02, R̂=1.409], Variance = -469.0015732548618
+2025-12-03 18:48:29,686 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 31: Gradients = {'h': Array(-14.63564029, dtype=float64), 'phi': Array(-1.96329481e-07, dtype=float64)}
+2025-12-03 18:48:29,690 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 31: Updated params = {'h': Array(0.09199752, dtype=float64), 'phi': Array(0.08346021, dtype=float64)}
+2025-12-03 18:49:03,517 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 32: Mean Energy = -27.6-0.0j ± 1.3 [σ²=8.9e+02, R̂=1.409], Variance = -471.86750921457553
+2025-12-03 18:49:03,518 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 32: Gradients = {'h': Array(-14.63383527, dtype=float64), 'phi': Array(-1.8411086e-07, dtype=float64)}
+2025-12-03 18:49:03,520 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 32: Updated params = {'h': Array(0.09299709, dtype=float64), 'phi': Array(0.08325628, dtype=float64)}
+2025-12-03 18:49:37,205 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 33: Mean Energy = -27.7+0.0j ± 1.3 [σ²=8.9e+02, R̂=1.409], Variance = -474.7420987655421
+2025-12-03 18:49:37,206 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 33: Gradients = {'h': Array(-14.63195146, dtype=float64), 'phi': Array(-4.44677513e-07, dtype=float64)}
+2025-12-03 18:49:37,210 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 33: Updated params = {'h': Array(0.09399661, dtype=float64), 'phi': Array(0.08323065, dtype=float64)}
+2025-12-03 18:50:11,114 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 34: Mean Energy = -27.7-0.0j ± 1.3 [σ²=8.9e+02, R̂=1.409], Variance = -477.62533617533444
+2025-12-03 18:50:11,115 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 34: Gradients = {'h': Array(-14.62999199, dtype=float64), 'phi': Array(-3.50301518e-08, dtype=float64)}
+2025-12-03 18:50:11,119 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 34: Updated params = {'h': Array(0.09499609, dtype=float64), 'phi': Array(0.08321955, dtype=float64)}
+2025-12-03 18:50:45,358 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 35: Mean Energy = -27.7-0.0j ± 1.3 [σ²=9.0e+02, R̂=1.409], Variance = -480.5172369969414
+2025-12-03 18:50:45,359 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 35: Gradients = {'h': Array(-14.6279546, dtype=float64), 'phi': Array(1.47009024e-07, dtype=float64)}
+2025-12-03 18:50:45,363 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 35: Updated params = {'h': Array(0.09599551, dtype=float64), 'phi': Array(0.08315778, dtype=float64)}
+2025-12-03 18:51:19,307 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 36: Mean Energy = -27.7+0.0j ± 1.3 [σ²=9.0e+02, R̂=1.409], Variance = -483.4177244496067
+2025-12-03 18:51:19,308 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 36: Gradients = {'h': Array(-14.62584403, dtype=float64), 'phi': Array(2.79804675e-07, dtype=float64)}
+2025-12-03 18:51:19,311 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 36: Updated params = {'h': Array(0.09699487, dtype=float64), 'phi': Array(0.08300411, dtype=float64)}
+2025-12-03 18:51:53,216 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 37: Mean Energy = -27.7+0.0j ± 1.3 [σ²=9.0e+02, R̂=1.409], Variance = -486.32702487528786
+2025-12-03 18:51:53,216 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 37: Gradients = {'h': Array(-14.62365196, dtype=float64), 'phi': Array(1.5626371e-09, dtype=float64)}
+2025-12-03 18:51:53,218 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 37: Updated params = {'h': Array(0.09799417, dtype=float64), 'phi': Array(0.08286372, dtype=float64)}
+2025-12-03 18:52:27,497 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 38: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.1e+02, R̂=1.409], Variance = -489.2449872618216
+2025-12-03 18:52:27,498 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 38: Gradients = {'h': Array(-14.62138543, dtype=float64), 'phi': Array(5.18344901e-07, dtype=float64)}
+2025-12-03 18:52:27,502 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 38: Updated params = {'h': Array(0.09899341, dtype=float64), 'phi': Array(0.08256333, dtype=float64)}
+2025-12-03 18:53:01,305 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 39: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.1e+02, R̂=1.409], Variance = -492.1716873727973
+2025-12-03 18:53:01,306 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 39: Gradients = {'h': Array(-14.61904248, dtype=float64), 'phi': Array(2.54162538e-07, dtype=float64)}
+2025-12-03 18:53:01,310 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 39: Updated params = {'h': Array(0.09999259, dtype=float64), 'phi': Array(0.08220534, dtype=float64)}
+2025-12-03 18:53:35,493 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 40: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.1e+02, R̂=1.409], Variance = -495.10713114192754
+2025-12-03 18:53:35,493 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 40: Gradients = {'h': Array(-14.61662091, dtype=float64), 'phi': Array(5.06445889e-08, dtype=float64)}
+2025-12-03 18:53:35,495 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 40: Updated params = {'h': Array(0.10099169, dtype=float64), 'phi': Array(0.08186222, dtype=float64)}
+2025-12-03 18:54:09,297 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 41: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.2e+02, R̂=1.409], Variance = -498.051315238291
+2025-12-03 18:54:09,298 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 41: Gradients = {'h': Array(-14.61412289, dtype=float64), 'phi': Array(2.52110489e-07, dtype=float64)}
+2025-12-03 18:54:09,300 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 41: Updated params = {'h': Array(0.10199072, dtype=float64), 'phi': Array(0.08146544, dtype=float64)}
+2025-12-03 18:54:43,088 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 42: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.2e+02, R̂=1.409], Variance = -501.00429260772665
+2025-12-03 18:54:43,089 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 42: Gradients = {'h': Array(-14.61154664, dtype=float64), 'phi': Array(3.47264263e-07, dtype=float64)}
+2025-12-03 18:54:43,093 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 42: Updated params = {'h': Array(0.10298968, dtype=float64), 'phi': Array(0.08099101, dtype=float64)}
+2025-12-03 18:55:17,106 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 43: Mean Energy = -27.8-0.0j ± 1.3 [σ²=9.2e+02, R̂=1.409], Variance = -503.9661058850274
+2025-12-03 18:55:17,107 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 43: Gradients = {'h': Array(-14.60889337, dtype=float64), 'phi': Array(-4.31269651e-08, dtype=float64)}
+2025-12-03 18:55:17,111 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 43: Updated params = {'h': Array(0.10398855, dtype=float64), 'phi': Array(0.08057478, dtype=float64)}
+2025-12-03 18:55:50,962 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 44: Mean Energy = -27.9-0.0j ± 1.3 [σ²=9.2e+02, R̂=1.409], Variance = -506.9367423932639
+2025-12-03 18:55:50,963 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 44: Gradients = {'h': Array(-14.60616044, dtype=float64), 'phi': Array(-1.79270389e-07, dtype=float64)}
+2025-12-03 18:55:50,966 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 44: Updated params = {'h': Array(0.10498734, dtype=float64), 'phi': Array(0.08026095, dtype=float64)}
+2025-12-03 18:56:24,784 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 45: Mean Energy = -27.9+0.0j ± 1.3 [σ²=9.3e+02, R̂=1.409], Variance = -509.916183571427
+2025-12-03 18:56:24,786 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 45: Gradients = {'h': Array(-14.60335055, dtype=float64), 'phi': Array(3.51545552e-08, dtype=float64)}
+2025-12-03 18:56:24,789 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 45: Updated params = {'h': Array(0.10598605, dtype=float64), 'phi': Array(0.07996329, dtype=float64)}
+2025-12-03 18:56:58,389 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 46: Mean Energy = -27.9+0.0j ± 1.3 [σ²=9.3e+02, R̂=1.409], Variance = -512.9045014893122
+2025-12-03 18:56:58,390 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 46: Gradients = {'h': Array(-14.60046359, dtype=float64), 'phi': Array(-1.75046735e-07, dtype=float64)}
+2025-12-03 18:56:58,395 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 46: Updated params = {'h': Array(0.10698467, dtype=float64), 'phi': Array(0.07975623, dtype=float64)}
+2025-12-03 18:57:32,677 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 47: Mean Energy = -27.9+0.0j ± 1.4 [σ²=9.3e+02, R̂=1.409], Variance = -515.9016449563505
+2025-12-03 18:57:32,678 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 47: Gradients = {'h': Array(-14.59749838, dtype=float64), 'phi': Array(1.03765133e-07, dtype=float64)}
+2025-12-03 18:57:32,681 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 47: Updated params = {'h': Array(0.10798319, dtype=float64), 'phi': Array(0.07953111, dtype=float64)}
+2025-12-03 18:58:06,436 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 48: Mean Energy = -27.9-0.0j ± 1.4 [σ²=9.4e+02, R̂=1.409], Variance = -518.9077826238481
+2025-12-03 18:58:06,437 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 48: Gradients = {'h': Array(-14.59445095, dtype=float64), 'phi': Array(3.42669228e-07, dtype=float64)}
+2025-12-03 18:58:06,439 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 48: Updated params = {'h': Array(0.10898162, dtype=float64), 'phi': Array(0.07920768, dtype=float64)}
+2025-12-03 18:58:40,325 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 49: Mean Energy = -27.9+0.0j ± 1.4 [σ²=9.4e+02, R̂=1.409], Variance = -521.9227340654397
+2025-12-03 18:58:40,326 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 49: Gradients = {'h': Array(-14.59132881, dtype=float64), 'phi': Array(2.51835143e-07, dtype=float64)}
+2025-12-03 18:58:40,330 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 49: Updated params = {'h': Array(0.10997995, dtype=float64), 'phi': Array(0.07882647, dtype=float64)}
+2025-12-03 18:59:14,051 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 50: Mean Energy = -28.0-0.0j ± 1.4 [σ²=9.4e+02, R̂=1.409], Variance = -524.9467232451111
+2025-12-03 18:59:14,052 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 50: Gradients = {'h': Array(-14.58812461, dtype=float64), 'phi': Array(7.55870771e-08, dtype=float64)}
+2025-12-03 18:59:14,055 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 50: Updated params = {'h': Array(0.11097817, dtype=float64), 'phi': Array(0.07845325, dtype=float64)}
+2025-12-03 18:59:47,738 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 51: Mean Energy = -28.0-0.0j ± 1.4 [σ²=9.5e+02, R̂=1.409], Variance = -527.9795433251657
+2025-12-03 18:59:47,739 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 51: Gradients = {'h': Array(-14.58484393, dtype=float64), 'phi': Array(8.05911323e-08, dtype=float64)}
+2025-12-03 18:59:47,742 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 51: Updated params = {'h': Array(0.11197629, dtype=float64), 'phi': Array(0.07808532, dtype=float64)}
+2025-12-03 19:00:21,488 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 52: Mean Energy = -28.0+0.0j ± 1.4 [σ²=9.5e+02, R̂=1.409], Variance = -531.0214278951893
+2025-12-03 19:00:21,489 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 52: Gradients = {'h': Array(-14.58148061, dtype=float64), 'phi': Array(-4.17077145e-07, dtype=float64)}
+2025-12-03 19:00:21,493 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 52: Updated params = {'h': Array(0.11297429, dtype=float64), 'phi': Array(0.07790798, dtype=float64)}
+2025-12-03 19:00:55,190 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 53: Mean Energy = -28.0-0.0j ± 1.4 [σ²=9.5e+02, R̂=1.409], Variance = -534.0722615966764
+2025-12-03 19:00:55,191 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 53: Gradients = {'h': Array(-14.57803972, dtype=float64), 'phi': Array(3.12093326e-07, dtype=float64)}
+2025-12-03 19:00:55,195 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 53: Updated params = {'h': Array(0.11397219, dtype=float64), 'phi': Array(0.07763759, dtype=float64)}
+2025-12-03 19:01:28,836 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 54: Mean Energy = -28.0+0.0j ± 1.4 [σ²=9.6e+02, R̂=1.409], Variance = -537.1320539572464
+2025-12-03 19:01:28,837 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 54: Gradients = {'h': Array(-14.5745203, dtype=float64), 'phi': Array(1.07434744e-07, dtype=float64)}
+2025-12-03 19:01:28,840 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 54: Updated params = {'h': Array(0.11496996, dtype=float64), 'phi': Array(0.07735385, dtype=float64)}
+2025-12-03 19:02:02,617 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 55: Mean Energy = -28.1+0.0j ± 1.4 [σ²=9.6e+02, R̂=1.409], Variance = -540.2009303303834
+2025-12-03 19:02:02,618 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 55: Gradients = {'h': Array(-14.57092032, dtype=float64), 'phi': Array(-1.44544298e-07, dtype=float64)}
+2025-12-03 19:02:02,622 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 55: Updated params = {'h': Array(0.11596762, dtype=float64), 'phi': Array(0.07714919, dtype=float64)}
+2025-12-03 19:02:36,247 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 56: Mean Energy = -28.1-0.0j ± 1.4 [σ²=9.6e+02, R̂=1.409], Variance = -543.2788197097062
+2025-12-03 19:02:36,248 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 56: Gradients = {'h': Array(-14.56723894, dtype=float64), 'phi': Array(-1.21682176e-07, dtype=float64)}
+2025-12-03 19:02:36,252 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 56: Updated params = {'h': Array(0.11696515, dtype=float64), 'phi': Array(0.07700805, dtype=float64)}
+2025-12-03 19:03:09,871 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 57: Mean Energy = -28.1-0.0j ± 1.4 [σ²=9.7e+02, R̂=1.409], Variance = -546.3657267612741
+2025-12-03 19:03:09,871 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 57: Gradients = {'h': Array(-14.56348058, dtype=float64), 'phi': Array(1.26770048e-07, dtype=float64)}
+2025-12-03 19:03:09,874 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 57: Updated params = {'h': Array(0.11796255, dtype=float64), 'phi': Array(0.07683377, dtype=float64)}
+2025-12-03 19:03:43,965 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 58: Mean Energy = -28.1-0.0j ± 1.4 [σ²=9.7e+02, R̂=1.409], Variance = -549.4617124455111
+2025-12-03 19:03:43,965 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 58: Gradients = {'h': Array(-14.55964068, dtype=float64), 'phi': Array(-4.20773827e-08, dtype=float64)}
+2025-12-03 19:03:43,969 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 58: Updated params = {'h': Array(0.11895982, dtype=float64), 'phi': Array(0.0766912, dtype=float64)}
+2025-12-03 19:04:17,911 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 59: Mean Energy = -28.1-0.0j ± 1.4 [σ²=9.7e+02, R̂=1.409], Variance = -552.5667890674233
+2025-12-03 19:04:17,912 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 59: Gradients = {'h': Array(-14.55571932, dtype=float64), 'phi': Array(4.68539304e-07, dtype=float64)}
+2025-12-03 19:04:17,913 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 59: Updated params = {'h': Array(0.11995696, dtype=float64), 'phi': Array(0.0763953, dtype=float64)}
+2025-12-03 19:04:51,576 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 60: Mean Energy = -28.1-0.0j ± 1.4 [σ²=9.8e+02, R̂=1.409], Variance = -555.6810238420265
+2025-12-03 19:04:51,576 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 60: Gradients = {'h': Array(-14.5517186, dtype=float64), 'phi': Array(3.8456112e-07, dtype=float64)}
+2025-12-03 19:04:51,580 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 60: Updated params = {'h': Array(0.12095395, dtype=float64), 'phi': Array(0.07599317, dtype=float64)}
+2025-12-03 19:05:25,413 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 61: Mean Energy = -28.2-0.0j ± 1.4 [σ²=9.8e+02, R̂=1.409], Variance = -558.8042075685361
+2025-12-03 19:05:25,414 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 61: Gradients = {'h': Array(-14.5476393, dtype=float64), 'phi': Array(5.63321892e-07, dtype=float64)}
+2025-12-03 19:05:25,418 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 61: Updated params = {'h': Array(0.12195081, dtype=float64), 'phi': Array(0.07544365, dtype=float64)}
+2025-12-03 19:05:59,464 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 62: Mean Energy = -28.2+0.0j ± 1.4 [σ²=9.9e+02, R̂=1.409], Variance = -561.9366419514536
+2025-12-03 19:05:59,465 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 62: Gradients = {'h': Array(-14.54347655, dtype=float64), 'phi': Array(3.32558846e-08, dtype=float64)}
+2025-12-03 19:05:59,469 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 62: Updated params = {'h': Array(0.12294752, dtype=float64), 'phi': Array(0.07493354, dtype=float64)}
+2025-12-03 19:06:33,565 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 63: Mean Energy = -28.2-0.0j ± 1.4 [σ²=9.9e+02, R̂=1.409], Variance = -565.0782545534205
+2025-12-03 19:06:33,566 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 63: Gradients = {'h': Array(-14.539232, dtype=float64), 'phi': Array(5.94160752e-08, dtype=float64)}
+2025-12-03 19:06:33,570 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 63: Updated params = {'h': Array(0.12394408, dtype=float64), 'phi': Array(0.07444995, dtype=float64)}
+2025-12-03 19:07:07,354 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 64: Mean Energy = -28.2-0.0j ± 1.4 [σ²=9.9e+02, R̂=1.409], Variance = -568.2289891440178
+2025-12-03 19:07:07,354 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 64: Gradients = {'h': Array(-14.53490779, dtype=float64), 'phi': Array(-6.11507181e-09, dtype=float64)}
+2025-12-03 19:07:07,358 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 64: Updated params = {'h': Array(0.12494048, dtype=float64), 'phi': Array(0.07401359, dtype=float64)}
+2025-12-03 19:07:41,173 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 65: Mean Energy = -28.2-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -571.3888925452306
+2025-12-03 19:07:41,174 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 65: Gradients = {'h': Array(-14.53050295, dtype=float64), 'phi': Array(9.10878034e-07, dtype=float64)}
+2025-12-03 19:07:41,178 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 65: Updated params = {'h': Array(0.12593673, dtype=float64), 'phi': Array(0.07334541, dtype=float64)}
+2025-12-03 19:08:15,189 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 66: Mean Energy = -28.3-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -574.5579370569039
+2025-12-03 19:08:15,190 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 66: Gradients = {'h': Array(-14.52601914, dtype=float64), 'phi': Array(3.64609081e-07, dtype=float64)}
+2025-12-03 19:08:15,193 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 66: Updated params = {'h': Array(0.12693282, dtype=float64), 'phi': Array(0.07262585, dtype=float64)}
+2025-12-03 19:08:48,786 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 67: Mean Energy = -28.3+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -577.7363514338338
+2025-12-03 19:08:48,786 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 67: Gradients = {'h': Array(-14.52144808, dtype=float64), 'phi': Array(3.85765786e-07, dtype=float64)}
+2025-12-03 19:08:48,790 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 67: Updated params = {'h': Array(0.12792874, dtype=float64), 'phi': Array(0.07185472, dtype=float64)}
+2025-12-03 19:09:22,560 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 68: Mean Energy = -28.3-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -580.9238917242092
+2025-12-03 19:09:22,561 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 68: Gradients = {'h': Array(-14.5167985, dtype=float64), 'phi': Array(-1.26047491e-07, dtype=float64)}
+2025-12-03 19:09:22,565 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 68: Updated params = {'h': Array(0.1289245, dtype=float64), 'phi': Array(0.07119839, dtype=float64)}
+2025-12-03 19:09:56,331 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 69: Mean Energy = -28.3+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -584.120669654048
+2025-12-03 19:09:56,332 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 69: Gradients = {'h': Array(-14.51207011, dtype=float64), 'phi': Array(3.17024239e-07, dtype=float64)}
+2025-12-03 19:09:56,335 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 69: Updated params = {'h': Array(0.12992008, dtype=float64), 'phi': Array(0.07050356, dtype=float64)}
+2025-12-03 19:10:30,044 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 70: Mean Energy = -28.3-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -587.3267190952743
+2025-12-03 19:10:30,045 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 70: Gradients = {'h': Array(-14.50725631, dtype=float64), 'phi': Array(1.50578157e-07, dtype=float64)}
+2025-12-03 19:10:30,049 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 70: Updated params = {'h': Array(0.13091549, dtype=float64), 'phi': Array(0.0698249, dtype=float64)}
+2025-12-03 19:11:03,835 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 71: Mean Energy = -28.3-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -590.5421005741819
+2025-12-03 19:11:03,836 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 71: Gradients = {'h': Array(-14.50235905, dtype=float64), 'phi': Array(2.52556473e-07, dtype=float64)}
+2025-12-03 19:11:03,839 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 71: Updated params = {'h': Array(0.13191072, dtype=float64), 'phi': Array(0.06912893, dtype=float64)}
+2025-12-03 19:11:37,618 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 72: Mean Energy = -28.4+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -593.7666936335868
+2025-12-03 19:11:37,619 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 72: Gradients = {'h': Array(-14.49738507, dtype=float64), 'phi': Array(1.93763932e-07, dtype=float64)}
+2025-12-03 19:11:37,621 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 72: Updated params = {'h': Array(0.13290577, dtype=float64), 'phi': Array(0.06843539, dtype=float64)}
+2025-12-03 19:12:11,416 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 73: Mean Energy = -28.4+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -597.0005782778646
+2025-12-03 19:12:11,417 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 73: Gradients = {'h': Array(-14.49232708, dtype=float64), 'phi': Array(7.78103198e-07, dtype=float64)}
+2025-12-03 19:12:11,420 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 73: Updated params = {'h': Array(0.13390063, dtype=float64), 'phi': Array(0.06758613, dtype=float64)}
+2025-12-03 19:12:45,241 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 74: Mean Energy = -28.4+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -600.2438551986486
+2025-12-03 19:12:45,242 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 74: Gradients = {'h': Array(-14.4871837, dtype=float64), 'phi': Array(2.60267273e-07, dtype=float64)}
+2025-12-03 19:12:45,245 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 74: Updated params = {'h': Array(0.1348953, dtype=float64), 'phi': Array(0.0667368, dtype=float64)}
+2025-12-03 19:13:18,958 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 75: Mean Energy = -28.4+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -603.4964174968036
+2025-12-03 19:13:18,959 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 75: Gradients = {'h': Array(-14.4819606, dtype=float64), 'phi': Array(3.02044698e-07, dtype=float64)}
+2025-12-03 19:13:18,963 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 75: Updated params = {'h': Array(0.13588978, dtype=float64), 'phi': Array(0.0658753, dtype=float64)}
+2025-12-03 19:13:52,942 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 76: Mean Energy = -28.4-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -606.7584025398613
+2025-12-03 19:13:52,943 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 76: Gradients = {'h': Array(-14.47665149, dtype=float64), 'phi': Array(2.36314751e-07, dtype=float64)}
+2025-12-03 19:13:52,947 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 76: Updated params = {'h': Array(0.13688406, dtype=float64), 'phi': Array(0.06502182, dtype=float64)}
+2025-12-03 19:14:26,991 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 77: Mean Energy = -28.5+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -610.0296528878848
+2025-12-03 19:14:26,992 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 77: Gradients = {'h': Array(-14.47126446, dtype=float64), 'phi': Array(3.27704556e-07, dtype=float64)}
+2025-12-03 19:14:26,996 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 77: Updated params = {'h': Array(0.13787814, dtype=float64), 'phi': Array(0.06414911, dtype=float64)}
+2025-12-03 19:15:00,729 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 78: Mean Energy = -28.5-0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -613.3103608363795
+2025-12-03 19:15:00,730 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 78: Gradients = {'h': Array(-14.46579038, dtype=float64), 'phi': Array(2.592839e-07, dtype=float64)}
+2025-12-03 19:15:00,734 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 78: Updated params = {'h': Array(0.13887201, dtype=float64), 'phi': Array(0.06327877, dtype=float64)}
+2025-12-03 19:15:34,775 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 79: Mean Energy = -28.5+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -616.6004264245992
+2025-12-03 19:15:34,775 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 79: Gradients = {'h': Array(-14.46023596, dtype=float64), 'phi': Array(9.18486509e-08, dtype=float64)}
+2025-12-03 19:15:34,779 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 79: Updated params = {'h': Array(0.13986568, dtype=float64), 'phi': Array(0.06246118, dtype=float64)}
+2025-12-03 19:16:08,782 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 80: Mean Energy = -28.5+0.0j ± 1.4 [σ²=1.0e+03, R̂=1.409], Variance = -619.8999084172146
+2025-12-03 19:16:08,782 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 80: Gradients = {'h': Array(-14.45459761, dtype=float64), 'phi': Array(1.58323524e-07, dtype=float64)}
+2025-12-03 19:16:08,784 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 80: Updated params = {'h': Array(0.14085913, dtype=float64), 'phi': Array(0.06167047, dtype=float64)}
+2025-12-03 19:16:42,587 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 81: Mean Energy = -28.5+0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -623.2088132357928
+2025-12-03 19:16:42,588 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 81: Gradients = {'h': Array(-14.44887604, dtype=float64), 'phi': Array(3.29233484e-07, dtype=float64)}
+2025-12-03 19:16:42,592 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 81: Updated params = {'h': Array(0.14185237, dtype=float64), 'phi': Array(0.0608527, dtype=float64)}
+2025-12-03 19:17:16,443 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 82: Mean Energy = -28.6-0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -626.5271755494314
+2025-12-03 19:17:16,444 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 82: Gradients = {'h': Array(-14.44307068, dtype=float64), 'phi': Array(3.93633482e-07, dtype=float64)}
+2025-12-03 19:17:16,448 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 82: Updated params = {'h': Array(0.14284538, dtype=float64), 'phi': Array(0.05999254, dtype=float64)}
+2025-12-03 19:17:50,497 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 83: Mean Energy = -28.6-0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -629.8549579587651
+2025-12-03 19:17:50,498 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 83: Gradients = {'h': Array(-14.43718159, dtype=float64), 'phi': Array(7.2490063e-07, dtype=float64)}
+2025-12-03 19:17:50,501 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 83: Updated params = {'h': Array(0.14383818, dtype=float64), 'phi': Array(0.05901194, dtype=float64)}
+2025-12-03 19:18:24,635 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 84: Mean Energy = -28.6+0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -633.192187891515
+2025-12-03 19:18:24,636 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 84: Gradients = {'h': Array(-14.43121133, dtype=float64), 'phi': Array(1.43573138e-07, dtype=float64)}
+2025-12-03 19:18:24,639 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 84: Updated params = {'h': Array(0.14483074, dtype=float64), 'phi': Array(0.05807986, dtype=float64)}
+2025-12-03 19:18:58,717 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 85: Mean Energy = -28.6+0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -636.5389310905492
+2025-12-03 19:18:58,718 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 85: Gradients = {'h': Array(-14.42515536, dtype=float64), 'phi': Array(2.95539645e-07, dtype=float64)}
+2025-12-03 19:18:58,722 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 85: Updated params = {'h': Array(0.14582307, dtype=float64), 'phi': Array(0.05714715, dtype=float64)}
+2025-12-03 19:19:32,640 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 86: Mean Energy = -28.6+0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -639.8951607702938
+2025-12-03 19:19:32,641 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 86: Gradients = {'h': Array(-14.41901594, dtype=float64), 'phi': Array(8.83627085e-08, dtype=float64)}
+2025-12-03 19:19:32,644 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 86: Updated params = {'h': Array(0.14681517, dtype=float64), 'phi': Array(0.05627511, dtype=float64)}
+2025-12-03 19:20:07,073 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 87: Mean Energy = -28.7-0.0j ± 1.4 [σ²=1.1e+03, R̂=1.409], Variance = -643.2608931803431
+2025-12-03 19:20:07,074 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 87: Gradients = {'h': Array(-14.41279273, dtype=float64), 'phi': Array(1.59063099e-07, dtype=float64)}
+2025-12-03 19:20:07,077 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 87: Updated params = {'h': Array(0.14780703, dtype=float64), 'phi': Array(0.05543616, dtype=float64)}
+2025-12-03 19:20:40,867 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 88: Mean Energy = -28.7-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -646.6361801165274
+2025-12-03 19:20:40,868 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 88: Gradients = {'h': Array(-14.40648454, dtype=float64), 'phi': Array(8.23086638e-07, dtype=float64)}
+2025-12-03 19:20:40,871 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 88: Updated params = {'h': Array(0.14879864, dtype=float64), 'phi': Array(0.05445315, dtype=float64)}
+2025-12-03 19:21:14,860 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 89: Mean Energy = -28.7+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -650.0209314348541
+2025-12-03 19:21:14,861 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 89: Gradients = {'h': Array(-14.40009446, dtype=float64), 'phi': Array(1.32342817e-07, dtype=float64)}
+2025-12-03 19:21:14,864 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 89: Updated params = {'h': Array(0.14979001, dtype=float64), 'phi': Array(0.05352331, dtype=float64)}
+2025-12-03 19:21:48,692 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 90: Mean Energy = -28.7+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -653.4152597801426
+2025-12-03 19:21:48,693 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 90: Gradients = {'h': Array(-14.39361899, dtype=float64), 'phi': Array(2.49951939e-07, dtype=float64)}
+2025-12-03 19:21:48,695 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 90: Updated params = {'h': Array(0.15078113, dtype=float64), 'phi': Array(0.05260715, dtype=float64)}
+2025-12-03 19:22:22,734 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 91: Mean Energy = -28.7+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -656.8191595821879
+2025-12-03 19:22:22,735 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 91: Gradients = {'h': Array(-14.38705856, dtype=float64), 'phi': Array(4.60475314e-08, dtype=float64)}
+2025-12-03 19:22:22,739 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 91: Updated params = {'h': Array(0.15177199, dtype=float64), 'phi': Array(0.05176376, dtype=float64)}
+2025-12-03 19:22:56,601 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 92: Mean Energy = -28.7+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -660.2326789610853
+2025-12-03 19:22:56,602 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 92: Gradients = {'h': Array(-14.3804122, dtype=float64), 'phi': Array(-2.11243089e-07, dtype=float64)}
+2025-12-03 19:22:56,606 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 92: Updated params = {'h': Array(0.1527626, dtype=float64), 'phi': Array(0.05106863, dtype=float64)}
+2025-12-03 19:23:30,457 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 93: Mean Energy = -28.8-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -663.655650928536
+2025-12-03 19:23:30,458 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 93: Gradients = {'h': Array(-14.3736853, dtype=float64), 'phi': Array(8.97033727e-08, dtype=float64)}
+2025-12-03 19:23:30,462 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 93: Updated params = {'h': Array(0.15375294, dtype=float64), 'phi': Array(0.05041167, dtype=float64)}
+2025-12-03 19:24:04,397 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 94: Mean Energy = -28.8-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -667.0883015138611
+2025-12-03 19:24:04,398 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 94: Gradients = {'h': Array(-14.36687245, dtype=float64), 'phi': Array(2.72835171e-07, dtype=float64)}
+2025-12-03 19:24:04,402 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 94: Updated params = {'h': Array(0.15474302, dtype=float64), 'phi': Array(0.04973377, dtype=float64)}
+2025-12-03 19:24:38,662 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 95: Mean Energy = -28.8+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -670.5305523855147
+2025-12-03 19:24:38,663 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 95: Gradients = {'h': Array(-14.35997275, dtype=float64), 'phi': Array(-4.60830748e-08, dtype=float64)}
+2025-12-03 19:24:38,666 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 95: Updated params = {'h': Array(0.15573282, dtype=float64), 'phi': Array(0.04913508, dtype=float64)}
+2025-12-03 19:25:13,069 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 96: Mean Energy = -28.8-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -673.9824426554331
+2025-12-03 19:25:13,070 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 96: Gradients = {'h': Array(-14.35298958, dtype=float64), 'phi': Array(7.05089347e-08, dtype=float64)}
+2025-12-03 19:25:13,073 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 96: Updated params = {'h': Array(0.15672236, dtype=float64), 'phi': Array(0.04857113, dtype=float64)}
+2025-12-03 19:25:46,795 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 97: Mean Energy = -28.8+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -677.4439162751603
+2025-12-03 19:25:46,796 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 97: Gradients = {'h': Array(-14.34592284, dtype=float64), 'phi': Array(1.60247802e-07, dtype=float64)}
+2025-12-03 19:25:46,800 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 97: Updated params = {'h': Array(0.15771161, dtype=float64), 'phi': Array(0.04801047, dtype=float64)}
+2025-12-03 19:26:20,642 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 98: Mean Energy = -28.9-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -680.9149089863159
+2025-12-03 19:26:20,642 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 98: Gradients = {'h': Array(-14.33877483, dtype=float64), 'phi': Array(2.79081386e-07, dtype=float64)}
+2025-12-03 19:26:20,644 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 98: Updated params = {'h': Array(0.15870058, dtype=float64), 'phi': Array(0.04741626, dtype=float64)}
+2025-12-03 19:26:54,882 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 99: Mean Energy = -28.9-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -684.3958520124554
+2025-12-03 19:26:54,883 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 99: Gradients = {'h': Array(-14.33153331, dtype=float64), 'phi': Array(2.34251459e-07, dtype=float64)}
+2025-12-03 19:26:54,886 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 99: Updated params = {'h': Array(0.15968927, dtype=float64), 'phi': Array(0.04680533, dtype=float64)}
+2025-12-03 19:27:28,824 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 100: Mean Energy = -28.9+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -687.8862688723357
+2025-12-03 19:27:28,825 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 100: Gradients = {'h': Array(-14.32421178, dtype=float64), 'phi': Array(8.15169235e-08, dtype=float64)}
+2025-12-03 19:27:28,829 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 100: Updated params = {'h': Array(0.16067767, dtype=float64), 'phi': Array(0.04622666, dtype=float64)}
+2025-12-03 19:28:02,674 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 101: Mean Energy = -28.9+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -691.3864891529735
+2025-12-03 19:28:02,675 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 101: Gradients = {'h': Array(-14.31680195, dtype=float64), 'phi': Array(2.54665611e-07, dtype=float64)}
+2025-12-03 19:28:02,678 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 101: Updated params = {'h': Array(0.16166577, dtype=float64), 'phi': Array(0.04562305, dtype=float64)}
+2025-12-03 19:28:36,871 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 102: Mean Energy = -28.9+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -694.896207637669
+2025-12-03 19:28:36,871 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 102: Gradients = {'h': Array(-14.30931144, dtype=float64), 'phi': Array(3.16884511e-07, dtype=float64)}
+2025-12-03 19:28:36,875 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 102: Updated params = {'h': Array(0.16265358, dtype=float64), 'phi': Array(0.04497801, dtype=float64)}
+2025-12-03 19:29:11,111 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 103: Mean Energy = -29.0-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -698.415841968724
+2025-12-03 19:29:11,112 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 103: Gradients = {'h': Array(-14.30172939, dtype=float64), 'phi': Array(3.08061784e-07, dtype=float64)}
+2025-12-03 19:29:11,116 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 103: Updated params = {'h': Array(0.16364109, dtype=float64), 'phi': Array(0.04429841, dtype=float64)}
+2025-12-03 19:29:45,090 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 104: Mean Energy = -29.0+0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -701.9450814348734
+2025-12-03 19:29:45,091 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 104: Gradients = {'h': Array(-14.29406533, dtype=float64), 'phi': Array(6.66449834e-08, dtype=float64)}
+2025-12-03 19:29:45,095 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 104: Updated params = {'h': Array(0.16462829, dtype=float64), 'phi': Array(0.04366237, dtype=float64)}
+2025-12-03 19:30:19,441 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 105: Mean Energy = -29.0-0.0j ± 1.5 [σ²=1.1e+03, R̂=1.409], Variance = -705.4840666159184
+2025-12-03 19:30:19,442 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 105: Gradients = {'h': Array(-14.2863153, dtype=float64), 'phi': Array(2.36442227e-07, dtype=float64)}
+2025-12-03 19:30:19,445 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 105: Updated params = {'h': Array(0.16561518, dtype=float64), 'phi': Array(0.04301225, dtype=float64)}
+2025-12-03 19:30:53,610 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 106: Mean Energy = -29.0+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -709.0327262334355
+2025-12-03 19:30:53,611 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 106: Gradients = {'h': Array(-14.27847981, dtype=float64), 'phi': Array(2.02186784e-08, dtype=float64)}
+2025-12-03 19:30:53,615 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 106: Updated params = {'h': Array(0.16660175, dtype=float64), 'phi': Array(0.04241776, dtype=float64)}
+2025-12-03 19:31:27,766 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 107: Mean Energy = -29.0+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -712.591238399305
+2025-12-03 19:31:27,766 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 107: Gradients = {'h': Array(-14.27055742, dtype=float64), 'phi': Array(8.80377979e-08, dtype=float64)}
+2025-12-03 19:31:27,770 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 107: Updated params = {'h': Array(0.16758801, dtype=float64), 'phi': Array(0.04185161, dtype=float64)}
+2025-12-03 19:32:01,936 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 108: Mean Energy = -29.1+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -716.1594028593056
+2025-12-03 19:32:01,937 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 108: Gradients = {'h': Array(-14.26255074, dtype=float64), 'phi': Array(2.46668982e-07, dtype=float64)}
+2025-12-03 19:32:01,940 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 108: Updated params = {'h': Array(0.16857395, dtype=float64), 'phi': Array(0.04126054, dtype=float64)}
+2025-12-03 19:32:36,138 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 109: Mean Energy = -29.1-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -719.7373856937561
+2025-12-03 19:32:36,139 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 109: Gradients = {'h': Array(-14.25445795, dtype=float64), 'phi': Array(4.51795066e-07, dtype=float64)}
+2025-12-03 19:32:36,142 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 109: Updated params = {'h': Array(0.16955957, dtype=float64), 'phi': Array(0.04058477, dtype=float64)}
+2025-12-03 19:33:10,687 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 110: Mean Energy = -29.1-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -723.3250187370256
+2025-12-03 19:33:10,688 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 110: Gradients = {'h': Array(-14.24628295, dtype=float64), 'phi': Array(-1.65022964e-07, dtype=float64)}
+2025-12-03 19:33:10,692 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 110: Updated params = {'h': Array(0.17054485, dtype=float64), 'phi': Array(0.04002853, dtype=float64)}
+2025-12-03 19:33:44,515 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 111: Mean Energy = -29.1+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -726.9225623837376
+2025-12-03 19:33:44,516 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 111: Gradients = {'h': Array(-14.23801874, dtype=float64), 'phi': Array(1.67316693e-07, dtype=float64)}
+2025-12-03 19:33:44,520 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 111: Updated params = {'h': Array(0.1715298, dtype=float64), 'phi': Array(0.03947154, dtype=float64)}
+2025-12-03 19:34:19,128 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 112: Mean Energy = -29.1+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -730.5298867176086
+2025-12-03 19:34:19,129 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 112: Gradients = {'h': Array(-14.22966788, dtype=float64), 'phi': Array(5.74060635e-08, dtype=float64)}
+2025-12-03 19:34:19,133 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 112: Updated params = {'h': Array(0.17251442, dtype=float64), 'phi': Array(0.03894916, dtype=float64)}
+2025-12-03 19:34:52,879 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 113: Mean Energy = -29.2+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -734.1470145160894
+2025-12-03 19:34:52,880 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 113: Gradients = {'h': Array(-14.22123089, dtype=float64), 'phi': Array(1.34948848e-07, dtype=float64)}
+2025-12-03 19:34:52,884 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 113: Updated params = {'h': Array(0.17349869, dtype=float64), 'phi': Array(0.03843279, dtype=float64)}
+2025-12-03 19:35:26,687 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 114: Mean Energy = -29.2-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -737.7740673238841
+2025-12-03 19:35:26,688 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 114: Gradients = {'h': Array(-14.21270394, dtype=float64), 'phi': Array(1.02866258e-07, dtype=float64)}
+2025-12-03 19:35:26,690 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 114: Updated params = {'h': Array(0.17448262, dtype=float64), 'phi': Array(0.03793212, dtype=float64)}
+2025-12-03 19:36:01,217 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 115: Mean Energy = -29.2-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -741.410781951495
+2025-12-03 19:36:01,218 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 115: Gradients = {'h': Array(-14.20409631, dtype=float64), 'phi': Array(1.77571573e-07, dtype=float64)}
+2025-12-03 19:36:01,222 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 115: Updated params = {'h': Array(0.1754662, dtype=float64), 'phi': Array(0.03742123, dtype=float64)}
+2025-12-03 19:36:35,456 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 116: Mean Energy = -29.2+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -745.0573755418899
+2025-12-03 19:36:35,457 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 116: Gradients = {'h': Array(-14.19539895, dtype=float64), 'phi': Array(2.4225587e-07, dtype=float64)}
+2025-12-03 19:36:35,460 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 116: Updated params = {'h': Array(0.17644942, dtype=float64), 'phi': Array(0.03688018, dtype=float64)}
+2025-12-03 19:37:10,114 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 117: Mean Energy = -29.2+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -748.7138227423386
+2025-12-03 19:37:10,115 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 117: Gradients = {'h': Array(-14.18661798, dtype=float64), 'phi': Array(-4.74031057e-08, dtype=float64)}
+2025-12-03 19:37:10,118 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 117: Updated params = {'h': Array(0.17743229, dtype=float64), 'phi': Array(0.036407, dtype=float64)}
+2025-12-03 19:37:44,661 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 118: Mean Energy = -29.3-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -752.3801061698766
+2025-12-03 19:37:44,662 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 118: Gradients = {'h': Array(-14.1777494, dtype=float64), 'phi': Array(-7.91926299e-08, dtype=float64)}
+2025-12-03 19:37:44,666 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 118: Updated params = {'h': Array(0.17841479, dtype=float64), 'phi': Array(0.03600602, dtype=float64)}
+2025-12-03 19:38:18,668 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 119: Mean Energy = -29.3+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -756.0561682427551
+2025-12-03 19:38:18,668 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 119: Gradients = {'h': Array(-14.16879653, dtype=float64), 'phi': Array(1.02175147e-07, dtype=float64)}
+2025-12-03 19:38:18,672 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 119: Updated params = {'h': Array(0.17939693, dtype=float64), 'phi': Array(0.03560935, dtype=float64)}
+2025-12-03 19:38:53,030 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 120: Mean Energy = -29.3-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -759.742294176261
+2025-12-03 19:38:53,031 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 120: Gradients = {'h': Array(-14.15975136, dtype=float64), 'phi': Array(1.57672605e-07, dtype=float64)}
+2025-12-03 19:38:53,034 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 120: Updated params = {'h': Array(0.1803787, dtype=float64), 'phi': Array(0.03519802, dtype=float64)}
+2025-12-03 19:39:26,805 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 121: Mean Energy = -29.3+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -763.4380587631513
+2025-12-03 19:39:26,806 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 121: Gradients = {'h': Array(-14.15062696, dtype=float64), 'phi': Array(3.11338101e-08, dtype=float64)}
+2025-12-03 19:39:26,808 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 121: Updated params = {'h': Array(0.1813601, dtype=float64), 'phi': Array(0.0348157, dtype=float64)}
+2025-12-03 19:40:01,291 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 122: Mean Energy = -29.3+0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -767.1438142038991
+2025-12-03 19:40:01,292 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 122: Gradients = {'h': Array(-14.14141192, dtype=float64), 'phi': Array(2.03794978e-08, dtype=float64)}
+2025-12-03 19:40:01,296 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 122: Updated params = {'h': Array(0.18234112, dtype=float64), 'phi': Array(0.03446324, dtype=float64)}
+2025-12-03 19:40:35,042 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 123: Mean Energy = -29.4-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -770.8595141018667
+2025-12-03 19:40:35,042 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 123: Gradients = {'h': Array(-14.13210905, dtype=float64), 'phi': Array(1.66470065e-07, dtype=float64)}
+2025-12-03 19:40:35,046 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 123: Updated params = {'h': Array(0.18332176, dtype=float64), 'phi': Array(0.03408828, dtype=float64)}
+2025-12-03 19:41:08,842 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 124: Mean Energy = -29.4-0.0j ± 1.5 [σ²=1.2e+03, R̂=1.409], Variance = -774.5850805797986
+2025-12-03 19:41:08,843 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 124: Gradients = {'h': Array(-14.12271859, dtype=float64), 'phi': Array(2.19271783e-07, dtype=float64)}
+2025-12-03 19:41:08,847 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 124: Updated params = {'h': Array(0.18430201, dtype=float64), 'phi': Array(0.03367523, dtype=float64)}
+2025-12-03 19:41:42,635 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 125: Mean Energy = -29.4-0.0j ± 1.6 [σ²=1.2e+03, R̂=1.409], Variance = -778.320508216084
+2025-12-03 19:41:42,635 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 125: Gradients = {'h': Array(-14.11324581, dtype=float64), 'phi': Array(1.09287355e-07, dtype=float64)}
+2025-12-03 19:41:42,639 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 125: Updated params = {'h': Array(0.18528187, dtype=float64), 'phi': Array(0.03326465, dtype=float64)}
+2025-12-03 19:42:16,436 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 126: Mean Energy = -29.4+0.0j ± 1.6 [σ²=1.2e+03, R̂=1.409], Variance = -782.065818974179
+2025-12-03 19:42:16,437 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 126: Gradients = {'h': Array(-14.10368563, dtype=float64), 'phi': Array(5.08749876e-08, dtype=float64)}
+2025-12-03 19:42:16,441 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 126: Updated params = {'h': Array(0.18626134, dtype=float64), 'phi': Array(0.03287614, dtype=float64)}
+2025-12-03 19:42:50,321 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 127: Mean Energy = -29.4+0.0j ± 1.6 [σ²=1.2e+03, R̂=1.409], Variance = -785.8211766715426
+2025-12-03 19:42:50,322 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 127: Gradients = {'h': Array(-14.09403282, dtype=float64), 'phi': Array(1.24730062e-07, dtype=float64)}
+2025-12-03 19:42:50,324 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 127: Updated params = {'h': Array(0.1872404, dtype=float64), 'phi': Array(0.0324822, dtype=float64)}
+2025-12-03 19:43:24,517 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 128: Mean Energy = -29.5-0.0j ± 1.6 [σ²=1.2e+03, R̂=1.409], Variance = -789.5863589507985
+2025-12-03 19:43:24,518 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 128: Gradients = {'h': Array(-14.08429875, dtype=float64), 'phi': Array(5.90755955e-07, dtype=float64)}
+2025-12-03 19:43:24,520 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 128: Updated params = {'h': Array(0.18821907, dtype=float64), 'phi': Array(0.03193093, dtype=float64)}
+2025-12-03 19:43:58,128 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 129: Mean Energy = -29.5+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -793.3615441766892
+2025-12-03 19:43:58,129 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 129: Gradients = {'h': Array(-14.07447505, dtype=float64), 'phi': Array(7.18389282e-08, dtype=float64)}
+2025-12-03 19:43:58,132 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 129: Updated params = {'h': Array(0.18919733, dtype=float64), 'phi': Array(0.03140832, dtype=float64)}
+2025-12-03 19:44:32,283 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 130: Mean Energy = -29.5+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -797.146556781791
+2025-12-03 19:44:32,283 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 130: Gradients = {'h': Array(-14.06456754, dtype=float64), 'phi': Array(1.01123262e-07, dtype=float64)}
+2025-12-03 19:44:32,285 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 130: Updated params = {'h': Array(0.19017518, dtype=float64), 'phi': Array(0.03090161, dtype=float64)}
+2025-12-03 19:45:06,448 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 131: Mean Energy = -29.5+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -800.9415667306512
+2025-12-03 19:45:06,449 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 131: Gradients = {'h': Array(-14.05457114, dtype=float64), 'phi': Array(8.52980215e-08, dtype=float64)}
+2025-12-03 19:45:06,453 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 131: Updated params = {'h': Array(0.19115261, dtype=float64), 'phi': Array(0.03041454, dtype=float64)}
+2025-12-03 19:45:40,392 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 132: Mean Energy = -29.5+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -804.7465248940457
+2025-12-03 19:45:40,393 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 132: Gradients = {'h': Array(-14.04448773, dtype=float64), 'phi': Array(-2.33799422e-08, dtype=float64)}
+2025-12-03 19:45:40,397 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 132: Updated params = {'h': Array(0.19212962, dtype=float64), 'phi': Array(0.02998256, dtype=float64)}
+2025-12-03 19:46:15,197 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 133: Mean Energy = -29.6-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -808.5614513526946
+2025-12-03 19:46:15,198 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 133: Gradients = {'h': Array(-14.03431733, dtype=float64), 'phi': Array(2.52438752e-08, dtype=float64)}
+2025-12-03 19:46:15,201 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 133: Updated params = {'h': Array(0.19310622, dtype=float64), 'phi': Array(0.02958352, dtype=float64)}
+2025-12-03 19:46:50,051 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 134: Mean Energy = -29.6+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -812.3863043516975
+2025-12-03 19:46:50,051 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 134: Gradients = {'h': Array(-14.02405953, dtype=float64), 'phi': Array(6.15730564e-08, dtype=float64)}
+2025-12-03 19:46:50,056 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 134: Updated params = {'h': Array(0.19408238, dtype=float64), 'phi': Array(0.0292016, dtype=float64)}
+2025-12-03 19:47:24,650 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 135: Mean Energy = -29.6-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -816.2211461429596
+2025-12-03 19:47:24,651 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 135: Gradients = {'h': Array(-14.01371506, dtype=float64), 'phi': Array(4.20768865e-07, dtype=float64)}
+2025-12-03 19:47:24,654 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 135: Updated params = {'h': Array(0.19505811, dtype=float64), 'phi': Array(0.02871353, dtype=float64)}
+2025-12-03 19:47:58,832 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 136: Mean Energy = -29.6+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -820.0660046764589
+2025-12-03 19:47:58,834 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 136: Gradients = {'h': Array(-14.00328125, dtype=float64), 'phi': Array(1.3751166e-08, dtype=float64)}
+2025-12-03 19:47:58,837 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 136: Updated params = {'h': Array(0.19603341, dtype=float64), 'phi': Array(0.02826782, dtype=float64)}
+2025-12-03 19:48:32,567 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 137: Mean Energy = -29.7-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -823.9207357512795
+2025-12-03 19:48:32,568 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 137: Gradients = {'h': Array(-13.99276458, dtype=float64), 'phi': Array(1.3179773e-07, dtype=float64)}
+2025-12-03 19:48:32,572 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 137: Updated params = {'h': Array(0.19700826, dtype=float64), 'phi': Array(0.02781946, dtype=float64)}
+2025-12-03 19:49:06,282 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 138: Mean Energy = -29.7+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -827.7855020553094
+2025-12-03 19:49:06,283 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 138: Gradients = {'h': Array(-13.9821584, dtype=float64), 'phi': Array(1.15338275e-07, dtype=float64)}
+2025-12-03 19:49:06,286 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 138: Updated params = {'h': Array(0.19798267, dtype=float64), 'phi': Array(0.02737427, dtype=float64)}
+2025-12-03 19:49:40,241 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 139: Mean Energy = -29.7+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -831.6602408823162
+2025-12-03 19:49:40,241 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 139: Gradients = {'h': Array(-13.97146544, dtype=float64), 'phi': Array(2.17393042e-08, dtype=float64)}
+2025-12-03 19:49:40,245 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 139: Updated params = {'h': Array(0.19895664, dtype=float64), 'phi': Array(0.02696448, dtype=float64)}
+2025-12-03 19:50:14,278 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 140: Mean Energy = -29.7-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -835.544954648692
+2025-12-03 19:50:14,279 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 140: Gradients = {'h': Array(-13.96068351, dtype=float64), 'phi': Array(4.56834329e-07, dtype=float64)}
+2025-12-03 19:50:14,283 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 140: Updated params = {'h': Array(0.19993015, dtype=float64), 'phi': Array(0.02643838, dtype=float64)}
+2025-12-03 19:50:48,053 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 141: Mean Energy = -29.7+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -839.4397040088706
+2025-12-03 19:50:48,053 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 141: Gradients = {'h': Array(-13.9498156, dtype=float64), 'phi': Array(-1.73219688e-07, dtype=float64)}
+2025-12-03 19:50:48,057 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 141: Updated params = {'h': Array(0.2009032, dtype=float64), 'phi': Array(0.02602451, dtype=float64)}
+2025-12-03 19:51:22,111 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 142: Mean Energy = -29.8+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -843.3444729624097
+2025-12-03 19:51:22,112 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 142: Gradients = {'h': Array(-13.93886091, dtype=float64), 'phi': Array(4.00483628e-08, dtype=float64)}
+2025-12-03 19:51:22,115 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 142: Updated params = {'h': Array(0.20187579, dtype=float64), 'phi': Array(0.02563663, dtype=float64)}
+2025-12-03 19:51:56,150 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 143: Mean Energy = -29.8+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -847.2591328219297
+2025-12-03 19:51:56,151 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 143: Gradients = {'h': Array(-13.92782103, dtype=float64), 'phi': Array(9.11624939e-08, dtype=float64)}
+2025-12-03 19:51:56,155 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 143: Updated params = {'h': Array(0.20284792, dtype=float64), 'phi': Array(0.02525426, dtype=float64)}
+2025-12-03 19:52:30,339 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 144: Mean Energy = -29.8+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -851.1838908263551
+2025-12-03 19:52:30,340 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 144: Gradients = {'h': Array(-13.91669001, dtype=float64), 'phi': Array(5.06736811e-08, dtype=float64)}
+2025-12-03 19:52:30,343 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 144: Updated params = {'h': Array(0.20381958, dtype=float64), 'phi': Array(0.02489101, dtype=float64)}
+2025-12-03 19:53:04,299 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 145: Mean Energy = -29.8+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -855.1185766488218
+2025-12-03 19:53:04,300 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 145: Gradients = {'h': Array(-13.90547564, dtype=float64), 'phi': Array(1.37169861e-08, dtype=float64)}
+2025-12-03 19:53:04,303 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 145: Updated params = {'h': Array(0.20479076, dtype=float64), 'phi': Array(0.02455804, dtype=float64)}
+2025-12-03 19:53:38,565 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 146: Mean Energy = -29.8-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -859.0633673769157
+2025-12-03 19:53:38,566 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 146: Gradients = {'h': Array(-13.89417008, dtype=float64), 'phi': Array(9.52601796e-08, dtype=float64)}
+2025-12-03 19:53:38,570 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 146: Updated params = {'h': Array(0.20576147, dtype=float64), 'phi': Array(0.02422351, dtype=float64)}
+2025-12-03 19:54:12,779 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 147: Mean Energy = -29.9+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -863.0180511699267
+2025-12-03 19:54:12,779 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 147: Gradients = {'h': Array(-13.88278143, dtype=float64), 'phi': Array(1.63234587e-08, dtype=float64)}
+2025-12-03 19:54:12,782 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 147: Updated params = {'h': Array(0.20673169, dtype=float64), 'phi': Array(0.02391554, dtype=float64)}
+2025-12-03 19:54:46,842 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 148: Mean Energy = -29.9-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -866.9828060691168
+2025-12-03 19:54:46,843 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 148: Gradients = {'h': Array(-13.87130177, dtype=float64), 'phi': Array(2.30955834e-07, dtype=float64)}
+2025-12-03 19:54:46,847 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 148: Updated params = {'h': Array(0.20770143, dtype=float64), 'phi': Array(0.02355547, dtype=float64)}
+2025-12-03 19:55:20,718 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 149: Mean Energy = -29.9-0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -870.957575759532
+2025-12-03 19:55:20,719 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 149: Gradients = {'h': Array(-13.85973843, dtype=float64), 'phi': Array(7.26088877e-08, dtype=float64)}
+2025-12-03 19:55:20,722 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 149: Updated params = {'h': Array(0.20867067, dtype=float64), 'phi': Array(0.02320429, dtype=float64)}
+2025-12-03 19:55:54,945 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 150: Mean Energy = -29.9+0.0j ± 1.6 [σ²=1.3e+03, R̂=1.409], Variance = -874.942361890935
+2025-12-03 19:55:54,946 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 150: Gradients = {'h': Array(-13.84808616, dtype=float64), 'phi': Array(1.34322956e-07, dtype=float64)}
+2025-12-03 19:55:54,950 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 150: Updated params = {'h': Array(0.20963942, dtype=float64), 'phi': Array(0.02283908, dtype=float64)}
+2025-12-03 19:56:28,876 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 151: Mean Energy = -29.9+0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -878.9371660379726
+2025-12-03 19:56:28,877 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 151: Gradients = {'h': Array(-13.8363467, dtype=float64), 'phi': Array(5.78621625e-08, dtype=float64)}
+2025-12-03 19:56:28,880 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 151: Updated params = {'h': Array(0.21060767, dtype=float64), 'phi': Array(0.02248841, dtype=float64)}
+2025-12-03 19:57:03,297 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 152: Mean Energy = -30.0-0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -882.9419973160391
+2025-12-03 19:57:03,298 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 152: Gradients = {'h': Array(-13.82451799, dtype=float64), 'phi': Array(-2.07761223e-08, dtype=float64)}
+2025-12-03 19:57:03,302 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 152: Updated params = {'h': Array(0.21157542, dtype=float64), 'phi': Array(0.02217927, dtype=float64)}
+2025-12-03 19:57:37,395 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 153: Mean Energy = -30.0-0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -886.9568338245102
+2025-12-03 19:57:37,396 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 153: Gradients = {'h': Array(-13.81260633, dtype=float64), 'phi': Array(1.43476795e-07, dtype=float64)}
+2025-12-03 19:57:37,399 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 153: Updated params = {'h': Array(0.21254266, dtype=float64), 'phi': Array(0.02184827, dtype=float64)}
+2025-12-03 19:58:11,635 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 154: Mean Energy = -30.0-0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -890.9816994123032
+2025-12-03 19:58:11,636 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 154: Gradients = {'h': Array(-13.80060545, dtype=float64), 'phi': Array(5.80680954e-08, dtype=float64)}
+2025-12-03 19:58:11,639 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 154: Updated params = {'h': Array(0.21350939, dtype=float64), 'phi': Array(0.02152826, dtype=float64)}
+2025-12-03 19:58:45,541 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 155: Mean Energy = -30.0+0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -895.016587053942
+2025-12-03 19:58:45,542 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 155: Gradients = {'h': Array(-13.78851745, dtype=float64), 'phi': Array(4.73278121e-08, dtype=float64)}
+2025-12-03 19:58:45,546 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 155: Updated params = {'h': Array(0.2144756, dtype=float64), 'phi': Array(0.02122201, dtype=float64)}
+2025-12-03 19:59:19,644 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 156: Mean Energy = -30.1-0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -899.0614969355421
+2025-12-03 19:59:19,645 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 156: Gradients = {'h': Array(-13.77634237, dtype=float64), 'phi': Array(5.75059034e-08, dtype=float64)}
+2025-12-03 19:59:19,649 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 156: Updated params = {'h': Array(0.21544129, dtype=float64), 'phi': Array(0.02092443, dtype=float64)}
+2025-12-03 19:59:53,916 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 157: Mean Energy = -30.1+0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -903.1164294713027
+2025-12-03 19:59:53,917 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 157: Gradients = {'h': Array(-13.76408022, dtype=float64), 'phi': Array(8.48289395e-09, dtype=float64)}
+2025-12-03 19:59:53,920 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 157: Updated params = {'h': Array(0.21640645, dtype=float64), 'phi': Array(0.0206526, dtype=float64)}
+2025-12-03 20:00:27,793 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 158: Mean Energy = -30.1+0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -907.1813705225447
+2025-12-03 20:00:27,794 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 158: Gradients = {'h': Array(-13.7517318, dtype=float64), 'phi': Array(-7.61506828e-08, dtype=float64)}
+2025-12-03 20:00:27,798 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 158: Updated params = {'h': Array(0.21737109, dtype=float64), 'phi': Array(0.02043531, dtype=float64)}
+2025-12-03 20:01:01,721 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 159: Mean Energy = -30.1+0.0j ± 1.6 [σ²=1.4e+03, R̂=1.409], Variance = -911.2563838369521
+2025-12-03 20:01:01,722 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 159: Gradients = {'h': Array(-13.73929238, dtype=float64), 'phi': Array(2.65096877e-08, dtype=float64)}
+2025-12-03 20:01:01,726 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 159: Updated params = {'h': Array(0.21833519, dtype=float64), 'phi': Array(0.02022931, dtype=float64)}
+2025-12-03 20:01:35,709 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 160: Mean Energy = -30.1+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -915.3414148967939
+2025-12-03 20:01:35,710 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 160: Gradients = {'h': Array(-13.72676924, dtype=float64), 'phi': Array(-3.48663164e-08, dtype=float64)}
+2025-12-03 20:01:35,714 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 160: Updated params = {'h': Array(0.21929875, dtype=float64), 'phi': Array(0.02005627, dtype=float64)}
+2025-12-03 20:02:09,684 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 161: Mean Energy = -30.2+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -919.4363998534483
+2025-12-03 20:02:09,685 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 161: Gradients = {'h': Array(-13.71415876, dtype=float64), 'phi': Array(-3.43520111e-08, dtype=float64)}
+2025-12-03 20:02:09,689 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 161: Updated params = {'h': Array(0.22026177, dtype=float64), 'phi': Array(0.01991283, dtype=float64)}
+2025-12-03 20:02:43,936 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 162: Mean Energy = -30.2+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -923.5414159765312
+2025-12-03 20:02:43,937 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 162: Gradients = {'h': Array(-13.70146451, dtype=float64), 'phi': Array(9.5950028e-08, dtype=float64)}
+2025-12-03 20:02:43,941 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 162: Updated params = {'h': Array(0.22122424, dtype=float64), 'phi': Array(0.01974753, dtype=float64)}
+2025-12-03 20:03:17,833 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 163: Mean Energy = -30.2-0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -927.6565346479913
+2025-12-03 20:03:17,834 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 163: Gradients = {'h': Array(-13.68867837, dtype=float64), 'phi': Array(8.38011684e-08, dtype=float64)}
+2025-12-03 20:03:17,837 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 163: Updated params = {'h': Array(0.22218616, dtype=float64), 'phi': Array(0.01956694, dtype=float64)}
+2025-12-03 20:03:52,386 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 164: Mean Energy = -30.2+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -931.781543686285
+2025-12-03 20:03:52,387 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 164: Gradients = {'h': Array(-13.67580985, dtype=float64), 'phi': Array(6.25403496e-08, dtype=float64)}
+2025-12-03 20:03:52,390 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 164: Updated params = {'h': Array(0.22314753, dtype=float64), 'phi': Array(0.01938042, dtype=float64)}
+2025-12-03 20:04:26,235 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 165: Mean Energy = -30.2-0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -935.9166933581915
+2025-12-03 20:04:26,236 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 165: Gradients = {'h': Array(-13.66285006, dtype=float64), 'phi': Array(7.12261857e-08, dtype=float64)}
+2025-12-03 20:04:26,239 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 165: Updated params = {'h': Array(0.22410833, dtype=float64), 'phi': Array(0.01918523, dtype=float64)}
+2025-12-03 20:05:00,311 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 166: Mean Energy = -30.3+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -940.0617280370093
+2025-12-03 20:05:00,312 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 166: Gradients = {'h': Array(-13.64980801, dtype=float64), 'phi': Array(1.94326693e-08, dtype=float64)}
+2025-12-03 20:05:00,316 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 166: Updated params = {'h': Array(0.22506857, dtype=float64), 'phi': Array(0.01900165, dtype=float64)}
+2025-12-03 20:05:34,176 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 167: Mean Energy = -30.3-0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -944.2168471527109
+2025-12-03 20:05:34,177 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 167: Gradients = {'h': Array(-13.63667474, dtype=float64), 'phi': Array(2.46963667e-07, dtype=float64)}
+2025-12-03 20:05:34,181 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 167: Updated params = {'h': Array(0.22602824, dtype=float64), 'phi': Array(0.01874303, dtype=float64)}
+2025-12-03 20:06:08,355 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 168: Mean Energy = -30.3+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -948.3819336737772
+2025-12-03 20:06:08,356 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 168: Gradients = {'h': Array(-13.62345878, dtype=float64), 'phi': Array(-3.19500436e-08, dtype=float64)}
+2025-12-03 20:06:08,360 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 168: Updated params = {'h': Array(0.22698734, dtype=float64), 'phi': Array(0.01852167, dtype=float64)}
+2025-12-03 20:06:42,610 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 169: Mean Energy = -30.3+0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -952.5570533373407
+2025-12-03 20:06:42,611 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 169: Gradients = {'h': Array(-13.61015522, dtype=float64), 'phi': Array(1.04361331e-07, dtype=float64)}
+2025-12-03 20:06:42,614 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 169: Updated params = {'h': Array(0.22794586, dtype=float64), 'phi': Array(0.01828226, dtype=float64)}
+2025-12-03 20:07:16,879 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 170: Mean Energy = -30.4-0.0j ± 1.7 [σ²=1.4e+03, R̂=1.409], Variance = -956.7422527045143
+2025-12-03 20:07:16,879 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 170: Gradients = {'h': Array(-13.59676199, dtype=float64), 'phi': Array(4.0017017e-08, dtype=float64)}
+2025-12-03 20:07:16,881 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 170: Updated params = {'h': Array(0.2289038, dtype=float64), 'phi': Array(0.01805087, dtype=float64)}
+2025-12-03 20:07:51,014 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 171: Mean Energy = -30.4+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -960.9373037075283
+2025-12-03 20:07:51,015 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 171: Gradients = {'h': Array(-13.58328698, dtype=float64), 'phi': Array(4.4203192e-08, dtype=float64)}
+2025-12-03 20:07:51,018 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 171: Updated params = {'h': Array(0.22986115, dtype=float64), 'phi': Array(0.01782511, dtype=float64)}
+2025-12-03 20:08:24,858 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 172: Mean Energy = -30.4+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -965.1424125319719
+2025-12-03 20:08:24,859 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 172: Gradients = {'h': Array(-13.56972324, dtype=float64), 'phi': Array(1.10863851e-07, dtype=float64)}
+2025-12-03 20:08:24,862 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 172: Updated params = {'h': Array(0.23081791, dtype=float64), 'phi': Array(0.01757891, dtype=float64)}
+2025-12-03 20:08:59,294 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 173: Mean Energy = -30.4+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -969.3575108251322
+2025-12-03 20:08:59,295 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 173: Gradients = {'h': Array(-13.5560731, dtype=float64), 'phi': Array(7.70879423e-08, dtype=float64)}
+2025-12-03 20:08:59,298 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 173: Updated params = {'h': Array(0.23177408, dtype=float64), 'phi': Array(0.01732708, dtype=float64)}
+2025-12-03 20:09:33,493 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 174: Mean Energy = -30.4+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -973.5825934556517
+2025-12-03 20:09:33,494 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 174: Gradients = {'h': Array(-13.54233666, dtype=float64), 'phi': Array(1.83032231e-08, dtype=float64)}
+2025-12-03 20:09:33,498 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 174: Updated params = {'h': Array(0.23272965, dtype=float64), 'phi': Array(0.0170927, dtype=float64)}
+2025-12-03 20:10:08,143 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 175: Mean Energy = -30.5-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -977.8176561266628
+2025-12-03 20:10:08,144 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 175: Gradients = {'h': Array(-13.52851396, dtype=float64), 'phi': Array(1.39096369e-08, dtype=float64)}
+2025-12-03 20:10:08,148 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 175: Updated params = {'h': Array(0.23368461, dtype=float64), 'phi': Array(0.01687575, dtype=float64)}
+2025-12-03 20:10:42,070 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 176: Mean Energy = -30.5-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -982.0627604424923
+2025-12-03 20:10:42,071 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 176: Gradients = {'h': Array(-13.51460271, dtype=float64), 'phi': Array(4.49503999e-08, dtype=float64)}
+2025-12-03 20:10:42,075 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 176: Updated params = {'h': Array(0.23463896, dtype=float64), 'phi': Array(0.0166625, dtype=float64)}
+2025-12-03 20:11:16,316 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 177: Mean Energy = -30.5+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -986.3177011558772
+2025-12-03 20:11:16,317 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 177: Gradients = {'h': Array(-13.50061008, dtype=float64), 'phi': Array(1.75208929e-08, dtype=float64)}
+2025-12-03 20:11:16,320 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 177: Updated params = {'h': Array(0.2355927, dtype=float64), 'phi': Array(0.01646319, dtype=float64)}
+2025-12-03 20:11:50,778 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 178: Mean Energy = -30.5-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -990.5827007594752
+2025-12-03 20:11:50,780 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 178: Gradients = {'h': Array(-13.48652623, dtype=float64), 'phi': Array(2.4390465e-07, dtype=float64)}
+2025-12-03 20:11:50,783 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 178: Updated params = {'h': Array(0.23654583, dtype=float64), 'phi': Array(0.0161889, dtype=float64)}
+2025-12-03 20:12:24,730 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 179: Mean Energy = -30.6-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -994.8576695086697
+2025-12-03 20:12:24,730 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 179: Gradients = {'h': Array(-13.47235962, dtype=float64), 'phi': Array(1.6428984e-07, dtype=float64)}
+2025-12-03 20:12:24,733 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 179: Updated params = {'h': Array(0.23749833, dtype=float64), 'phi': Array(0.0158776, dtype=float64)}
+2025-12-03 20:12:58,603 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 180: Mean Energy = -30.6+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -999.1424848774301
+2025-12-03 20:12:58,603 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 180: Gradients = {'h': Array(-13.45810911, dtype=float64), 'phi': Array(5.15777256e-08, dtype=float64)}
+2025-12-03 20:12:58,605 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 180: Updated params = {'h': Array(0.2384502, dtype=float64), 'phi': Array(0.01557651, dtype=float64)}
+2025-12-03 20:13:32,914 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 181: Mean Energy = -30.6+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1003.4373129171554
+2025-12-03 20:13:32,915 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 181: Gradients = {'h': Array(-13.44377038, dtype=float64), 'phi': Array(3.40979465e-09, dtype=float64)}
+2025-12-03 20:13:32,918 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 181: Updated params = {'h': Array(0.23940145, dtype=float64), 'phi': Array(0.0153034, dtype=float64)}
+2025-12-03 20:14:07,333 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 182: Mean Energy = -30.6+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1007.7420803224757
+2025-12-03 20:14:07,334 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 182: Gradients = {'h': Array(-13.42934592, dtype=float64), 'phi': Array(7.0186684e-08, dtype=float64)}
+2025-12-03 20:14:07,337 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 182: Updated params = {'h': Array(0.24035206, dtype=float64), 'phi': Array(0.01502936, dtype=float64)}
+2025-12-03 20:14:41,232 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 183: Mean Energy = -30.6+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1012.0567719300324
+2025-12-03 20:14:41,233 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 183: Gradients = {'h': Array(-13.41483557, dtype=float64), 'phi': Array(3.15018741e-08, dtype=float64)}
+2025-12-03 20:14:41,237 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 183: Updated params = {'h': Array(0.24130203, dtype=float64), 'phi': Array(0.01476963, dtype=float64)}
+2025-12-03 20:15:15,193 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 184: Mean Energy = -30.7-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1016.3813916663507
+2025-12-03 20:15:15,193 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 184: Gradients = {'h': Array(-13.40023944, dtype=float64), 'phi': Array(3.34162098e-07, dtype=float64)}
+2025-12-03 20:15:15,197 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 184: Updated params = {'h': Array(0.24225135, dtype=float64), 'phi': Array(0.01440508, dtype=float64)}
+2025-12-03 20:15:49,106 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 185: Mean Energy = -30.7+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1020.7159819343915
+2025-12-03 20:15:49,107 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 185: Gradients = {'h': Array(-13.38555758, dtype=float64), 'phi': Array(3.65371144e-08, dtype=float64)}
+2025-12-03 20:15:49,111 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 185: Updated params = {'h': Array(0.24320003, dtype=float64), 'phi': Array(0.01406168, dtype=float64)}
+2025-12-03 20:16:23,230 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 186: Mean Energy = -30.7+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1025.0604521440714
+2025-12-03 20:16:23,231 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 186: Gradients = {'h': Array(-13.37078879, dtype=float64), 'phi': Array(1.52491241e-07, dtype=float64)}
+2025-12-03 20:16:23,234 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 186: Updated params = {'h': Array(0.24414805, dtype=float64), 'phi': Array(0.01369188, dtype=float64)}
+2025-12-03 20:16:57,264 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 187: Mean Energy = -30.7+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1029.4147418759737
+2025-12-03 20:16:57,265 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 187: Gradients = {'h': Array(-13.35594038, dtype=float64), 'phi': Array(2.04273738e-08, dtype=float64)}
+2025-12-03 20:16:57,269 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 187: Updated params = {'h': Array(0.24509542, dtype=float64), 'phi': Array(0.01335004, dtype=float64)}
+2025-12-03 20:17:31,539 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 188: Mean Energy = -30.8-0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1033.7790653123075
+2025-12-03 20:17:31,540 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 188: Gradients = {'h': Array(-13.34100109, dtype=float64), 'phi': Array(8.0184566e-08, dtype=float64)}
+2025-12-03 20:17:31,544 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 188: Updated params = {'h': Array(0.24604212, dtype=float64), 'phi': Array(0.01300978, dtype=float64)}
+2025-12-03 20:18:05,465 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 189: Mean Energy = -30.8+0.0j ± 1.7 [σ²=1.5e+03, R̂=1.409], Variance = -1038.153186130629
+2025-12-03 20:18:05,466 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 189: Gradients = {'h': Array(-13.32597935, dtype=float64), 'phi': Array(4.82718891e-08, dtype=float64)}
+2025-12-03 20:18:05,469 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 189: Updated params = {'h': Array(0.24698816, dtype=float64), 'phi': Array(0.01268352, dtype=float64)}
+2025-12-03 20:18:39,766 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 190: Mean Energy = -30.8+0.0j ± 1.7 [σ²=1.6e+03, R̂=1.409], Variance = -1042.537111648726
+2025-12-03 20:18:39,767 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 190: Gradients = {'h': Array(-13.31087449, dtype=float64), 'phi': Array(6.45581405e-08, dtype=float64)}
+2025-12-03 20:18:39,770 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 190: Updated params = {'h': Array(0.24793353, dtype=float64), 'phi': Array(0.01236337, dtype=float64)}
+2025-12-03 20:19:14,030 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 191: Mean Energy = -30.8+0.0j ± 1.7 [σ²=1.6e+03, R̂=1.409], Variance = -1046.931060690078
+2025-12-03 20:19:14,031 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 191: Gradients = {'h': Array(-13.29568019, dtype=float64), 'phi': Array(7.12138018e-08, dtype=float64)}
+2025-12-03 20:19:14,035 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 191: Updated params = {'h': Array(0.24887822, dtype=float64), 'phi': Array(0.01204602, dtype=float64)}
+2025-12-03 20:19:47,970 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 192: Mean Energy = -30.8+0.0j ± 1.7 [σ²=1.6e+03, R̂=1.409], Variance = -1051.3347242632772
+2025-12-03 20:19:47,971 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 192: Gradients = {'h': Array(-13.28040552, dtype=float64), 'phi': Array(1.53843033e-08, dtype=float64)}
+2025-12-03 20:19:47,974 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 192: Updated params = {'h': Array(0.24982223, dtype=float64), 'phi': Array(0.01175345, dtype=float64)}
+2025-12-03 20:20:22,244 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 193: Mean Energy = -30.9+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1055.748295678486
+2025-12-03 20:20:22,245 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 193: Gradients = {'h': Array(-13.26504402, dtype=float64), 'phi': Array(5.78160547e-09, dtype=float64)}
+2025-12-03 20:20:22,248 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 193: Updated params = {'h': Array(0.25076555, dtype=float64), 'phi': Array(0.0114871, dtype=float64)}
+2025-12-03 20:20:56,416 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 194: Mean Energy = -30.9+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1060.1717315967462
+2025-12-03 20:20:56,416 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 194: Gradients = {'h': Array(-13.24959511, dtype=float64), 'phi': Array(3.16300459e-08, dtype=float64)}
+2025-12-03 20:20:56,420 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 194: Updated params = {'h': Array(0.25170819, dtype=float64), 'phi': Array(0.01123398, dtype=float64)}
+2025-12-03 20:21:30,276 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 195: Mean Energy = -30.9+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1064.6049480831553
+2025-12-03 20:21:30,277 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 195: Gradients = {'h': Array(-13.23406487, dtype=float64), 'phi': Array(4.5315562e-09, dtype=float64)}
+2025-12-03 20:21:30,280 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 195: Updated params = {'h': Array(0.25265013, dtype=float64), 'phi': Array(0.01100373, dtype=float64)}
+2025-12-03 20:22:04,121 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 196: Mean Energy = -30.9+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1069.0479797180521
+2025-12-03 20:22:04,122 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 196: Gradients = {'h': Array(-13.21845257, dtype=float64), 'phi': Array(2.20346884e-08, dtype=float64)}
+2025-12-03 20:22:04,125 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 196: Updated params = {'h': Array(0.25359138, dtype=float64), 'phi': Array(0.01078701, dtype=float64)}
+2025-12-03 20:22:38,168 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 197: Mean Energy = -31.0+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1073.5008111618408
+2025-12-03 20:22:38,169 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 197: Gradients = {'h': Array(-13.20275277, dtype=float64), 'phi': Array(-5.71685609e-08, dtype=float64)}
+2025-12-03 20:22:38,172 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 197: Updated params = {'h': Array(0.25453192, dtype=float64), 'phi': Array(0.01061471, dtype=float64)}
+2025-12-03 20:23:12,163 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 198: Mean Energy = -31.0+0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1077.9634668728286
+2025-12-03 20:23:12,164 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 198: Gradients = {'h': Array(-13.18697027, dtype=float64), 'phi': Array(4.67984583e-08, dtype=float64)}
+2025-12-03 20:23:12,168 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 198: Updated params = {'h': Array(0.25547176, dtype=float64), 'phi': Array(0.01044018, dtype=float64)}
+2025-12-03 20:23:45,874 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 199: Mean Energy = -31.0-0.0j ± 1.8 [σ²=1.6e+03, R̂=1.409], Variance = -1082.4359497551904
+2025-12-03 20:23:45,876 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 199: Gradients = {'h': Array(-13.17110021, dtype=float64), 'phi': Array(1.97652525e-08, dtype=float64)}
+2025-12-03 20:23:45,879 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Iteration 199: Updated params = {'h': Array(0.25641088, dtype=float64), 'phi': Array(0.0102746, dtype=float64)}
+2025-12-03 20:23:45,880 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Gutzwiller optimization finished. Final params: {'h': Array(0.06, dtype=float64), 'phi': Array(0.1, dtype=float64)}
+2025-12-03 20:23:46,232 - HFDS_Heisenberg.Optimized_Gutwiller_MF_Init - INFO - Gutzwiller optimization plots saved in HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_1/J=0.7/seed_4
+2025-12-03 20:23:46,246 - __main__ - INFO - Gutzwiller optimization finished. Using h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:46,246 - __main__ - INFO - HiddenFermion model initialized.
+2025-12-03 20:23:46,267 - __main__ - INFO - MetropolisExchange sampler created.
+2025-12-03 20:23:46,485 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:46,487 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:46,495 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:46,678 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:46,851 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:46,853 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:48,183 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:48,184 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:48,192 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:48,342 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:48,491 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:48,491 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:48,814 - __main__ - INFO - MCState (vstate) created.
+2025-12-03 20:23:48,871 - __main__ - INFO - VMC_SR driver created.
+2025-12-03 20:23:48,871 - __main__ - INFO - Starting VMC optimization for 3 iterations.
+2025-12-03 20:23:48,919 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:48,921 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:48,933 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:49,082 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:49,233 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:49,233 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:49,533 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:49,534 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:49,545 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:50,089 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:50,239 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:50,240 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:50,883 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:50,884 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:50,895 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:51,047 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:51,199 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:51,200 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:51,845 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:51,846 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:51,854 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:52,014 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:52,174 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:52,174 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:52,283 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:52,284 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:52,292 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:52,451 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:52,610 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:52,611 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:53,353 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:53,355 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:53,368 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:53,544 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:53,967 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:53,970 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:54,126 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:54,129 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:54,150 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:54,316 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:54,484 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:54,484 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:54,844 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:54,847 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:54,866 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:55,033 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:55,199 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:55,200 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:55,354 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:55,357 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:55,366 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:55,517 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:55,669 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:55,670 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:23:55,747 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:23:55,750 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:23:55,762 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:23:55,913 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:56,332 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:23:56,332 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:24:25,618 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:24:25,621 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:24:25,631 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:24:25,782 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:24:25,932 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:24:25,932 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:25:34,699 - __main__ - INFO - VMC optimization finished.
+  0%|          | 0/3 [00:00<?, ?it/s]  0%|          | 0/3 [00:36<?, ?it/s, Energy=-10.46-0.83j ± 0.99 [σ²=2.3e+02, R̂=1.225]]  0%|          | 0/3 [00:34<?, ?it/s, Energy=-14.39+0.44j ± 0.76 [σ²=1.4e+02, R̂=1.225]] 33%|███▎      | 1/3 [00:34<01:09, 34.65s/it, Energy=-14.39+0.44j ± 0.76 [σ²=1.4e+02, R̂=1.225]] 33%|███▎      | 1/3 [01:09<01:09, 34.65s/it, Energy=-16.89+0.28j ± 0.41 [σ²=4.8e+01, R̂=1.225]] 67%|██████▋   | 2/3 [01:09<00:34, 34.55s/it, Energy=-16.89+0.28j ± 0.41 [σ²=4.8e+01, R̂=1.225]]100%|██████████| 3/3 [01:09<00:00, 23.04s/it, Energy=-16.89+0.28j ± 0.41 [σ²=4.8e+01, R̂=1.225]]
+2025-12-03 20:25:34,755 - __main__ - INFO - Starting post-simulation analysis.
+2025-12-03 20:25:34,902 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:25:34,904 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:25:34,914 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:25:35,065 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:35,218 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:35,218 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:25:36,808 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:25:36,809 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:25:36,817 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:25:36,979 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:37,141 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:37,142 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:25:37,253 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:25:37,254 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:25:37,262 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:25:37,422 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:37,582 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:25:37,583 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:26:09,486 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:26:09,487 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:26:09,495 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:26:09,653 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:26:09,811 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:26:09,812 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:26:09,874 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:26:09,875 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:26:09,883 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:26:10,041 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:26:10,198 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:26:10,199 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:05,020 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:05,021 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:05,029 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:05,261 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:05,464 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:05,465 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:06,790 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:06,791 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:06,799 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:06,960 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:07,120 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:07,121 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:07,182 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:07,183 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:07,190 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:07,350 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:07,509 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:07,510 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:08,699 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:08,701 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:08,712 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:08,906 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:09,102 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:09,103 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:10,900 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:10,902 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:10,911 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:11,085 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:11,260 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:11,261 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+2025-12-03 20:27:15,040 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-03 20:27:15,042 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-03 20:27:15,052 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.256410882294817, phi=0.01027460104765251
+2025-12-03 20:27:15,235 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:15,415 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-03 20:27:15,416 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+/cluster/home/fconoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+2025-12-03 20:27:41,276 - __main__ - INFO - Analysis variables saved to pickle file.
+2025-12-03 20:27:41,276 - __main__ - INFO - Script finished successfully.

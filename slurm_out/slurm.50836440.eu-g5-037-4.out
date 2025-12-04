@@ -1,0 +1,31 @@
+2025-12-04 18:26:37,938 - __main__ - INFO - ket_gs outside model (first 10): [-0.00075158 -0.00134471  0.00087267 -0.00134471  0.00286136  0.00087267
+ -0.00069366  0.00087267 -0.00134471  0.00087267]
+2025-12-04 18:26:37,938 - __main__ - INFO - ket_gs shape: (12870, 1)
+2025-12-04 18:26:38,237 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.0, phi=0.0
+2025-12-04 18:26:38,411 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:26:38,574 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - MF energy Initialize orbitals: Traced<ShapedArray(float64[])>with<DynamicJaxprTrace>
+2025-12-04 18:26:38,576 - HFDS_Heisenberg.Gutzwiller_MF_Init - INFO - Finished updating Gutzwiller MF orbitals.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 313, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 254, in __call__
+    log_amp, log_sign = self.calc_psi(x)
+                        ^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin_amp.py", line 208, in calc_psi
+    sign, logx = logdet_cmplx(x)
+    ^^^^^^^^^^
+ValueError: not enough values to unpack (expected 2, got 1)
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: eu-g5-037-4: task 0: Exited with exit code 1

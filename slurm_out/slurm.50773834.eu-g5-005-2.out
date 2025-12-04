@@ -1,0 +1,52 @@
+2025-12-04 11:12:12,411 - __main__ - INFO - Parsing command-line arguments.
+2025-12-04 11:12:12,411 - __main__ - INFO - J2 coupling parameter set to: 0.2
+2025-12-04 11:12:12,411 - __main__ - INFO - Physical and model parameters set.
+2025-12-04 11:12:12,411 - __main__ - INFO - Script starting execution.
+2025-12-04 11:12:12,415 - __main__ - INFO - Output will be saved to: HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_new_Hk/J=0.2/seed_4
+2025-12-04 11:12:12,425 - __main__ - INFO - Hilbert space created.
+2025-12-04 11:12:12,428 - __main__ - INFO - Hamiltonian created.
+2025-12-04 11:12:16,535 - __main__ - INFO - Exact ground state calculated.
+2025-12-04 11:12:16,536 - __main__ - INFO - HiddenFermion model initialized.
+2025-12-04 11:12:16,595 - __main__ - INFO - MetropolisExchange sampler created.
+2025-12-04 11:12:16,843 - HFDS_Heisenberg.HFDS_model_spin - INFO - Setting up HiddenFermion model.
+2025-12-04 11:12:16,845 - HFDS_Heisenberg.HFDS_model_spin - INFO - HiddenFermion model setup complete.
+2025-12-04 11:12:16,854 - HFDS_Heisenberg.Init_orbitals - INFO - Initializing Gutzwiller orbitals with h=0.02, phi=0.4
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 172, in <module>
+    vstate = nk.vqs.MCState(
+             ^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 279, in __init__
+    self.init(seed, dtype=sampler.dtype)
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 328, in init
+    variables = jax.jit(self._init_fun, out_shardings=par_sharding)(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/netket_venv/lib/python3.11/site-packages/netket/vqs/mc/mc_state/state.py", line 249, in <lambda>
+    lambda model, *args, **kwargs: model.init(*args, **kwargs), model
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 117, in __call__
+    log_det, log_sign = jax.vmap(self.calc_psi)(jnp.stack(x_sym))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/HFDS_model_spin.py", line 64, in calc_psi
+    orbitals = self.orbitals(x)
+               ^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Init_orbitals.py", line 58, in setup
+    self.orbitals_mfmf = self.param('orbitals_mf', self._init_gutzwiller, (N_sites, self.n_elecs), self.dtype)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Init_orbitals.py", line 45, in _init_gutzwiller
+    mf = update_orbitals_gmf(self.lattice, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 175, in update_orbitals_gmf
+    upmatrix = initialize_real(n_elecs//2, sigmaz = +1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 149, in initialize_real
+    energies, eigenstates = Hk(sigmaz, phi, h, N_sites, positions, lattice, dtype)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/Gutzwiller_MF_Init.py", line 109, in Hk
+    for neighbor in nns_x[i]:
+                    ~~~~~^^^
+TypeError: 'Lattice' object is not subscriptable
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+srun: error: eu-g5-005-2: task 0: Exited with exit code 1
