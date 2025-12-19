@@ -22,10 +22,18 @@ print(jax.devices())
 import flax
 from flax import linen as nn
 from netket.operator.spin import sigmax, sigmaz, sigmay
+import logging
 import sys
 import os
 import argparse
 import pickle
+from netket.hilbert.homogeneous import HomogeneousHilbert 
+
+# Setup logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
@@ -38,8 +46,11 @@ from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
-parser.add_argument("--seed", type=float, default=0, help="seed")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2", required=False)
+parser.add_argument("--seed", type=float, default=0, help="seed", required=False)
+parser.add_argument("--output", type=str, default='psi', help="output mode", required=False)
+
+
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
@@ -49,6 +60,9 @@ L = 4  # Linear size of the lattice
 n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
+output = args.output #psi #exact_amp #exact_sign
+
+logger.info(f"Script parameters: J2={J2}, seed={seed}")
 
 num_layers      = 2     # number of Tranformer layers
 d_model         = 8   # dimensionality of the embedding space
@@ -59,13 +73,13 @@ parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 100
+N_opt           = 1
 
-number_data_points = 20
+number_data_points = 1
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_sign"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_mode{output}_sym4"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'
@@ -78,22 +92,29 @@ os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
+logger.info(f"Output will be saved to: {folder}")
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph
+logger.info("Creating Hilbert space and Hamiltonian...")
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
+logger.info(f"Hilbert space size = {hilbert.size}")
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
     hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
 ).to_jax_operator()  # No Marshall sign rule
+logger.info("Hamiltonian created.")
 
 # --- Calculate exact ground state before model initialization ---
+logger.info("Calculating exact ground state...")
 _, ket_gs = nk.exact.lanczos_ed(hamiltonian, compute_eigenvectors=True)
+logger.info(f"Exact ground state calculated. Shape: {ket_gs.shape}")
+logger.info(f"ket_gs values out ViT (first 10): {ket_gs.flatten()[:10]}")
 
-
+####################################################################################################################
 
 import matplotlib.pyplot as plt
 import netket as nk
@@ -357,7 +378,11 @@ class ViT(nn.Module):
     d_model: int  # dimensionality of the embedding space
     n_heads: int  # number of heads
     patch_size: int  # linear patch size
+    hilbert: HomogeneousHilbert 
     transl_invariant: bool = False
+    output_mode: str = 'model_psi' # 'exact_amp', 'exact_sign', 'model_psi'
+    
+
 
     @nn.compact
     def __call__(self, spins):
@@ -378,27 +403,11 @@ class ViT(nn.Module):
 
         log_psi = OuputHead(d_model=self.d_model)(y)
 
-        log_amp = np.real(log_psi)
-        log_sign = np.imag(log_psi)
 
-        # --- EXACT LOOKUP ---
-        exact_log_amps = jnp.log(jnp.array(np.abs(ket_gs)) + 0j)
-        exact_log_signs = jnp.angle(ket_gs)
-
-        # Use original spins for indexing, not the embedded 'x'
-        x_bits = (spins + 1) / 2
-        powers = 2**jnp.arange(spins.shape[-1] - 1, -1, -1)
-        indices = jnp.sum(x_bits * powers, axis=-1).astype(int)
-        
-        exact_log_amp = exact_log_amps[indices].reshape(-1) 
-        exact_log_sign = exact_log_signs[indices].reshape(-1)
+        return log_psi
 
 
-        log_psi_exact_sign = log_amp + 1j * exact_log_sign
-        log_psi_exact_amp = exact_log_amp + 1j * log_sign
 
-        return log_psi_exact_sign # or log_psi_exact_sign
-    
 
 
 from netket.jax import logsumexp_cplx
@@ -409,9 +418,13 @@ class ViT_sym(nn.Module):
     d_model: int  # dimensionality of the embedding space
     n_heads: int  # number of heads
     patch_size: int  # linear patch size
+    hilbert: HomogeneousHilbert
     transl_invariant: bool = False
     parity: bool = True  # parity symmetry operation
     rotation: bool = False  # rotational symmetry operation
+    
+    output_mode: str = 'model_psi'
+
 
     def setup(self):
         if self.rotation:
@@ -425,7 +438,10 @@ class ViT_sym(nn.Module):
                     self.d_model,
                     self.n_heads,
                     self.patch_size,
-                    transl_invariant=self.transl_invariant)
+                    hilbert=self.hilbert,
+                    transl_invariant=self.transl_invariant,
+                    output_mode=self.output_mode
+                    )
 
         def gen_reflected_samples(spins):
             return -spins
@@ -458,33 +474,72 @@ class ViT_sym(nn.Module):
 
         spins_sym = gen_sym_samples(spins)
 
-        #for spin_sym_i in spins_sym:
-        #    log_psi = self.vit(spin_sym_i)
         log_psi = jax.vmap(vit)(jnp.stack(spins_sym))
         
-        return logsumexp_cplx(log_psi, axis=0)
+        log_psi_sym = logsumexp_cplx(log_psi, axis=0)
+
+        if self.output_mode == 'exact_amp':
+            log_psi_exact_amps = jnp.log(jnp.abs(ket_gs))
+            indices = self.hilbert.states_to_numbers(spins)
+            log_psi_exact_amp = log_psi_exact_amps[indices].reshape(-1)
+            return log_psi_exact_amp + 1j * jnp.imag(log_psi_sym)
+        
+        elif self.output_mode == 'exact_sign':
+            log_psi_exact_signs = jnp.angle(ket_gs)
+            indices = self.hilbert.states_to_numbers(spins) 
+            log_psi_exact_sign = log_psi_exact_signs[indices].reshape(-1)
+            return jnp.real(log_psi_sym) + 1j * log_psi_exact_sign
+        
+        elif self.output_mode == 'psi':
+            return log_psi_sym
 
 
 
 
+####################################################################################################################
+
+logger.info("Initializing ViT model...")
 # Intiialize the ViT variational wave function
+
 vit_module = ViT_sym(
     L=L,
     num_layers=num_layers, 
     d_model=d_model, 
     n_heads=n_heads, 
     patch_size=patch_size, 
+    hilbert=hilbert,
     transl_invariant=True, 
     parity=parity, 
-    rotation=rotation
+    rotation=rotation,
+    output_mode=output
 )
+"""
 
+vit_module = ViT(
+    num_layers=num_layers, 
+    d_model=d_model, 
+    n_heads=n_heads, 
+    patch_size=patch_size,
+    hilbert=hilbert,
+    transl_invariant=True,
+    output_mode= output # You can change this to 'exact_sign' or 'model_psi'
+
+)
+"""
 key = jax.random.key(seed)
 key, subkey = jax.random.split(key)
-spin_configs = jax.random.randint(subkey, shape=(M, L * L), minval=0, maxval=1) * 2 - 1
+# Generate initial spin configurations that satisfy the total_sz=0 constraint
+n_sites = L * L
+n_up = n_sites // 2
+
+# Create a single valid configuration
+base_config = jnp.array([1] * n_up + [-1] * (n_sites - n_up))
+# Create a batch of M identical valid configurations and then shuffle each one
+spin_configs = jax.vmap(jax.random.permutation)(jax.random.split(subkey, M), jnp.tile(base_config, (M, 1)))
 params = vit_module.init(subkey, spin_configs)
 
 # Metropolis Local Sampling
+logger.info("Creating sampler...")
 sampler = nk.sampler.MetropolisExchange(
     hilbert=hilbert,
     graph=lattice,
@@ -496,6 +551,7 @@ sampler = nk.sampler.MetropolisExchange(
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 key, subkey = jax.random.split(key, 2)
+logger.info("Creating MCState (vstate)...")
 vstate = nk.vqs.MCState(
     sampler=sampler,
     model=vit_module,
@@ -575,6 +631,9 @@ amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amp
 amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
 sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
 
+eigenvalues_start, number_relevant_S_eigenvalues_start = plot_S_matrix_eigenvalues(vstate, folder, hilbert, part_training='start', one_avg="one")
+eigenvalues_end, number_relevant_S_eigenvalues_end = plot_S_matrix_eigenvalues(vstate, folder, hilbert, part_training='end', one_avg="one")
+
 
 variables = {
         #'sign_vstate_MCMC': sign_vstate_MCMC,
@@ -587,15 +646,17 @@ variables = {
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
         'sign_overlap': sign_overlap,
-        #'eigenvalues': eigenvalues
+        'eigenvalues_start': eigenvalues_start,
+        'eigenvalues_end': eigenvalues_end,
+        'number_relevant_S_eigenvalues_start': number_relevant_S_eigenvalues_start,
+        'number_relevant_S_eigenvalues_end': number_relevant_S_eigenvalues_end
+
     }
+
+print(variables)
 
 with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)                   
 
-
-vstate.n_samples = 256
-S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
-
-
+logger.info("Script finished successfully.")
 sys.stdout.close()

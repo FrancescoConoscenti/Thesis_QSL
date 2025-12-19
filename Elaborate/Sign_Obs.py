@@ -6,7 +6,7 @@ import numpy as np
 import netket as nk
 import flax
 import os
-from Elaborate.Statistics.Error_Stat import Fidelity
+
 from tenpy.networks.mps import MPS
 
 
@@ -109,9 +109,10 @@ def Amp_overlap_configs(ket_gs, vstate, hi):
 
     # Error product amplitude
     Overlap = jnp.sum(np.abs(psi_exact) * np.abs(psi_var))
+    overlap_configs = np.abs(psi_exact) * np.abs(psi_var)
 
+    return Overlap, overlap_configs
 
-    return Overlap
 
 #################################################################################################################################################
 
@@ -233,6 +234,14 @@ def Sign_DMRG_full_hilbert(psi: MPS, hi):
 
     return signs_out, amps_out, sign_DMRG_full
 
+# Fidelity vstate, exact state
+def Fidelity(vstate, ket_gs):
+    vstate_array = vstate.to_array()
+    overlap_val = vstate_array.conj() @ ket_gs
+    fidelity_val = np.abs(overlap_val) ** 2 / (np.vdot(vstate_array, vstate_array) * np.vdot(ket_gs, ket_gs))
+    #print(f"Fidelity <vstate|exact> = {fidelity_val}")
+    return np.real(fidelity_val)
+
 
 def Fidelity_iteration(vstate, ket_gs, folder_path):
 
@@ -287,7 +296,7 @@ def Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi):
         with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
 
-        Overlap[i] = Amp_overlap_configs(ket_gs, vstate, hi)
+        Overlap[i], _ = Amp_overlap_configs(ket_gs, vstate, hi)
 
     return Overlap
 
@@ -307,7 +316,14 @@ def Sign_overlap(ket_gs, signs_vstate, signs_exact):
     # signs_vstate has shape (number_models, N_states)
     # signs_exact has shape (N_states,)
     # The product will be broadcast correctly.
-    # We sum along axis=1 to get a result per model.
-    sign_overlap = np.abs(np.sum(weights * signs_vstate * signs_exact, axis=1))
+    # We sum along axis=1 to get a result per model if signs_vstate is 2D.
+    # If it's 1D (for a single model), we sum over the only axis (0).
+    sum_axis = 1 if signs_vstate.ndim == 2 else 0
+    product = weights * signs_vstate * signs_exact
+    
+    sign_overlap = np.abs(np.sum(product, axis=sum_axis))
+    sign_overlap_configs = signs_vstate * signs_exact
 
-    return sign_overlap 
+    return sign_overlap, sign_overlap_configs
+
+

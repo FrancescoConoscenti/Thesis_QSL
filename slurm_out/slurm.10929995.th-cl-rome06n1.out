@@ -1,6 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:23<?, ?it/s, Energy=-5.01-0.22j ± 0.53 [σ²=6.8e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 23.15it/s, Energy=-5.01-0.22j ± 0.53 [σ²=6.8e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:21<?, ?it/s, Energy=-5.77-0.48j ± 0.46 [σ²=5.5e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1203.19it/s, Energy=-5.77-0.48j ± 0.46 [σ²=5.5e+01, R̂=1.225]]
-/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Sign_vs_iteration.py:352: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
-  plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets

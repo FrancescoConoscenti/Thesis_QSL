@@ -347,4 +347,3 @@ class ViT_sym(nn.Module):
         log_psi = jax.vmap(vit)(jnp.stack(spins_sym))
         
         return logsumexp_cplx(log_psi, axis=0)
-

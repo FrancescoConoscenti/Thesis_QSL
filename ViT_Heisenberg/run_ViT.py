@@ -36,6 +36,9 @@ from Elaborate.Statistics.count_params import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
+
+from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
+
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
@@ -43,32 +46,32 @@ parser.add_argument("--seed", type=float, default=0, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 4  # Linear size of the lattice
+L = 6  # Linear size of the lattice
 
 
 n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
-num_layers      = 2     # number of Tranformer layers
-d_model         = 8   # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+num_layers      = 1     # number of Tranformer layers
+d_model         = 2   # dimensionality of the embedding space
+n_heads         = 1     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 200
+N_opt           = 2
 
-number_data_points = 20
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_latest_model"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-model_path = f'ViT_Heisenberg/plot/Vision_new/{model_name}/{J_value}'
+model_path = f'ViT_Heisenberg/plot/6x6/{model_name}/{J_value}'
 folder = f'{model_path}/{seed_str}'
 save_model = f"{model_path}/{seed_str}/models"
 
@@ -169,11 +172,11 @@ E_vs = Energy(log, L, folder)
 #Correlation function
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hilbert)
-#change to lanczos for Heisenberg
-E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
-#Fidelity
-fidelity = Fidelity(vstate, ket_gs)
-print(f"Fidelity <vstate|exact> = {fidelity}")
+if L == 4:
+    #Exact
+    E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
+elif L==6:
+    E_exact = Exact_gs_en_6x6(J2)
 #Rel Err
 Relative_Error(E_vs, E_exact, L)
 #Magn
@@ -186,40 +189,38 @@ Vscore(L, variance, E_vs)
 count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
 print(f"params={count_params}")
 
-#Marshall_sign(marshall_op, vstate, folder, n_samples = 64 )
-#n_sample = 4096
-#marshall_op = MarshallSignOperator(hilbert)
-#sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-#sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hilbert,  folder, one_avg = "one")
-#amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hilbert, folder, one_avg = "one")
+if L == 4:
+    #Fidelity
+    fidelity = Fidelity(vstate, ket_gs)
+    print(f"Fidelity <vstate|exact> = {fidelity}")
 
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
-amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
-amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
-sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
+    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
+    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
+    amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
+    amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
+    sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
+    S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
 
+    variables = {
+            #'sign_vstate_MCMC': sign_vstate_MCMC,
+            'sign_vstate': sign_vstate,
+            'sign_exact': sign_exact,
+            'fidelity': fidelity,
+            'configs': configs,
+            'sign_vstate_config': sign_vstate_config,
+            'weight_exact': weight_exact,
+            'weight_vstate': weight_vstate,
+            'amp_overlap': amp_overlap,
+            'sign_overlap': sign_overlap,
+            #'eigenvalues': eigenvalues
+        }
 
-variables = {
-        #'sign_vstate_MCMC': sign_vstate_MCMC,
-        'sign_vstate': sign_vstate,
-        'sign_exact': sign_exact,
-        'fidelity': fidelity,
-        'configs': configs,
-        'sign_vstate_config': sign_vstate_config,
-        'weight_exact': weight_exact,
-        'weight_vstate': weight_vstate,
-        'amp_overlap': amp_overlap,
-        'sign_overlap': sign_overlap,
-        #'eigenvalues': eigenvalues
-    }
+    with open(folder+"/variables", 'wb') as f:
+        pickle.dump(variables, f)                   
 
-with open(folder+"/variables", 'wb') as f:
-    pickle.dump(variables, f)                   
-
-
-vstate.n_samples = 256
-S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
+elif L==6:
+    print("6x6")
+    Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
 
 
 sys.stdout.close()

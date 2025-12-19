@@ -1,2 +1,15 @@
 model_*
 __pycache__
+slurm.*
+DMRG/trained_models/
+*.pkl
+*.pkl.gz
+*.npy
+*.png
+
+DMRG/plot/
+Elaborate/plot/
+**/seed_*/
+**/variables
+**/output.txt*.pkl.gz
+*.npy

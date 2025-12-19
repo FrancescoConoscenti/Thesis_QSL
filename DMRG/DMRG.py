@@ -32,8 +32,8 @@ class J1J2Heisenberg(CouplingMPOModel):
         return SpinHalfSite()
 
     def init_lattice(self, model_params):
-        Lx = model_params.get('Lx', 4)
-        Ly = model_params.get('Ly', 4)
+        Lx = model_params.get('Lx', 6)
+        Ly = model_params.get('Ly', 6)
         site = self.init_sites(model_params=model_params)
         #Torus geometry
         return Square(Lx=Lx, Ly=Ly, site=site, bc='periodic', bc_MPS='finite') 
@@ -56,13 +56,14 @@ class J1J2Heisenberg(CouplingMPOModel):
             
 
 def DMRG_vstate_optimization(hamiltonian, model_params, filename=None):
+    """
     if filename and os.path.exists(filename):
         print(f"--- Loading pre-trained DMRG state from {filename} ---")
         with gzip.open(filename, 'rb') as f:
             DMRG_vstate = pickle.load(f)
         print("--- DMRG state loaded. ---")
         Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
-        return DMRG_vstate
+        return DMRG_vstate"""
 
     print("\n--- Starting DMRG Optimization ---")
     sites = hamiltonian.lat.mps_sites()
@@ -79,11 +80,54 @@ def DMRG_vstate_optimization(hamiltonian, model_params, filename=None):
     #    svd_min: minimum singular value to keep during the SVD truncation
     #chi_list: dictionary defining the maximum bond dimension at specific sweeps
 
+    # 2. Advanced DMRG Parameters
     dmrg_params = {
-        'max_sweeps' : 20,
-        'trunc_params' : {'chi_max' : 1024, 'svd_min': 1e-10},
-        'chi_list' : {5:128, 10:256, 15:512, 20:1024}
+        # Run enough sweeps to let the mixer do its work
+        'max_sweeps': 100,
+        
+        # ---------------------------------------------------------
+        # TRUNCATION: Keep high accuracy
+        # ---------------------------------------------------------
+        'trunc_params': {
+            'chi_max': 4096, 
+            'svd_min': 1e-12,  # Keep small singular values
+        },
+        
+        # ---------------------------------------------------------
+        # MIXER: The "Clever" Part
+        # ---------------------------------------------------------
+        # 'mixer': True uses default DensityMatrixMixer. 
+        # We customize it to be stronger initially and decay slowly.
+        'mixer': True,
+        'mixer_params': {
+            'amplitude': 1e-3,      # Start with significant noise (perturbation)
+            'decay': 1.1,           # Decay amplitude by /1.1 every sweep
+            'disable_after': 80     # CRITICAL: Turn off mixer for last 20 sweeps to settle
+        },
+
+        # ---------------------------------------------------------
+        # BOND DIMENSION SCHEDULE
+        # ---------------------------------------------------------
+        # We ramp up chi while the mixer is still active (sweeps 0-80).
+        'chi_list': {
+            0: 128, 
+            10: 512, 
+            20: 1024, 
+            40: 2048, 
+            60: 3000, 
+            70: 4096  # Reach max chi before mixer turns off
+        },
+
+        # ---------------------------------------------------------
+        # LANCZOS: Inner Solver Precision
+        # ---------------------------------------------------------
+        # Force the local eigensolver to be more precise
+        'lanczos_params': {
+            'reortho': True,    # higher stability
+            'N_min': 5,         # Minimum iterations (force it to look harder)
+            'N_max': 20         # Allow it more time if needed
         }
+    }
 
     engine = dmrg.TwoSiteDMRGEngine(DMRG_vstate, hamiltonian, dmrg_params)
     E0, DMRG_vstate = engine.run()
@@ -107,7 +151,8 @@ def DMRG_vstate_optimization(hamiltonian, model_params, filename=None):
             pickle.dump(DMRG_vstate, f)
         print("--- DMRG state saved. ---")
 
-    return DMRG_vstate
+    return DMRG_vstate, energies_per_site
+
 
 def extract_mps_tensors(DMRG_vstate):
     """

@@ -2,7 +2,10 @@ import numpy as np
 import os
 import flax
 import netket as nk
+from netket.errors import NonHolomorphicQGTOnTheFlyDenseRepresentationError
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def compute_S_matrix(vstate, folder_path, hi):
@@ -27,7 +30,14 @@ def compute_S_matrix(vstate, folder_path, hi):
 
 def compute_S_matrix_single_model(vstate, hi):
 
-    qgt = vstate.quantum_geometric_tensor()   # returns a QGT object (lazy or jacobian-based)
-    S_matrix = qgt.to_dense()
+    try:
+        qgt = vstate.quantum_geometric_tensor()   # returns a QGT object (lazy or jacobian-based)
+        S_matrix = qgt.to_dense()
+        logger.info("S-matrix computed using default vstate.quantum_geometric_tensor().to_dense()")
+    except NonHolomorphicQGTOnTheFlyDenseRepresentationError:
+        # Safe fallback: works for non-holomorphic ansätze
+        logger.info("NonHolomorphicQGTOnTheFlyDenseRepresentationError caught. Using QGTJacobianDense fallback.")
+        qgt = nk.optimizer.qgt.QGTJacobianDense(vstate)
+        S_matrix = qgt.to_dense()
 
     return S_matrix

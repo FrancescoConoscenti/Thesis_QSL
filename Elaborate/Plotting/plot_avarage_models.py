@@ -257,11 +257,8 @@ if __name__ == "__main__":
 
     # Define a list of model paths to process
     model_paths = [
-        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitFermi_typecomplex",
-        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex",
-        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_Initrandom_typecomplex"
-
-    ]       
+        "HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex"    
+        ]       
     
     # Loop through each model path and process it
     for model_path in model_paths:

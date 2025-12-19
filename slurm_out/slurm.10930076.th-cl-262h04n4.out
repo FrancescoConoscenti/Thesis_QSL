@@ -1,13 +1,0 @@
-Rank=0: Total number of GPUs: 1, devices: [CpuDevice(id=0)]
-Rank=0: Local number of GPUs: 1, devices: [CpuDevice(id=0)]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:23<?, ?it/s, Energy=-10.43+0.56j ± 0.55 [σ²=7.3e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 18.79it/s, Energy=-10.43+0.56j ± 0.55 [σ²=7.3e+01, R̂=1.225]]
-  0%|          | 0/1 [00:00<?, ?it/s]  0%|          | 0/1 [00:20<?, ?it/s, Energy=-12.48-0.37j ± 0.58 [σ²=8.9e+01, R̂=1.225]]100%|██████████| 1/1 [00:00<00:00, 1293.34it/s, Energy=-12.48-0.37j ± 0.58 [σ²=8.9e+01, R̂=1.225]]
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/run_spin.py", line 191, in <module>
-    E_init = get_initial_energy(vstate, ha, L)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: get_initial_energy() takes 2 positional arguments but 3 were given
-srun: error: th-cl-262h04n4: task 0: Exited with exit code 1
-srun: Terminating StepId=10930076.0

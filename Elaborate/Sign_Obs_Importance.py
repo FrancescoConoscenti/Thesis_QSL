@@ -98,3 +98,66 @@ def amp_overlap_Importance_Sampled(RBM_vstate, psi_DMRG_sampled, samples_DMRG):
     Overlap_amp_samples = numerator / np.sqrt(norm_RBM_sq)
 
     return Overlap_amp_samples    
+
+
+############################################################################################à
+
+
+def importance_Sampling_Exact(Exact_vstate, n_samples):
+    
+    Exact_vstate.n_samples = n_samples
+    Exact_vstate.reset()
+    
+    samples = Exact_vstate.samples
+    samples = samples.reshape(-1, samples.shape[-1])
+    
+    log_psi = Exact_vstate.log_value(samples)
+    psi_exact_sampled = jnp.exp(log_psi)
+    
+    return np.array(samples), np.array(psi_exact_sampled)
+
+def sign_overlap_Importance_Sampled_Exact(RBM_vstate, Exact_vstate, samples_Exact, hi):
+
+    SignObs = MarshallSignObs(hi)
+    
+    # RBM Sign
+    kernel = nk.vqs.get_local_kernel(RBM_vstate, SignObs)
+    sigma_template, args_template = nk.vqs.get_local_kernel_arguments(RBM_vstate, SignObs)
+    logpsi_vals = RBM_vstate.log_value(samples_Exact)
+    sign_RBM_samples = kernel(logpsi_vals, RBM_vstate.parameters, samples_Exact, args_template)
+    
+    # Exact Sign
+    kernel_exact = nk.vqs.get_local_kernel(Exact_vstate, SignObs)
+    sigma_template_exact, args_template_exact = nk.vqs.get_local_kernel_arguments(Exact_vstate, SignObs)
+    logpsi_vals_exact = Exact_vstate.log_value(samples_Exact)
+    sign_Exact_samples = kernel_exact(logpsi_vals_exact, Exact_vstate.parameters, samples_Exact, args_template_exact)
+    
+    # Overlap
+    sign_product = sign_Exact_samples.reshape(-1) * sign_RBM_samples.reshape(-1)
+    Overlap_sign_samples = np.mean(sign_product)
+
+    return Overlap_sign_samples
+
+def amp_overlap_Importance_Sampled_Exact(RBM_vstate, psi_Exact_sampled, samples_Exact):
+
+    logpsi_vals = RBM_vstate.log_value(samples_Exact)
+    psi_RBM_samples = jnp.exp(logpsi_vals)
+    
+    weights = jnp.abs(psi_RBM_samples) / jnp.abs(psi_Exact_sampled)
+    numerator = jnp.mean(weights)
+    norm_RBM_sq = jnp.mean(weights**2)
+    Overlap_amp_samples = numerator / jnp.sqrt(norm_RBM_sq)
+
+    return Overlap_amp_samples
+
+def fidelity_Importance_Sampled_Exact(RBM_vstate, psi_Exact_sampled, samples_Exact):
+    
+    logpsi_vals = RBM_vstate.log_value(samples_Exact)
+    psi_RBM_samples = jnp.exp(logpsi_vals)
+    
+    ratios = psi_RBM_samples / psi_Exact_sampled
+    overlap = jnp.mean(ratios)
+    norm_sq = jnp.mean(jnp.abs(ratios)**2)
+    
+    fidelity = jnp.abs(overlap)**2 / norm_sq
+    return fidelity

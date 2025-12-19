@@ -71,13 +71,3 @@ get_marshal_sign_MCMC = lambda vstate: jax.vmap(lambda sigma: _marshal_sign_MCMC
 
 
 
-
-
-
-
-#%%
-
-
-
-
-

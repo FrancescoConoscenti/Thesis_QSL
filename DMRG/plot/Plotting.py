@@ -30,6 +30,10 @@ def plot_DMRG_energies(energies, bond_dims, sweeps, model_params):
     print(f"✅ DMRG plot saved to {save_path}")
     plt.show()
 
+    final_energy = energies[-1]
+    with open(os.path.join(output_dir, "final_energy.txt"), "w") as f:
+        f.write(str(final_energy))
+
     print(f"Final ground state energy: {energies[-1]:.6f}")
 
 def plot_correlation_function(corr_r, model_params):
@@ -61,16 +65,26 @@ def plot_structure_factor(S_q, model_params):
     Ly = model_params.get('Ly', 'N/A')
     J2 = model_params.get('J2', 'N/A')
 
+    # Define grid for pcolormesh (corners of the cells)
+    q_x = np.linspace(0, 2 * np.pi, Lx + 1)
+    q_y = np.linspace(0, 2 * np.pi, Ly + 1)
+    Qx, Qy = np.meshgrid(q_x, q_y)
+
     fig, ax = plt.subplots(figsize=(7, 6))
-    im = ax.imshow(np.abs(S_q), origin='lower', cmap='viridis')
-    fig.colorbar(im, ax=ax, label="|S(q)|")
+    # S_q is (Lx, Ly) -> (qx, qy). Transpose to match meshgrid (y, x) indexing for pcolormesh
+    mesh = ax.pcolormesh(Qx, Qy, np.abs(S_q).T, shading='flat', cmap='viridis')
+    fig.colorbar(mesh, ax=ax, label="|S(q)|")
     ax.set_xlabel(r"$q_x$", fontsize=12)
     ax.set_ylabel(r"$q_y$", fontsize=12)
     ax.set_title(f"Structure Factor S(q) (Lx={Lx}, Ly={Ly}, J2={J2})", fontsize=14)
-    ax.set_xticks([0, Lx // 2, Lx - 1])
-    ax.set_xticklabels(['0', r'$\pi$', r'$2\pi$'])
-    ax.set_yticks([0, Ly // 2, Ly - 1])
-    ax.set_yticklabels(['0', r'$\pi$', r'$2\pi$'])
+    
+    ticks = [0, np.pi, 2 * np.pi]
+    tick_labels = ['0', r'$\pi$', r'$2\pi$']
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(tick_labels)
+    ax.set_yticks(ticks)
+    ax.set_yticklabels(tick_labels)
+    
     plt.tight_layout()
 
     filename = f"DMRG_L{Lx}.png"

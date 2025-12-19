@@ -30,7 +30,7 @@ import jax
 import jax.numpy as jnp
 
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
-from Elaborate.Statistics.Error_Stat import Fidelity
+from Elaborate.Sign_Obs import Fidelity
 from Elaborate.Sign_Obs import *
 
 
@@ -418,7 +418,7 @@ def plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder_path, one_av
     fidelity = Fidelity_iteration(vstate, ket_gs, folder_path)
     sign_vstate, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact, signs_exact = Marshall_Sign_exact(ket_gs, hi)
-    sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+    sign_overlap,_ = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
     Plot_Sign_Err_Amplitude_Err_Fidelity(amplitude_overlap, fidelity, sign_overlap, folder_path, one_avg, plot_variance=False, error_var=None, fidelity_var=None, sign_err_var=None)
     
@@ -486,7 +486,7 @@ def plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, folder_pat
     sign_vstate, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     sign_exact, signs_exact = Marshall_Sign_exact(ket_gs, hi)
     #sign_err = Sign_difference(sign_vstate, sign_exact)
-    sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+    sign_overlap,_ = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
     Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False)
 
@@ -534,7 +534,7 @@ def plot_Overlap_vs_iteration(ket_gs, vstate, hi, folder_path, one_avg):
     amplitude_overlap = Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi)
     _, signs_vstate = Marshall_Sign_full_hilbert(vstate, folder_path, hi)
     _, signs_exact = Marshall_Sign_exact(ket_gs, hi)
-    sign_overlap = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+    sign_overlap,_ = Sign_overlap(ket_gs, signs_vstate, signs_exact)
 
     Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_avg, plot_variance=False)
 
@@ -616,7 +616,10 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     amp_overlap_per_config = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
 
     # Calculate sign overlap as sign(<s|psi_var>) * sign(<s|psi_exact>)
-    sign_overlap_per_config = (np.sign(psi_vstate_norm.real) * np.sign(psi_exact.real) + 1 ) / 2 # Map to [0,1] for plotting
+    _, signs_vstate = Marshall_Sign_full_hilbert_one(vstate, hi)
+    _, signs_exact = Marshall_Sign_exact(ket_gs, hi)
+    _, sign_overlap_per_config = Sign_overlap(ket_gs, signs_vstate, signs_exact)
+
 
     # --- Bin weights on a log scale and average overlaps within each bin ---
     # This reduces the number of points for a clearer plot.
@@ -640,15 +643,16 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     binned_sign_overlap = np.bincount(bin_indices, weights=sign_to_bin)[1:num_bins+1]
     counts = np.bincount(bin_indices)[1:num_bins+1]
     
-    # Avoid division by zero for empty bins
+    # divide bins into "counts" part
     non_empty = counts > 0
     avg_weights = np.divide(binned_weights, counts, where=non_empty, out=np.zeros_like(binned_weights))
     avg_amp_overlap = np.divide(binned_amp_overlap, counts, where=non_empty, out=np.zeros_like(binned_amp_overlap))
-    avg_sign_overlap = np.divide(binned_sign_overlap, counts, where=non_empty, out=np.zeros_like(binned_sign_overlap))
+    avg_sign_overlap = np.divide(binned_sign_overlap, counts,  where=non_empty, out=np.zeros_like(binned_sign_overlap))
 
     Plot_Overlap_vs_Weight(avg_weights[non_empty], avg_amp_overlap[non_empty], avg_sign_overlap[non_empty], folder_path, one_avg)
 
     return avg_weights[non_empty], avg_amp_overlap[non_empty], avg_sign_overlap[non_empty]
+
 def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_avg):
     """
     Plots per-configuration Sign and Amplitude Overlap vs. exact weight.
@@ -662,7 +666,7 @@ def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_
     ax.bar(x - width/2, amp_overlap, width, label='Amplitude Overlap', color='tab:purple', alpha=0.9)
 
     # Plot Sign Overlap
-    ax.bar(x + width/2, sign_overlap, width, label='Sign Overlap', color='tab:green', alpha=0.9)
+    ax.bar(x + width/2, np.abs(sign_overlap), width, label='Sign Overlap', color='tab:green', alpha=0.9)
 
     ax.set_xlabel("Binned Exact Weight |<s|ψ_exact>|²", fontsize=12)
     ax.set_ylabel("Overlap Value", fontsize=12)

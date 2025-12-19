@@ -45,6 +45,7 @@ from jax.nn.initializers import zeros, normal, constant
 from netket.utils.dispatch import dispatch
 from netket import experimental as nkx
 from netket.jax import apply_chunked
+from netket.jax import logdet_cmplx
 import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert 
 from netket.jax import logsumexp_cplx
@@ -53,13 +54,22 @@ from jax import Array
 from HFDS_Heisenberg.MF_Init import init_orbitals_mf
 from HFDS_Heisenberg.Gutzwiller_MF_Init import update_orbitals_gmf
 
+import logging
+# Setup logging
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    stream=sys.stdout)
+logger = logging.getLogger(__name__)
+
 from HFDS_Heisenberg.HFDS_model_spin import Orbitals
 
 
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
+parser.add_argument("--output", type=str, default='psi', help="output mode")
+
 args = parser.parse_args()
 
 spin = True
@@ -75,9 +85,10 @@ n_dim = 2
 J1J2 = True
 J2 = args.J2
 seed = int(args.seed)
+output_mode = args.output
 
 dtype   = "complex"
-MFinitialization = "G_MF" #G_MF#random #Fermi
+MFinitialization = "random" #G_MF#random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
 parity = True
@@ -85,7 +96,7 @@ rotation = True
 
 #Varaitional state param
 n_hid_ferm       = 2
-features         = 4    #hidden units per layer
+features         = 16    #hidden units per layer
 hid_layers       = 1
 
 #Network param
@@ -100,7 +111,8 @@ block_iter       = N_opt//save_every
 n_chains         = n_samples//2
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_amp"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_mode{output_mode}_to_plot"
+logger.info(f"Model name: {model_name}")
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -131,11 +143,16 @@ print(f"hilbert space size = ",hi.size)
 ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
 
 # --- Calculate exact ground state before model initialization ---
-_, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+_, ket_gs_np = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+ket_gs = jnp.asarray(ket_gs_np)
 
+logger.info(f"ket_gs outside model (first 10): {ket_gs.flatten()[:10]}")
+logger.info(f"ket_gs shape: {ket_gs.shape}")
 
+############################################################################################################
 
 class HiddenFermion_amp(nn.Module):
+  lattice: nk.graph.Graph
   n_elecs: int
   network: str
   n_hid: int
@@ -145,18 +162,22 @@ class HiddenFermion_amp(nn.Module):
   features: int
   MFinit: str
   hilbert: HomogeneousHilbert
+  output_mode: str
+  h_opt: float 
+  phi_opt: float 
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
   bounds: str="PBC"
   parity: bool = False
   rotation: bool = False
   dtype: type = jnp.float64
-  U: float=8.0
+  U: float = 8.0
+  
 
   def setup(self):
     # orbital Initialization
     self.n_modes = 2*self.Lx*self.Ly
-    self.orbitals = Orbitals(self.n_elecs,self.n_hid,self.Lx, self.Ly, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
+    self.orbitals = Orbitals(self.lattice, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U, self.h_opt, self.phi_opt)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
@@ -192,6 +213,7 @@ class HiddenFermion_amp(nn.Module):
     # 5. Concatenate the MF orbitals and the NN outputs
     x = jnp.concatenate((orbitals,x_),axis=1)
     sign, logx = jnp.linalg.slogdet(x)
+    #logdetx = logdet_cmplx(x)
     return logx, jnp.log(sign + 0j)
 
 
@@ -235,32 +257,45 @@ class HiddenFermion_amp(nn.Module):
   @nn.compact
   def __call__(self,x):
 
-    #x_sym = self.gen_sym_samples(x)
-    log_amp, log_sign = self.calc_psi(x)
+    # 1. Generate symmetric samples
+    x_sym = self.gen_sym_samples(x)
+    x_sym_stacked = jnp.stack(x_sym) # shape: (n_sym, batch_size, n_sites)
 
-    # --- EXACT LOOKUP ---
-    exact_log_amps = jnp.log(jnp.array(np.abs(ket_gs), dtype=self.dtype) + 0j)
-    exact_log_signs = jnp.angle(ket_gs)
+    # 2. Calculate log_amp and log_sign for all symmetric samples
+    # vmap over the first axis (the symmetry dimension)
+    log_amps, log_signs = jax.vmap(self.calc_psi)(x_sym_stacked)
 
-    x_bits = (x + 1) / 2
-    powers = 2**jnp.arange(x.shape[-1] - 1, -1, -1)
-    indices = jnp.sum(x_bits * powers, axis=-1).astype(int)
-    
-    exact_log_amp = exact_log_amps[indices].reshape(-1) 
-    exact_log_sign = exact_log_signs[indices].reshape(-1)
-    #exact_log_amp = jnp.repeat(exact_log_amp[None, :], repeats=8, axis=0)
+    # 3. Perform exact lookup for all symmetric samples
+    # vmap over the first axis (the symmetry dimension)
+    def get_exact_parts(samples):
+        indices = self.hilbert.states_to_numbers(samples)
+        vals = ket_gs[indices].reshape(-1)
+        exact_log_amps = jnp.log(jnp.abs(vals) + 1e-12) # Add epsilon for stability
+        exact_phases = jnp.angle(vals)
+        return exact_log_amps, exact_phases
 
-    log_psi_exact_sign = log_amp  + 1j * exact_log_sign
-    log_psi_exact_amp = exact_log_amp + 1j * log_sign
+    exact_log_amps, exact_phases = jax.vmap(get_exact_parts)(x_sym_stacked)
 
-    return log_psi_exact_amp
+    # 4. Construct the wavefunction based on output_mode
+    if self.output_mode == 'exact_amp': # Learn sign, fix amplitude
+        log_psi_sym = exact_log_amps + 1j * jnp.imag(log_signs)
+    elif self.output_mode == 'exact_sign': # Learn amplitude, fix sign
+        log_psi_sym = log_amps + 1j * exact_phases
+    elif self.output_mode == 'psi': # 'psi', learn both
+        log_psi_sym = log_amps + log_signs
 
+    # 5. Symmetrize by summing over the symmetry-transformed wavefunctions
+    return logsumexp_cplx(log_psi_sym, axis=0)
+  
+###########################################################################################################
 
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
 
 
-model = HiddenFermion_amp(n_elecs=n_elecs,
+model = HiddenFermion_amp(
+                        lattice=lattice,
+                        n_elecs=n_elecs,
                         network="FFNN",
                         n_hid=n_hid_ferm,
                         Lx=L,
@@ -269,12 +304,15 @@ model = HiddenFermion_amp(n_elecs=n_elecs,
                         features=features,
                         MFinit=MFinitialization,
                         hilbert=hi,
+                        output_mode=output_mode,
+                        h_opt=0.055, # Added h_opt
+                        phi_opt= 0.1,
                         stop_grad_mf=False,
                         stop_grad_lower_block=False,
                         bounds=bounds,
                         parity=parity,
                         rotation=rotation,
-                        dtype=dtype_,)
+                        dtype=dtype_) # Added phi_opt
 
 
 
@@ -332,9 +370,9 @@ E_vs = Energy(log, L, folder)
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hi)
 #exact diagonalization
-E_exact, ket_gs = Exact_gs(L, J2, ha, J1J2, spin)
+E_exact, ket_gs_exact_np = Exact_gs(L, J2, ha, J1J2, spin)
 #Fidelity
-fidelity = Fidelity(vstate, ket_gs)
+fidelity = Fidelity(vstate, ket_gs_exact_np)
 print(f"Fidelity <vstate|exact> = {fidelity}")
 #Rel Error
 Relative_Error(E_vs, E_exact, L)
@@ -351,15 +389,18 @@ hidden_fermion_param_count(n_elecs, n_hid_ferm, L, L, hid_layers, features)
 #n_sample = 4096
 #marshall_op = MarshallSignOperator(hilbert)
 #sign_vstate_MCMC, sign_vstate_full = plot_Sign_full_MCMC(marshall_op, vstate, str(folder), 64, hi)
-sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs, vstate, hi,  folder, one_avg = "one")
+sign_vstate_full, sign_exact, fidelity = plot_Sign_Fidelity(ket_gs_exact_np, vstate, hi,  folder, one_avg = "one")
 #amp_overlap = plot_Amp_overlap_configs(ket_gs, vstate, hi, folder, one_avg = "one")
 
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hi, 3, L, folder, one_avg = "one")
-configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hi, 8, L, folder, one_avg = "one")
-amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, folder, one_avg = "one")
-amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, folder, one_avg = "one")
-sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder, "one")
-
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs_exact_np, vstate, hi, 3, L, folder, one_avg = "one")
+configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs_exact_np, vstate, hi, 8, L, folder, one_avg = "one")
+amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs_exact_np, vstate, hi, folder, one_avg = "one")
+amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs_exact_np, vstate, hi, folder, one_avg = "one")
+sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs_exact_np, vstate, hi, folder, "one")
+vstate.n_samples = 1024
+eigenvalues_start, number_relevant_S_eigenvalues_start = plot_S_matrix_eigenvalues(vstate, folder, hi, part_training='start', one_avg="one")
+eigenvalues_end, number_relevant_S_eigenvalues_end = plot_S_matrix_eigenvalues(vstate, folder, hi, part_training='end', one_avg="one")
+  
 variables = {
         'E_init': E_init,
         'E_exact': E_exact,
@@ -374,18 +415,14 @@ variables = {
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
         'sign_overlap': sign_overlap,
-        #'eigenvalues': eigenvalues
+        'eigenvalues_start': eigenvalues_start,
+        'eigenvalues_end': eigenvalues_end,
+        'number_relevant_S_eigenvalues_start': number_relevant_S_eigenvalues_start,
+        'number_relevant_S_eigenvalues_end': number_relevant_S_eigenvalues_end
     }
 
 with open(folder+"/variables", 'wb') as f:
     pickle.dump(variables, f)
 
-vstate.n_samples = 256
-#S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
-   
 
 sys.stdout.close()
-
-
-
-
