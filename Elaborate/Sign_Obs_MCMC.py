@@ -18,6 +18,13 @@ from tenpy.networks.mps import MPS
 
 
 class MarshallSignObs(AbstractOperator):
+    def __init__(self, hilbert):
+        self._hilbert = hilbert
+
+    @property
+    def hilbert(self):
+        return self._hilbert
+
     @property
     def dtype(self):
         return float
@@ -27,8 +34,7 @@ class MarshallSignObs(AbstractOperator):
         return True
 
 
-def e_loc(logpsi, pars, sigma, extra_args):
-
+def e_loc(logpsi, pars, sigma, extra_args, *, chunk_size=None):
     sign = extra_args
     #weights = jnp.exp(2.0 * jnp.real(logpsi))  # |psi|^2 weights
     #return jnp.stack([sign, weights], axis=-1)
@@ -36,9 +42,21 @@ def e_loc(logpsi, pars, sigma, extra_args):
 
 
 @nk.vqs.get_local_kernel.dispatch
+def get_local_kernel(vstate: nk.vqs.MCState, op: MarshallSignObs, chunk_size: int,):
+    return e_loc
+
+@nk.vqs.get_local_kernel.dispatch
 def get_local_kernel(vstate: nk.vqs.MCState, op: MarshallSignObs):
     return e_loc
 
+
+@nk.vqs.get_local_kernel_arguments.dispatch
+def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignObs, chunk_size: int,):
+    sigma = vstate.samples
+    # get the connected elements. Reshape the samples because that code only works
+    # if the input is a 2D matrix
+    extra_args = get_marshal_sign_MCMC(vstate)(sigma)
+    return sigma, extra_args
 
 @nk.vqs.get_local_kernel_arguments.dispatch
 def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignObs):
@@ -47,6 +65,7 @@ def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignObs):
     # if the input is a 2D matrix
     extra_args = get_marshal_sign_MCMC(vstate)(sigma)
     return sigma, extra_args
+
 
 # vectorized function to compute Marshall sign per sample
 def _marshal_sign_MCMC(sigma, vstate):
@@ -68,6 +87,3 @@ def _marshal_sign_MCMC(sigma, vstate):
 get_marshal_sign_MCMC = lambda vstate: jax.vmap(lambda sigma: _marshal_sign_MCMC(sigma, vstate), in_axes=0, out_axes=0)
 
 #########################################################################################################################à
-
-
-

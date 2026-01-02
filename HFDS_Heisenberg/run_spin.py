@@ -1,17 +1,6 @@
-try:
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    import jax
-    jax.distributed.initialize()
-
-    print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
-    print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
-
-    # wait for all processes to show their devices
-    comm.Barrier()
-except:
-  pass
+import os
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
 
 
 import sys
@@ -38,6 +27,9 @@ from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
 from Elaborate.Plotting.S_matrix_vs_iteration import *
 
+from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
+
+
 # Setup logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -53,7 +45,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 6
+L       = 4
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -74,16 +66,16 @@ rotation = True
 logger.info("Physical and model parameters set.")
 
 #Varaitional state param
-n_hid_ferm       = 1
-features         = 1    #hidden units per layer
+n_hid_ferm       = 4
+features         = 64    #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.025
-n_samples        = 128
-N_opt            = 1
+lr               = 0.01
+n_samples        = 1024
+N_opt            = 1000
 
-number_data_points = 1
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
@@ -95,7 +87,7 @@ model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_sampl
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
-   model_path = f'HFDS_Heisenberg/plot/6x6/{model_name}/{J_value}'
+   model_path = f'HFDS_Heisenberg/plot/4x4/{model_name}/{J_value}'
    folder = f'{model_path}/{seed_str}'
    save_model = f"{model_path}/{seed_str}/models"
 else:

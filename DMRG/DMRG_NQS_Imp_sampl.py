@@ -14,8 +14,8 @@ import re
 from DMRG.DMRG import *
 from DMRG.Fidelities import *
 
-from Elaborate.Sign_Obs_MCMC import *
-from Elaborate.Sign_Obs import *
+from Elaborate.Sign_Obs_MCMC import MarshallSignObs
+from Elaborate.Sign_Obs import MarshallSignOperator
 from Elaborate.Sign_Obs_Importance import *
 
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion

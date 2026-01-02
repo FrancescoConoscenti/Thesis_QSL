@@ -1,3 +1,6 @@
+import os
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
 try:
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -10,8 +13,9 @@ try:
 
     # wait for all processes to show their devices
     comm.Barrier()
-except:
-  pass
+except Exception as e:
+    print(f"Error initializing distributed JAX: {e}")
+    raise
 
 import matplotlib.pyplot as plt
 import netket as nk
