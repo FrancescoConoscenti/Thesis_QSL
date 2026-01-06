@@ -12,10 +12,10 @@ import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert
 
 
-def update_orbitals_gmf(lattice, dtype, h, phi):
+def update_orbitals_gmf(L, dtype, h, phi):
     
     positions = lattice.positions
-    N = len(lattice.positions)
+    N = L*L
     n_elecs = N
     apbc_phase = jnp.exp(1j * jnp.pi)
     Lx, Ly = int(np.sqrt(N)), int(np.sqrt(N))

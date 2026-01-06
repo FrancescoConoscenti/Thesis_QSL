@@ -110,6 +110,8 @@ def plot_S_eigenvalues_vs_Js(base_folder, Js, num_eigenvalues_to_plot=1000):
     
     # Save the plot
     save_path = f"/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/S_eigenvalues_vs_J_{model_type}_end_training.png"
+    if not os.path.exists(os.path.dirname(save_path)):
+        save_path = save_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved to {save_path}")
     plt.show()
@@ -190,6 +192,8 @@ def plot_S_eigenvalues_models_vs_J(model_paths, Js, num_eigenvalues_to_plot=1000
         plt.tight_layout()
         
         save_path = f"/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/S_eigenvalues_J_{J_val}_model_comparison.png"
+        if not os.path.exists(os.path.dirname(save_path)):
+            save_path = save_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"✅ Plot for J={J_val} saved to {save_path}")
         plt.show()
@@ -304,6 +308,8 @@ def plot_S_eigenvalues_histogram_vs_Js(base_folder, Js, bins=50):
     
     # Save the plot
     save_path = f"/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/S_eigenvalues_histogram_vs_J_{model_type}.png"
+    if not os.path.exists(os.path.dirname(save_path)):
+        save_path = save_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved to {save_path}")
     plt.show()
@@ -314,6 +320,8 @@ if __name__ == '__main__':
     
     #model_path_single = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd2_feat16_sample1024_lr0.025_iter100_parityTrue_rotTrue_Initrandom_typecomplex_modepsi_to_plot"
     model_path_single = "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/Vision_new/layers2_d8_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_modepsi_sym3"
+    if not os.path.exists(model_path_single):
+        model_path_single = model_path_single.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     Js_to_plot_single = [0.0, 0.2, 0.4, 0.5, 0.7]
     #plot_S_eigenvalues_vs_Js(model_path_single, Js_to_plot_single, num_eigenvalues_to_plot=1000)
     plot_S_eigenvalues_histogram_vs_Js(model_path_single, Js_to_plot_single, bins=200)

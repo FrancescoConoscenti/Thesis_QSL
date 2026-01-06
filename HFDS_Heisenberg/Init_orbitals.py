@@ -1,4 +1,5 @@
 from jax import numpy as jnp
+import numpy as np
 import netket as nk
 import jax
 from flax import linen as nn
@@ -30,7 +31,7 @@ def compute_orbital_selection(x, orbitals_full, N_sites):
 
  
 class Orbitals(nn.Module):
-  lattice: nk.graph.Graph
+  L: int
   n_elecs: int
   n_hid: int
   MFinit: str
@@ -38,22 +39,21 @@ class Orbitals(nn.Module):
   bounds: str
   dtype: type = jnp.float64
   U: float = 8.0
-  h_opt: float = 0.0
-  phi_opt: float = 0.0
 
   def _init_gutzwiller(self, key, shape, dtype):
-    logger.info(f"Initializing Gutzwiller orbitals with h={self.h_opt}, phi={self.phi_opt}")
+    #logger.info(f"Initializing Gutzwiller orbitals with h={self.h_opt}, phi={self.phi_opt}")
     #mf = update_orbitals_gmf_init(self.lattice, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
-    mf = update_orbitals_gmf(self.lattice, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
+    #mf = update_orbitals_gmf(self.L, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
+    mf = None
 
     return mf
       
   def _init_mf(self, key, shape, dtype):
-    mf = init_orbitals_mf(L=int(jnp.sqrt(self.lattice.n_nodes)), bounds=self.bounds, dtype=dtype)
+    mf = init_orbitals_mf(L=self.L, bounds=self.bounds, dtype=dtype)
     return mf
   
   def setup(self):
-    N_sites = self.lattice.n_nodes
+    N_sites = self.L * self.L
 
     if self.MFinit=="Fermi":
         self.orbitals_mfmf = self.param('orbitals_mf',self._init_mf,(N_sites,self.n_elecs), self.dtype)
@@ -64,8 +64,8 @@ class Orbitals(nn.Module):
     else:
         raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
     
-    #self.orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*N_sites,self.n_hid), self.dtype)
-    self.orbitals_mfhf = self.param('orbitals_hf', zeros,(2*N_sites,self.n_hid), self.dtype)
+    self.orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*N_sites,self.n_hid), self.dtype)
+    #self.orbitals_mfhf = self.param('orbitals_hf', zeros,(2*N_sites,self.n_hid), self.dtype)
 
 
 
@@ -75,6 +75,6 @@ class Orbitals(nn.Module):
     # Vectorize the single-sample function to work on a batch of samples `x`.
     # We vectorize over `x` (axis 0), but use the same `orbitals_full` (None) and `N_sites` (None) for all samples.
     vmapped_selection = jax.vmap(compute_orbital_selection, in_axes=(0, None, None))
-    orbitals_selected = vmapped_selection(x, orbitals_full, self.lattice.n_nodes)
+    orbitals_selected = vmapped_selection(x, orbitals_full, self.L * self.L)
     
     return orbitals_selected

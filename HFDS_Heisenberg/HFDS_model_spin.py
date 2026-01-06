@@ -13,7 +13,7 @@ from HFDS_Heisenberg.Init_orbitals import Orbitals
 logger = logging.getLogger(__name__)
 
 class HiddenFermion(nn.Module):
-  lattice: nk.graph.Graph
+  L: int
   network: str
   n_hid: int
   layers: int
@@ -27,15 +27,13 @@ class HiddenFermion(nn.Module):
   rotation: bool = False
   dtype: type = jnp.float64
   U: float = 8.0
-  h_opt: float = 0.0
-  phi_opt: float = 0.0
 
   def setup(self):
     logger.info("Setting up HiddenFermion model.")
     # orbital Initialization
-    self.n_modes = 2 * self.lattice.n_nodes
-    self.n_elecs = self.lattice.n_nodes
-    self.orbitals = Orbitals(self.lattice, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U, self.h_opt, self.phi_opt)
+    self.n_modes = 2 * self.L*self.L
+    self.n_elecs = self.L * self.L
+    self.orbitals = Orbitals(self.L, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]
@@ -44,8 +42,8 @@ class HiddenFermion(nn.Module):
         raise NotImplementedError()
     # Rotation symmetry indices
     if self.rotation:
-      L = int(np.sqrt(self.lattice.n_nodes))
-      idx = jnp.arange(self.lattice.n_nodes).reshape(L, L)
+      #L = int(jnp.sqrt(self.lattice.n_nodes))
+      idx = jnp.arange(self.L* self.L).reshape(self.L, self.L)
       self.idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
     logger.info("HiddenFermion model setup complete.")
 
@@ -69,8 +67,8 @@ class HiddenFermion(nn.Module):
     x_ = self.output(x).reshape(x.shape[0],self.n_hid,self.n_elecs + self.n_hid)
 
     x_2 = jnp.repeat(jnp.expand_dims(jnp.eye(self.n_hid), axis=0),x.shape[0],axis=0)
-    #x_ += jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)
-    x_ = jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)  # just to evaluate energy of G_MF
+    x_ += jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)
+    #x_ = jnp.concatenate((jnp.zeros((x.shape[0], self.n_hid, self.n_elecs),self.dtype), x_2),axis=2)  # just to evaluate energy of G_MF
     
     # 5. Concatenate the MF orbitals and the NN outputs
     x = jnp.concatenate((orbitals,x_),axis=1)

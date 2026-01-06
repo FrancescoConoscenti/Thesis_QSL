@@ -40,7 +40,7 @@ def Observable_Importance_sampling(J2, NQS_path=None, vstate=None):
         'conserve': 'Sz'
     }
     N_sites = Lx * Ly
-    n_samples = 2048
+    n_samples = 1024
     model_storage_dir = "DMRG/trained_models"
     os.makedirs(model_storage_dir, exist_ok=True)
 
@@ -182,23 +182,25 @@ def Observable_Importance_sampling(J2, NQS_path=None, vstate=None):
     
     if HFDS_vstate is not None:
         results.update({
-            "fidelity_sampled_HFDS_DMRG": fidelity_sampled_rbm_dmrg,
-            "sign_HFDS_MCMC": sign_HFDS_MCMC.mean,
-            "sign_HFDS_Imp": sign_HFDS_Imp,
-            "Overlap_sign_HFDS_DMRG": Overlap_sign_HFDS_DMRG,
-            "Overlap_amp_HFDS_DMRG": Overlap_amp_HFDS_DMRG
+            "fidelity_sampled_NQS_DMRG": fidelity_sampled_rbm_dmrg,
+            "sign_NQS_MCMC": sign_HFDS_MCMC.mean,
+            "sign_NQS_Imp": sign_HFDS_Imp,
+            "Overlap_sign_NQS_DMRG": Overlap_sign_HFDS_DMRG,
+            "Overlap_amp_NQS_DMRG": Overlap_amp_HFDS_DMRG
         })
 
     if ViT_vstate is not None:
         results.update({
-            "fidelity_sampled_ViT_DMRG": fidelity_sampled_vit_dmrg,
-            "sign_ViT_MCMC": sign_ViT_MCMC.mean,
-            "sign_ViT_Imp": sign_ViT_Imp,
-            "Overlap_sign_ViT_DMRG": Overlap_sign_ViT_DMRG,
-            "Overlap_amp_ViT_DMRG": Overlap_amp_ViT_DMRG
+            "fidelity_sampled_NQS_DMRG": fidelity_sampled_vit_dmrg,
+            "sign_NQS_MCMC": sign_ViT_MCMC.mean,
+            "sign_NQS_Imp": sign_ViT_Imp,
+            "Overlap_sign_NQS_DMRG": Overlap_sign_ViT_DMRG,
+            "Overlap_amp_NQS_DMRG": Overlap_amp_ViT_DMRG
         })
     
     results_filename = os.path.join(model_storage_dir, f"results_L{model_params['Lx']}_J2_{model_params['J2']}.pkl")
     with open(results_filename, "wb") as f:
         pickle.dump(results, f)
     print(f"Results saved to {results_filename}")
+
+    return results

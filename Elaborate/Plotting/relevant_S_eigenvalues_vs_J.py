@@ -98,6 +98,8 @@ def plot_relevant_eigenvalues_histogram(model_paths: list[str], j_values: list[f
     elif part_training == 'end':
         save_path = "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/relevant_S_eigenvalues_vs_J_end_HFDS.png"
 
+    if not os.path.exists(os.path.dirname(save_path)):
+        save_path = save_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved to {save_path}")
     plt.show()
@@ -109,6 +111,9 @@ if __name__ == '__main__':
     # The script will append the rest of the path (J=..., seed_...).
     model_paths_to_compare = ["/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd2_feat16_sample1024_lr0.025_iter100_parityTrue_rotTrue_Initrandom_typecomplex_modeexact_sign_to_plot",
                               "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd2_feat16_sample1024_lr0.025_iter100_parityTrue_rotTrue_Initrandom_typecomplex_modepsi_to_plot"]
+    for i in range(len(model_paths_to_compare)):
+        if not os.path.exists(model_paths_to_compare[i]):
+            model_paths_to_compare[i] = model_paths_to_compare[i].replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     j_values_to_plot = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7]
 
     # --- Generate the plot for a single seed (e.g., seed_id=0) ---

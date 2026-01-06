@@ -185,7 +185,9 @@ if __name__ == "__main__":
     #apply_to_files(folder, model)
 
     model = "HFDS"
-    base_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter500_parityTrue_rotationFalse_InitFermi_typereal"
+    base_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd4_feat32_sample1024_lr0.025_iter500_parityTrue_rotationFalse_InitFermi_typereal"
+    if not os.path.exists(base_path):
+        base_path = base_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     
     for j_folder in os.listdir(base_path):
         if j_folder.startswith("J="):

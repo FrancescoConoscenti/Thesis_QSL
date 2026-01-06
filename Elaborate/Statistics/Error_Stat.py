@@ -48,7 +48,7 @@ def Exact_gs(L, J2, ha, J1J2, spin=True):
 #Relative Error
 def Relative_Error(E_vs, E_exact, L):
     e = np.abs((E_vs - E_exact))/(L*L)
-    print(f"Relative error = {e}")
+    return e
 
 #Total magnetization on Z
 def Magnetization(vstate, lattice, hi):
@@ -57,9 +57,21 @@ def Magnetization(vstate, lattice, hi):
     print(f"Magnetization = {tot_magn_vstate}" )
 
 #Variance
-def Variance(log):
-    variance = log.data["Energy"]["Variance"][-1].real
+def Variance(log, folder=None):
+    variance_history = log.data["Energy"]["Variance"]
+    variance = variance_history[-1].real
     print(f"Variance = {variance}")
+
+    if folder is not None:
+        plt.figure()
+        plt.plot(variance_history.real)
+        plt.title("Variance vs Iterations")
+        plt.xlabel("Iterations")
+        plt.ylabel("Variance")
+        plt.yscale("log")
+        plt.savefig(f'{folder}/Variance_log.png')
+        plt.close()
+
     return variance
 
 #Vscore

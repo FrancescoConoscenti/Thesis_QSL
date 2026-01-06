@@ -23,7 +23,10 @@ import os
 import flax
 os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
 import pickle
-sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
+path_to_add = "/cluster/home/fconoscenti/Thesis_QSL"
+if not os.path.exists(path_to_add):
+    path_to_add = "/scratch/f/F.Conoscenti/Thesis_QSL"
+sys.path.append(os.path.dirname(os.path.dirname(path_to_add)))
 
 from netket.experimental.driver import VMC_SR
 

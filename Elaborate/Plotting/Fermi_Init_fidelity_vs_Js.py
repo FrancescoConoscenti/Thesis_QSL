@@ -115,6 +115,8 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
 
     save_path = Path("/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot") / "Initial_Fidelity_vs_J_Comparison_try.png"
 
+    if not os.path.exists(save_path.parent):
+        save_path = Path(str(save_path).replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL"))
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved to {save_path}")
     plt.show()
@@ -130,6 +132,8 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
         output_dir (str): The directory where the plot will be saved.
     """
     output_dir = "/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot"
+    if not os.path.exists(output_dir):
+        output_dir = output_dir.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 
     # --- Create a wider figure ---
     plt.figure(figsize=(12, 6))
@@ -206,10 +210,14 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
 if __name__ == '__main__':
      
     model_path = [
-        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_try_1"
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_try_1",
         "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter3_parityTrue_rotTrue_InitG_MF_typecomplex_try"    
         ]       
     
+    for i in range(len(model_path)):
+        if not os.path.exists(model_path[i]):
+            model_path[i] = model_path[i].replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+
     plot_initial_fidelity_vs_Js(model_path)
 
     plot_initial_energy_vs_Js(model_path)

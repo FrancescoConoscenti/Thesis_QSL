@@ -1,3 +1,5 @@
+import argparse
+
 #Count Parameters
 def hidden_fermion_param_count(n_elecs, n_hid, Lx, Ly, layers, features):
     # Parameters in Orbitals module
@@ -48,3 +50,32 @@ def vit_param_count(num_heads, num_layers, patch_size, d_model, Ns):
     total = embed_params + encoder_params + output_params
 
     return total
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Count parameters for models")
+    subparsers = parser.add_subparsers(dest="model", required=True, help="Model type")
+
+    # Hidden Fermion parser
+    parser_hf = subparsers.add_parser("hidden", help="Hidden Fermion model")
+    parser_hf.add_argument("--n_elecs", type=int, required=True, help="Number of electrons")
+    parser_hf.add_argument("--n_hid", type=int, required=True, help="Number of hidden fermions")
+    parser_hf.add_argument("--Lx", type=int, required=True, help="Lattice size X")
+    parser_hf.add_argument("--Ly", type=int, required=True, help="Lattice size Y")
+    parser_hf.add_argument("--layers", type=int, required=True, help="Number of hidden layers")
+    parser_hf.add_argument("--features", type=int, required=True, help="Number of features per layer")
+
+    # ViT parser
+    parser_vit = subparsers.add_parser("vit", help="Vision Transformer model")
+    parser_vit.add_argument("--num_heads", type=int, required=True, help="Number of heads")
+    parser_vit.add_argument("--num_layers", type=int, required=True, help="Number of layers")
+    parser_vit.add_argument("--patch_size", type=int, required=True, help="Patch size")
+    parser_vit.add_argument("--d_model", type=int, required=True, help="Embedding dimension")
+    parser_vit.add_argument("--Ns", type=int, required=True, help="Total number of sites")
+
+    args = parser.parse_args()
+
+    if args.model == "hidden":
+        hidden_fermion_param_count(args.n_elecs, args.n_hid, args.Lx, args.Ly, args.layers, args.features)
+    elif args.model == "vit":
+        total = vit_param_count(args.num_heads, args.num_layers, args.patch_size, args.d_model, args.Ns)
+        print(f"params={total}")

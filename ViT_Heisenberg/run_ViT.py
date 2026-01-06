@@ -1,21 +1,3 @@
-import os
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
-try:
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    import jax
-    jax.distributed.initialize()
-
-    print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
-    print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
-
-    # wait for all processes to show their devices
-    comm.Barrier()
-except Exception as e:
-    print(f"Error initializing distributed JAX: {e}")
-    raise
 
 import matplotlib.pyplot as plt
 import netket as nk
@@ -45,38 +27,46 @@ from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=0, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 6  # Linear size of the lattice
+L = 4  # Linear size of the lattice
 
 
 n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
+# 6k params for L=4 num_layers=2 d_model=16 n_heads=4 patch_size=2
+# 6k params for L=6 num_layers=2 d_model=16 n_heads=4 patch_size=2
+# 15k params for L=6 num_layers=2 d_model=24 n_heads=6 patch_size=2
+# 43k params for L=6 num_layers=3 d_model=36 n_heads=6 patch_size=2
+# 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
+# 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
+
 num_layers      = 1     # number of Tranformer layers
-d_model         = 2   # dimensionality of the embedding space
-n_heads         = 1     # number of heads
+d_model         = 4    # dimensionality of the embedding space
+n_heads         = 2     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 2
+N_opt           = 20
 
-number_data_points = 2
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_latest_model"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-model_path = f'ViT_Heisenberg/plot/6x6/{model_name}/{J_value}'
+model_path = f'ViT_Heisenberg/plot/{L}x{L}/{model_name}/{J_value}'
 folder = f'{model_path}/{seed_str}'
+folder_energy = f'{folder}/Energy_plot'
 save_model = f"{model_path}/{seed_str}/models"
 
 os.makedirs(save_model, exist_ok=True)
@@ -84,6 +74,7 @@ os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output 
 os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
+os.makedirs(folder_energy, exist_ok=True)
 
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
@@ -171,8 +162,6 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
 
 
     
-#Energy
-E_vs = Energy(log, L, folder)
 #Correlation function
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hilbert)
@@ -181,12 +170,14 @@ if L == 4:
     E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
 elif L==6:
     E_exact = Exact_gs_en_6x6(J2)
+
+E_vs = Energy(log, L, folder_energy, E_exact=E_exact)
 #Rel Err
 Relative_Error(E_vs, E_exact, L)
 #Magn
 Magnetization(vstate, lattice, hilbert)
 #Variance
-variance = Variance(log)
+variance = Variance(log, folder_energy)
 #Vscore
 Vscore(L, variance, E_vs)
 #count Params
@@ -203,7 +194,7 @@ if L == 4:
     amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
     amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
-    S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  one_avg = "one")
+    S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "end", one_avg = "one")
 
     variables = {
             #'sign_vstate_MCMC': sign_vstate_MCMC,
@@ -225,6 +216,13 @@ if L == 4:
 elif L==6:
     print("6x6")
     Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
+
+    variables = {
+            
+        }
+
+    with open(folder+"/variables", 'wb') as f:
+        pickle.dump(variables, f)   
 
 
 sys.stdout.close()
