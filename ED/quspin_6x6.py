@@ -2,6 +2,12 @@ from quspin.operators import hamiltonian
 from quspin.basis import spin_basis_general
 import numpy as np
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description="QuSpin script")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
+args = parser.parse_args()
+J2 = args.J2
 
 L = 6
 N = L**2
@@ -34,7 +40,7 @@ for r in range(L):
         # J2: Top-Right and Top-Left diagonals
         tr_diag = sites[(r + 1) % L, (c + 1) % L]
         tl_diag = sites[(r + 1) % L, (c - 1) % L]
-        J2_list.extend([[0.5, s, tr_diag], [0.5, s, tl_diag]])
+        J2_list.extend([[J2, s, tr_diag], [J2, s, tl_diag]])
 
 # --- 3. Build Basis and Hamiltonian ---
 # kxblock=0, kyblock=0 (Zero momentum)
@@ -52,11 +58,11 @@ static = [
 
 H = hamiltonian(static, [], basis=basis, dtype=np.float64)
 E, psi = H.eigsh(k=1, which='SA')
-print(f"Ground state energy per site: {E[0]/N}")
+print(f"Ground state energy per site: {E[0]/N/4}")
 
-output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "energy_output_all_symmetry_6x6.txt")
+output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "energy_J2_" + str(J2) + ".txt")
 with open(output_file, "w") as f:
-    f.write(f"Ground state energy per site: {E[0]/N}\n")
+    f.write(f"Ground state energy per site: {E[0]/N/4}\n")
 
 psi_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "psi_output_6x6_all_symm.npy")
 np.save(psi_file, psi)

@@ -21,9 +21,14 @@ def Correlations_Structure_Factor(psi, model_params, model):
     
     corr_r /= counts
     S_q = np.fft.fft2(corr_r)
+    S_q_periodic = np.zeros((Lx+1, Ly+1), dtype=S_q.dtype)
+    S_q_periodic[:Lx, :Ly] = S_q
+    S_q_periodic[Lx, :] = S_q_periodic[0, :]
+    S_q_periodic[:, Ly] = S_q_periodic[:, 0]
+
 
     plot_correlation_function(corr_r, model_params)
-    plot_structure_factor(S_q, model_params)
+    plot_structure_factor(S_q_periodic, model_params)
 
 
 def calculate_R(S_q, L):

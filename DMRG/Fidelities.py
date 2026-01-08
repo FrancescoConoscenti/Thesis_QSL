@@ -57,6 +57,7 @@ def Fidelity_exact(RBM_vstate, DMRG_vstate):
     return fidelity
 
 
+######################################################################################
 
 def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
 
@@ -88,6 +89,46 @@ def Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled):
     fidelity = numerator_est / denominator_est
 
     return fidelity
+
+def Sign_Overlap_sampled(psi_DMRG_sampled, psi_RBM_sampled):
+
+    # Extract signs (phases)
+    # We add a small epsilon to avoid division by zero, although psi_DMRG_sampled should be non-zero.
+    epsilon = 1e-18
+    sign_DMRG = psi_DMRG_sampled / (np.abs(psi_DMRG_sampled) + epsilon)
+    sign_RBM = psi_RBM_sampled / (np.abs(psi_RBM_sampled) + epsilon)
+
+    # 1. Calculate the element-wise ratio of signs X(sigma) = sgn_RBM(sigma) / sgn_DMRG(sigma)
+    ratio = sign_RBM / sign_DMRG
+    
+    # 2. Estimate the overlap <sgn_DMRG | sgn_RBM>
+    # This is the mean of the ratio: E[X]. Since samples are drawn from |psi_DMRG|^2,
+    # this corresponds to the overlap weighted by the DMRG probability.
+    overlap_est = np.mean(ratio)
+    
+    return np.abs(overlap_est)
+
+def Amplitude_Overlap_sampled(psi_DMRG_sampled, psi_RBM_sampled):
+
+    abs_DMRG = np.abs(psi_DMRG_sampled)
+    abs_RBM = np.abs(psi_RBM_sampled)
+
+    # 1. Calculate the element-wise ratio X(sigma) = |psi_RBM(sigma)| / |psi_DMRG(sigma)|
+    ratio = abs_RBM / (abs_DMRG)
+    
+    # 2. Estimate the overlap <|psi_DMRG| | |psi_RBM|>
+    # This is the mean of the ratio: E[X]. Since samples are drawn from |psi_DMRG|^2,
+    # this corresponds to the overlap weighted by the DMRG probability.
+    overlap_est = np.mean(ratio)
+    
+    # 3. Estimate the RBM Norm Squared (Denominator): <|psi_RBM| | |psi_RBM|>
+    # This is the mean of the squared magnitude of the ratio: E[|X|^2]
+    denominator_est = np.mean(ratio**2)
+    
+    # 4. Calculate Amplitude Overlap: E[X] / sqrt(E[|X|^2])
+    amplitude_overlap = overlap_est / np.sqrt(denominator_est)
+
+    return amplitude_overlap
 
 ############################################################################################################################
 
@@ -207,4 +248,3 @@ def fidelity_RBM_sampled_vs_full(psi_RBM_sampled, samples_dmrg, RBM_array, local
 
     fidelity = np.abs(overlap)**2 / (norm_target_sq * norm_sampled_sq)
     return fidelity.real
-

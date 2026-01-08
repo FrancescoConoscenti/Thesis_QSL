@@ -56,8 +56,8 @@ def Observable_Importance_sampling(J2, NQS_path=None, vstate=None):
         with gzip.open(dmrg_filename, 'rb') as f:
             DMRG_vstate = pickle.load(f)
         energy_per_site = [0.0] # Placeholder if not re-running
-    else:
-        DMRG_vstate, energy_per_site = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
+    #else:
+    #    DMRG_vstate, energy_per_site = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
 
     # --- NQS Loading ---
     hi = nk.hilbert.Spin(s=1/2, N=N_sites)

@@ -41,6 +41,10 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
         folder_path: Path to save the plots.
         one_avg: A string indicating the context (e.g., "one" for a single run).
     """
+
+    folder_save_QGT = folder_path+"/QGT_plot"
+    os.makedirs(folder_save_QGT, exist_ok=True)
+
     models_dir = Path(folder_path) / "models"
     if not models_dir.is_dir():
         print(f"Warning: 'models' directory not found in {folder_path}. Skipping.")
@@ -125,9 +129,9 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
     plt.tight_layout()
 
     if part_training == 'start':
-        save_plot_path = Path(folder_path) / "Sign_plot" / "S_matrix_spectrum_vs_iteration_start_training.png"
+        save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration_start_training.png"
     elif part_training == 'end':
-        save_plot_path = Path(folder_path) / "Sign_plot" / "S_matrix_spectrum_vs_iteration_end_training.png"        
+        save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration_end_training.png"        
     plt.savefig(save_plot_path, dpi=300)
     print(f"✅ Plot saved to {save_plot_path}")
     plt.show()

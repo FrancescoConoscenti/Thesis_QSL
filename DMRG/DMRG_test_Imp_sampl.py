@@ -12,6 +12,7 @@ import argparse
 
 from DMRG.DMRG import *
 from DMRG.Fidelities import *
+from DMRG.Observable.Corr_Struct import Correlations_Structure_Factor
 
 from Elaborate.Sign_Obs_MCMC import *
 from Elaborate.Sign_Obs import *
@@ -41,16 +42,32 @@ if __name__ == "__main__":
     N_sites = model_params['Lx'] **2
 
     # --- Define file paths for saved models ---
-    model_storage_dir = "DMRG/trained_models"
+    model_storage_dir = "/cluster/home/fconoscenti/Thesis_QSL/DMRG/trained_models"
     os.makedirs(model_storage_dir, exist_ok=True)
     dmrg_filename = os.path.join(model_storage_dir, f"dmrg_L{model_params['Lx']}_J2_{model_params['J2']}.pkl.gz")
     rbm_filename = os.path.join(model_storage_dir, f"rbm_L{model_params['Lx']}_J2_{model_params['J2']}.mpack")
+    samples_filename = os.path.join(model_storage_dir, f"samples_L{model_params['Lx']}_J2_{model_params['J2']}.pkl")
 
 
     # --- DMRG ---
     hamiltonian = J1J2Heisenberg(model_params=model_params)
-    DMRG_vstate, energy_per_site = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
+    
+    if os.path.exists(dmrg_filename):
+        print(f"Loading DMRG state from {dmrg_filename}")
+        with gzip.open(dmrg_filename, 'rb') as f:
+            DMRG_vstate = pickle.load(f)
+        energy_per_site = [0.0]
+        Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
+    else:
+        DMRG_vstate, energy_per_site = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
 
+        Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
+        results = {"final_energy_DMRG": energy_per_site[-1]}
+        
+        results_filename = os.path.join(model_storage_dir, f"final_energy_L{model_params['Lx']}_J2_{model_params['J2']}.pkl")
+        with open(results_filename, "wb") as f:
+            pickle.dump(results, f)
+        print(f"Results saved to {results_filename}")
     
     
     # --- RBM ---
@@ -58,8 +75,23 @@ if __name__ == "__main__":
     #hi = RBM_vstate.hilbert
     
     # --- Importance Sampling ---
-    samples, psi_DMRG_sampled = importance_Sampling_DMRG(DMRG_vstate, n_samples, N_sites)
+    if os.path.exists(samples_filename):
+        print(f"Loading samples from {samples_filename}")
+        with open(samples_filename, 'rb') as f:
+            data = pickle.load(f)
+            samples = data['samples']
+            psi_DMRG_sampled = data['psi_DMRG_sampled']
+    else:
+        print("Generating importance samples...")
+        samples, psi_DMRG_sampled = importance_Sampling_DMRG(DMRG_vstate, n_samples, N_sites)
+        print(f"Saving samples to {samples_filename}")
+        with open(samples_filename, 'wb') as f:
+            pickle.dump({'samples': samples, 'psi_DMRG_sampled': psi_DMRG_sampled}, f)
     
+
+
+    
+    """    
     samples_netket = samples # Keep original for RBM logpsi if needed
     samples_dmrg_01_basis = ((1 - np.asarray(samples_netket)) / 2).astype(int)
 
@@ -113,12 +145,4 @@ if __name__ == "__main__":
     print("Amp Overlap (DMRG vs RBM) on sampled configurations (function):", Overlap_amp_samples)
 
 
-
-    results = {
-        "final_energy_DMRG": energy_per_site[-1]
-    }
-    
-    results_filename = os.path.join(model_storage_dir, f"results_L{model_params['Lx']}_J2_{model_params['J2']}.pkl")
-    with open(results_filename, "wb") as f:
-        pickle.dump(results, f)
-    print(f"Results saved to {results_filename}")
+    """

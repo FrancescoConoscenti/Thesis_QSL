@@ -25,14 +25,16 @@ from Elaborate.Plotting.S_matrix_vs_iteration import *
 
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
+from Observables import run_observables
+
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
-parser.add_argument("--seed", type=float, default=0, help="seed")
+parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 4  # Linear size of the lattice
+L = 6  # Linear size of the lattice
 
 
 n_dim = 2
@@ -46,16 +48,16 @@ seed = int(args.seed)
 # 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
-num_layers      = 1     # number of Tranformer layers
-d_model         = 4    # dimensionality of the embedding space
-n_heads         = 2     # number of heads
+num_layers      = 2     # number of Tranformer layers
+d_model         = 8    # dimensionality of the embedding space
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 20
+N_opt           = 100
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
@@ -160,8 +162,11 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
     bytes_out = flax.serialization.to_bytes(vstate.variables)
     f.write(bytes_out)
 
+#####################################################################################################
 
+run_observables(log, folder)
     
+"""
 #Correlation function
 vstate.n_samples = 1024
 Corr_Struct(lattice, vstate, L, folder, hilbert)
@@ -224,5 +229,5 @@ elif L==6:
     with open(folder+"/variables", 'wb') as f:
         pickle.dump(variables, f)   
 
-
+"""
 sys.stdout.close()

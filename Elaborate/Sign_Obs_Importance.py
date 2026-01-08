@@ -22,6 +22,7 @@ def importance_Sampling_DMRG(DMRG_vstate, n_samples, N_sites):
 def sign_NQS_importance_Sampled(RBM_vstate, samples_DMRG, hi):
 
     SignObs = MarshallSignObs(hi)
+    RBM_vstate.n_samples = samples_DMRG.shape[0]
     kernel = nk.vqs.get_local_kernel(RBM_vstate, SignObs)
     sigma_template, args_template = nk.vqs.get_local_kernel_arguments(RBM_vstate, SignObs)
     logpsi_vals = RBM_vstate.log_value(samples_DMRG)

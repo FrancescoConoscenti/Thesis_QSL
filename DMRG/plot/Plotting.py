@@ -59,31 +59,17 @@ def plot_correlation_function(corr_r, model_params):
     fig.savefig(save_path, dpi=300)
     plt.close(fig)
 
-def plot_structure_factor(S_q, model_params):
-    """Plots the static spin structure factor S(q)."""
-    Lx = model_params.get('Lx', 'N/A')
-    Ly = model_params.get('Ly', 'N/A')
-    J2 = model_params.get('J2', 'N/A')
+def plot_structure_factor(S_q_periodic, model_params):
 
-    # Define grid for pcolormesh (corners of the cells)
-    q_x = np.linspace(0, 2 * np.pi, Lx + 1)
-    q_y = np.linspace(0, 2 * np.pi, Ly + 1)
-    Qx, Qy = np.meshgrid(q_x, q_y)
-
-    fig, ax = plt.subplots(figsize=(7, 6))
-    # S_q is (Lx, Ly) -> (qx, qy). Transpose to match meshgrid (y, x) indexing for pcolormesh
-    mesh = ax.pcolormesh(Qx, Qy, np.abs(S_q).T, shading='flat', cmap='viridis')
-    fig.colorbar(mesh, ax=ax, label="|S(q)|")
-    ax.set_xlabel(r"$q_x$", fontsize=12)
-    ax.set_ylabel(r"$q_y$", fontsize=12)
-    ax.set_title(f"Structure Factor S(q) (Lx={Lx}, Ly={Ly}, J2={J2})", fontsize=14)
-    
-    ticks = [0, np.pi, 2 * np.pi]
-    tick_labels = ['0', r'$\pi$', r'$2\pi$']
-    ax.set_xticks(ticks)
-    ax.set_xticklabels(tick_labels)
-    ax.set_yticks(ticks)
-    ax.set_yticklabels(tick_labels)
+    plt.figure(figsize=(6,5))
+    plt.imshow(np.abs(S_q_periodic).T, origin='lower', cmap='viridis')
+    plt.colorbar(label='|S(q)|')
+    plt.xlabel('q_x')
+    plt.ylabel('q_y')
+    plt.title('Structure Factor S(q)')
+    plt.xticks([0, Lx/2, Lx], ['0', 'π', '2π'])
+    plt.yticks([0, Ly/2, Ly], ['0', 'π', '2π'])
+    plt.show()
     
     plt.tight_layout()
 
