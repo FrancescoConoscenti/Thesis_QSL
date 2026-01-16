@@ -41,7 +41,13 @@ n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
 
+# 1k params for L=4 num_layers=2 d_model=8 n_heads=4 patch_size=2
+# 3.4k params for L=4 num_layers=1 d_model=16 n_heads=4 patch_size=2
 # 6k params for L=4 num_layers=2 d_model=16 n_heads=4 patch_size=2
+# 13.6k params for L=4 num_layers=2 d_model=24 n_heads=6 patch_size=2
+
+# 1k params for L=6 num_layers=2 d_model=8 n_heads=4 patch_size=2
+# 3k params for L=6 num_layers=1 d_model=16 n_heads=4 patch_size=2
 # 6k params for L=6 num_layers=2 d_model=16 n_heads=4 patch_size=2
 # 15k params for L=6 num_layers=2 d_model=24 n_heads=6 patch_size=2
 # 43k params for L=6 num_layers=3 d_model=36 n_heads=6 patch_size=2
@@ -49,7 +55,7 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 8    # dimensionality of the embedding space
+d_model         = 24    # dimensionality of the embedding space
 n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
@@ -57,7 +63,7 @@ parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 100
+N_opt           = 500
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
