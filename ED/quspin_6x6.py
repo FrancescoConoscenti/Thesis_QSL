@@ -45,8 +45,8 @@ for r in range(L):
 # --- 3. Build Basis and Hamiltonian ---
 # kxblock=0, kyblock=0 (Zero momentum)
 # zblock=1 (Spin reflection / Parity even)
-#basis_symm = spin_basis_general(N, m=0, S='1/2', kxblock=(tx, 0), kyblock=(ty, 0), rblock=(rot, 0), pblock=(px, 0))
-basis = spin_basis_general(N, m=0, S='1/2')
+basis_symm = spin_basis_general(N, m=0, S='1/2', kxblock=(tx, 0), kyblock=(ty, 0), rblock=(rot, 0), pblock=(px, 0))
+#basis = spin_basis_general(N, m=0, S='1/2')
 
 # Heisenberg interaction: J(SxSx + SySy + SzSz) 
 # In QuSpin "++" and "--" are needed for the XY part if not using built-in Heisenberg
@@ -56,7 +56,7 @@ static = [
 ]
 # Note: Multiplying +- by 0.5 because S+S- + S-S+ = 2(SxSx + SySy)
 
-H = hamiltonian(static, [], basis=basis, dtype=np.float64)
+H = hamiltonian(static, [], basis=basis_symm, dtype=np.float64)
 E, psi = H.eigsh(k=1, which='SA')
 print(f"Ground state energy per site: {E[0]/N/4}")
 
@@ -64,5 +64,5 @@ output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "energy_J
 with open(output_file, "w") as f:
     f.write(f"Ground state energy per site: {E[0]/N/4}\n")
 
-psi_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "psi_output_6x6_all_symm.npy")
+psi_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"psi_output_6x6_all_symm_J2_{J2}.npy")
 np.save(psi_file, psi)

@@ -3,8 +3,8 @@
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=32GB
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=256GB
 ##SBATCH --gres=gpu:1
 
 #SBATCH --time=00-24:00:00
