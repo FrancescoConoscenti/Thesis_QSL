@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=ViT_6x6_params
+#SBATCH --job-name=HFDS_6x6_params_3k
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
 #SBATCH --cpus-per-task=32
-#SBATCH --gres=gpu:1
+##SBATCH --gres=gpu:1
 
 #SBATCH --mem=64G
-#SBATCH --time=00-72:00:00
+#SBATCH --time=00-48:00:00
 #SBATCH --array=0-20
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
@@ -22,7 +22,7 @@ NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
 
 J_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_J ))
-SEED_INDEX=$(( SLURM_ARRAYparams for L=6 num_layers=2 d_model=24 n_heads=6 patch_size=2_TASK_ID / NUM_J ))
+SEED_INDEX=$(( SLURM_ARRAY_TASK_ID / NUM_J ))
 
 J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}

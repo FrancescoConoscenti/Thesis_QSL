@@ -54,7 +54,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 6
+L       = 4
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -75,20 +75,26 @@ rotation = True
 logger.info("Physical and model parameters set.")
 
 #Varaitional state param
+# 1k params for L=4 n_hid=1 features=16 layers=1
+# 3.9k params for L=4 n_hid=2 features=64 layers=1
 # 6k params for L=4 n_hid=4 features=64 layers=1
-# 15k params for L=6 n_hid=4 features=64 layers=1
+# 13k params for L=4 n_hid=6 features=128 layers=1
+
+# 1k ...
+# 3.8k params for L=6 n_hid=1 features=16 layers=1
 # 6k params for L=6 n_hid=2 features=32 layers=1
+# 15k params for L=6 n_hid=4 features=64 layers=1
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
-n_hid_ferm       = 2
-features         = 32    #hidden units per layer
+n_hid_ferm       = 6
+features         = 128    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
 n_samples        = 1024
 chunk_size       = 1024
-N_opt            = 1000
+N_opt            = 500
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
