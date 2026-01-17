@@ -34,7 +34,7 @@ def plot_initial_fidelity_vs_Js(model_paths: list[str]):
         initial_fidelity_errors = []
 
         # --- Find and process J folders ---
-        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith("J=")])
+        j_folders = sorted([d for d in base_path.iterdir() if d.is_dir() and (d.name.startswith("J=") or d.name.startswith("J2="))])
 
         if not j_folders:
             print(f"🤷 No 'J=...' subdirectories found in '{model_path}'. Skipping.")
@@ -158,7 +158,7 @@ def plot_initial_energy_vs_Js(model_paths: list[str]):
         # --- Discover J subfolders automatically and sort them numerically ---
         try:
             j_subfolders = sorted(
-                [p for p in Path(model_path).iterdir() if p.is_dir() and p.name.startswith("J=")],
+                [p for p in Path(model_path).iterdir() if p.is_dir() and (p.name.startswith("J=") or p.name.startswith("J2="))],
                 key=lambda p: float(p.name.split('=')[1])
             )
         except (ValueError, IndexError):

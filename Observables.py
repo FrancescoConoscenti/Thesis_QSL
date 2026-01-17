@@ -48,7 +48,7 @@ def parse_model_path(model_path):
         params['features'] = int(re.search(r"feat(\d+)", model_path).group(1))
         params['layers'] = int(re.search(r"layers(\d+)", model_path).group(1))
         
-        match_init = re.search(r"Init([a-zA-Z_]+)", model_path)
+        match_init = re.search(r"Init((?:(?!_type)[a-zA-Z_])+)", model_path)
         params['MFinit'] = match_init.group(1) if match_init else "random"
         
         match_type = re.search(r"type([a-zA-Z]+)", model_path)
@@ -265,11 +265,13 @@ def run_observables(log, folder):
         ket_gs = None
 
     if log is not None:
-        E_vs = Energy(log, L, folder_energy, E_exact=E_exact)
+        E_vs_final = Energy(log, L, folder_energy, E_exact=E_exact)
+        rel_err_E = Relative_Error(E_vs_final, E_exact, L)
+
+    if log is None:
+        E_vs_final = vstate.expect(hamiltonian).mean.real
+        rel_err_E = Relative_Error(E_vs_final, E_exact, L)
         
-        # Rel Err
-        Relative_Error(E_vs, E_exact, L)
-    
     # Magn
     Magnetization(vstate, lattice, hilbert)
     
@@ -278,7 +280,7 @@ def run_observables(log, folder):
         variance = Variance(log, folder_energy)
         
         # Vscore
-        Vscore(L, variance, E_vs)
+        Vscore(L, variance, E_vs_final)
     
     # count Params
     if params['model_type'] == 'ViT':
@@ -300,6 +302,9 @@ def run_observables(log, folder):
         eigenvalues, rank = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "end", one_avg = "one")
 
         variables = {
+                'E_exact': E_exact,
+                'E_vs_final': E_vs_final,
+                'rel_err_E': rel_err_E,
                 'sign_vstate': sign_vstate,
                 'sign_exact': sign_exact,
                 'fidelity': fidelity,
@@ -319,10 +324,20 @@ def run_observables(log, folder):
     elif L == 6:
         print("6x6")
         Fidelity_vs_Iterations(folder, vstate, params)
-        results = Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
         eigenvalues, rank = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "end", one_avg = "one")
         
         variables = {
+
+                'E_exact': E_exact,
+                'E_vs_final': E_vs_final,
+                'rel_err_E': rel_err_E,
+                'eigenvalues_S': eigenvalues,
+                'rank_S': rank
+        }
+
+        results = Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
+        
+        variables.update({
                 'final_energy_DMRG': results['final_energy_DMRG'],
                 'sign_DMRG_Imp': results['sign_DMRG_Imp'],
                 'fidelity_sampled_NQS_DMRG': results['fidelity_sampled_NQS_DMRG'],
@@ -330,10 +345,8 @@ def run_observables(log, folder):
                 'sign_NQS_Imp': results['sign_NQS_Imp'],
                 'Overlap_sign_NQS_DMRG': results['Overlap_sign_NQS_DMRG'],
                 'Overlap_amp_NQS_DMRG': results['Overlap_amp_NQS_DMRG'],
-                'eigenvalues_S': eigenvalues,
-                'rank_S': rank
-            }
-        
+        })
+
         with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
             pickle.dump(variables, f)                   
 
@@ -342,8 +355,37 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d8_heads4_patch2_sample1024_lr0.0075_iter100_parityTrue_rotTrue_latest_model/J=0.0/seed_1"
-    
-    log=None
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_latest_model"
+    log = None
 
-    run_observables(log, model_path)
+    if not os.path.exists(model_path):
+        model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+
+    if os.path.exists(model_path):
+        j_folders = [f for f in os.listdir(model_path) if f.startswith("J=") and os.path.isdir(os.path.join(model_path, f))]
+        try:
+            j_folders.sort(key=lambda x: float(x.split('=')[1]))
+        except:
+            j_folders.sort()
+
+        for j_folder in j_folders:
+            j_path = os.path.join(model_path, j_folder)
+            seed_folders = [f for f in os.listdir(j_path) if f.startswith("seed_") and os.path.isdir(os.path.join(j_path, f))]
+            try:
+                seed_folders.sort(key=lambda x: int(x.split('_')[1]))
+            except:
+                seed_folders.sort()
+
+            for seed_folder in seed_folders:
+                full_path = os.path.join(j_path, seed_folder)
+                print(f"Running observables for: {full_path}")
+                original_stdout = sys.stdout
+                try:
+                    run_observables(log, full_path)
+                except Exception as e:
+                    sys.stdout = original_stdout
+                    print(f"Error processing {full_path}: {e}")
+                finally:
+                    sys.stdout = original_stdout
+    else:
+        print(f"Model path not found: {model_path}")

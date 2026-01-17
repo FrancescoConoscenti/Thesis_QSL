@@ -16,9 +16,12 @@ from Elaborate.Sign_Obs import *
 
 
 def average_models_seeds(folder):
+    if not os.path.exists(folder):
+        folder = folder.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+
     try:
         j_subfolders = sorted(
-            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            [p for p in Path(folder).iterdir() if p.is_dir() and (p.name.startswith("J=") or p.name.startswith("J2="))],
             key=lambda p: float(p.name.split('=')[1])
         )
     except (ValueError, IndexError):
@@ -141,7 +144,7 @@ def average_models_seeds(folder):
                 results[f"{base_key}_mean"] = mean_val
                 results[f"{base_key}_var"] = var_val
 
-                print(f"{base_key}_mean",mean_val)
+                print(f"{base_key}_mean")
 
             except Exception as e:
                 print(f"Skipping key '{key}' (error while processing): {e}")
@@ -160,12 +163,14 @@ def average_models_seeds(folder):
 
 
 def avarage_plots_seeds(folder, plot_variance=True):
+    if not os.path.exists(folder):
+        folder = folder.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 
     L=4
 
     try:
         j_subfolders = sorted(
-            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            [p for p in Path(folder).iterdir() if p.is_dir() and (p.name.startswith("J=") or p.name.startswith("J2="))],
             key=lambda p: float(p.name.split('=')[1])
         )
     except (ValueError, IndexError):
@@ -221,13 +226,16 @@ def avarage_plots_seeds(folder, plot_variance=True):
         #Plot_Sign_single_config(configs, sign_vstate_config_mean, sign_vstate_full_mean, sign_exact_full_mean, weight_exact_mean, weight_vstate_mean, number_states_avg, folder_to_plot, one_avg= "avg", plot_variance=plot_variance, sign_vstate_full_var=sign_vstate_full_var)
         #Plot_Weight_single(configs, sign_vstate_config_mean, weight_exact_mean, weight_vstate_mean, number_states_avg, folder_to_plot, one_avg = "avg", plot_variance=plot_variance, weight_vstate_var=weight_vstate_var)
         #Plot_Amp_overlap_configs(amp_overlap_mean, folder_to_plot, one_avg = "avg", plot_variance=plot_variance, error_var=amp_overlap_var)
-        #Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap_mean, fidelity_mean, sign_overlap_mean, folder_to_plot, one_avg = "avg", plot_variance=plot_variance, error_var=amp_overlap_var, fidelity_var=fidelity_var, sign_err_var=sign_err_var) # Existing call
-        Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amp_overlap_mean, sign_overlap_mean, folder_to_plot, one_avg="avg", plot_variance=plot_variance, amplitude_overlap_var=amp_overlap_var, sign_overlap_var=sign_overlap_var)
+        Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap_mean, fidelity_mean, sign_overlap_mean, folder_to_plot, one_avg = "avg", plot_variance=plot_variance, error_var=amp_overlap_var, fidelity_var=fidelity_var, sign_err_var=sign_err_var) # Existing call
+        #Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amp_overlap_mean, sign_overlap_mean, folder_to_plot, one_avg="avg", plot_variance=plot_variance, amplitude_overlap_var=amp_overlap_var, sign_overlap_var=sign_overlap_var)
         
 def output_variables_avarage(folder):
+    if not os.path.exists(folder):
+        folder = folder.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+
     try:
         j_subfolders = sorted(
-            [p for p in Path(folder).iterdir() if p.is_dir() and p.name.startswith("J=")],
+            [p for p in Path(folder).iterdir() if p.is_dir() and (p.name.startswith("J=") or p.name.startswith("J2="))],
             key=lambda p: float(p.name.split('=')[1])
         )
     except (ValueError, IndexError):
@@ -246,19 +254,20 @@ def output_variables_avarage(folder):
         with open(avg_file_path, 'rb') as f:
             loaded_data = pickle.load(f)
 
-        E_init_mean = loaded_data['E_init_mean']
-        E_exact = loaded_data['E_exact']
+    
+        #E_exact = loaded_data['E_exact']
         fidelity_mean = loaded_data['fidelity_mean']
 
-        print(f"{j_folder.name}: E_init_mean = {E_init_mean}, E_exact = {E_exact}, Fidelity_mean = {fidelity_mean}")
+
+        print(f"{j_folder.name}: Fidelity_mean = {fidelity_mean}")
 
 
 if __name__ == "__main__":
 
     # Define a list of model paths to process
     model_paths = [
-        "HFDS_Heisenberg/plot/spin_new/layers1_hidd1_feat1_sample256_lr0.025_iter1_parityTrue_rotTrue_InitG_MF_typecomplex"    
-        ]       
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_latest_model"  
+        ]
     
     # Loop through each model path and process it
     for model_path in model_paths:

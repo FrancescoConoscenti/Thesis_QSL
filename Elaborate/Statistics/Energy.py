@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 def plot_energy_log_abs(energy_per_site, folder):
     plt.figure()
@@ -54,23 +55,12 @@ def get_initial_energy(log, L):
     return initial_energy_val 
 
 def Exact_gs_en_6x6(J2):
-    if J2==0.0:
-        return -0.678872
-    if J2==0.2:
-        return -0.599046
-    if J2==0.4:
-        return -0.529745
-    if J2==0.45:
-        return -0.515655
-    if J2==0.5:
-        return -0.503810
-    if J2==0.55:
-        return -0.495178
-    if J2==0.6:
-        return -0.493239
-    if J2==0.7:
-        return -0.530001
-    if J2==0.8:
-        return -0.586487
-    if J2==1.0:
-        return -0.714360
+    
+    file_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/ED/energy_J2_{J2}.txt"
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            line = f.readline()
+            return float(line.split(":")[-1].strip())
+    else:
+        print(f"Exact energy file not found: {file_path}")
+        return None

@@ -38,6 +38,7 @@ from Elaborate.Plotting.S_matrix_vs_iteration import *
 
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
+from Observables import run_observables
 
 # Setup logging
 logging.basicConfig(level=logging.INFO,
@@ -54,7 +55,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 4
+L       = 6
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -86,17 +87,17 @@ logger.info("Physical and model parameters set.")
 # 15k params for L=6 n_hid=4 features=64 layers=1
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
-n_hid_ferm       = 6
-features         = 128    #hidden units per layer
+n_hid_ferm       = 1
+features         = 1    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 1024
+n_samples        = 64
 chunk_size       = 1024
-N_opt            = 500
+N_opt            = 2
 
-number_data_points = 20
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
@@ -220,6 +221,9 @@ with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
     f.write(flax.serialization.to_bytes(vstate.variables))
 
 
+run_observables(log, folder)
+
+"""
 logger.info("Starting post-simulation analysis.")
 
 E_init = get_initial_energy(log, L)
@@ -294,5 +298,5 @@ elif L==6:
     print("6x6")
     Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
     
-logger.info("Script finished successfully.")
+logger.info("Script finished successfully.")"""
 sys.stdout.close()
