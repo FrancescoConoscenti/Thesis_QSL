@@ -8,14 +8,14 @@
 ##SBATCH --gres=gpu:1
 
 #SBATCH --time=00-24:00:00
-#SBATCH --array=0-8
+#SBATCH --array=0-2
 
 source ../netket_venv/bin/activate
 
 export JAX_PLATFORMS=cpu
 
 J_VALUES=( 0.47 0.50 0.53 0.55 0.57 0.6 0.62 0.64 0.7)
-SEED_VALUES=(1)
+SEED_VALUES=(1 2 3)
 OUTPUT_VALUES=(psi exact_sign)
 
 
@@ -23,9 +23,9 @@ NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
 NUM_OUTPUT=${#OUTPUT_VALUES[@]}
 
-J_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_J ))
-OUTPUT_INDEX=$(( (SLURM_ARRAY_TASK_ID / NUM_J) % NUM_OUTPUT ))
-SEED_INDEX=$(( (SLURM_ARRAY_TASK_ID / (NUM_J * NUM_OUTPUT)) % NUM_SEED ))
+SEED_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_SEED ))
+J_INDEX=$(( (SLURM_ARRAY_TASK_ID / NUM_SEED) % NUM_J ))
+OUTPUT_INDEX=$(( (SLURM_ARRAY_TASK_ID / (NUM_SEED * NUM_J)) % NUM_OUTPUT ))
 
 J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}
@@ -35,15 +35,15 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 #srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 
-#srun python -m HFDS_Heisenberg.run_spin #--seed "$SEED" --J2 "$J"
-#srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J" 
+#srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" #--J2 "$J"
+srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" #--J2 "$J" 
 
 #srun python -m ED.quspin_MCState
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
 #srun python -m Observables
 
-srun python -m DMRG.DMRG_test_Imp_sampl --J2 "$J"
+#srun python -m DMRG.DMRG_test_Imp_sampl --J2 "$J"
 
 #srun python -m HFDS_Heisenberg.test_Init_grid_search
 #srun python -m ED.quspin_6x6

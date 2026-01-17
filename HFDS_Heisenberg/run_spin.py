@@ -93,7 +93,7 @@ hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 64
+n_samples        = 32
 chunk_size       = 1024
 N_opt            = 2
 

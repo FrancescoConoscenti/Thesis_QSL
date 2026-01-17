@@ -29,7 +29,7 @@ from Observables import run_observables
 
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.0, help="Coupling parameter J2")
+parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
@@ -55,15 +55,15 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 24    # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+d_model         = 8    # dimensionality of the embedding space
+n_heads         = 1     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 500
+N_opt           = 20
 
 number_data_points = 20
 save_every       = N_opt//number_data_points

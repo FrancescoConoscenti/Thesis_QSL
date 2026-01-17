@@ -57,6 +57,9 @@ def get_initial_energy(log, L):
 def Exact_gs_en_6x6(J2):
     
     file_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/ED/energy_J2_{J2}.txt"
+    if not os.path.exists(file_path):
+        file_path = f"/cluster/home/fconoscenti/Thesis_QSL/ED/energy_J2_{J2}.txt"
+
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             line = f.readline()

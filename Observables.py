@@ -315,7 +315,8 @@ def run_observables(log, folder):
                 'amp_overlap': amp_overlap,
                 'sign_overlap': sign_overlap,
                 'eigenvalues_S': eigenvalues,
-                'rank_S': rank
+                'rank_S': rank,
+                'params': count_params
             }
         
         with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
@@ -332,7 +333,8 @@ def run_observables(log, folder):
                 'E_vs_final': E_vs_final,
                 'rel_err_E': rel_err_E,
                 'eigenvalues_S': eigenvalues,
-                'rank_S': rank
+                'rank_S': rank,
+                'params': count_params
         }
 
         results = Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
