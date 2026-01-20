@@ -220,7 +220,10 @@ logger.info("VMC optimization finished.")
 with open(save_model + f"/model_{block_iter}.mpack", "wb") as f:
     f.write(flax.serialization.to_bytes(vstate.variables))
 
+# save log
 
+with open(os.path.join(folder, "log.pkl"), 'wb') as f:
+    pickle.dump(log.data, f)
 run_observables(log, folder)
 
 """

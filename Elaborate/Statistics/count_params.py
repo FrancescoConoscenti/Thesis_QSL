@@ -21,6 +21,8 @@ def hidden_fermion_param_count(n_elecs, n_hid, Lx, Ly, layers, features):
 
     print(f"params={total_params}")
 
+    return total_params
+
 #Count parameters
 def vit_param_count(num_heads, num_layers, patch_size, d_model, Ns):
     """

@@ -12,6 +12,7 @@ import sys
 import os
 import argparse
 import pickle
+import re
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
@@ -55,15 +56,15 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 8    # dimensionality of the embedding space
-n_heads         = 1     # number of heads
+d_model         = 24    # dimensionality of the embedding space
+n_heads         = 4     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 20
+N_opt           = 5000
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
@@ -154,8 +155,24 @@ vmc = VMC_SR(
 # Optimization
 log = nk.logging.RuntimeLog()
 
+start_block = 0
+if os.path.exists(save_model):
+    model_files = [f for f in os.listdir(save_model) if f.startswith("model_") and f.endswith(".mpack")]
+    indices = []
+    for f in model_files:
+        match = re.search(r"model_(\d+)\.mpack", f)
+        if match:
+            indices.append(int(match.group(1)))
+    
+    if indices:
+        last_block = max(indices)
+        if last_block <= block_iter:
+            print(f"Resuming from block {last_block} (iteration {last_block * save_every})")
+            with open(os.path.join(save_model, f"model_{last_block}.mpack"), "rb") as f:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            start_block = last_block
 
-for i in range(block_iter):
+for i in range(start_block, block_iter):
     #Save model
     with open(save_model +f"/model_{i}.mpack", "wb") as f:
         bytes_out = flax.serialization.to_bytes(vstate.variables)
@@ -168,7 +185,11 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
     bytes_out = flax.serialization.to_bytes(vstate.variables)
     f.write(bytes_out)
 
+
 #####################################################################################################
+
+with open(os.path.join(folder, "log.pkl"), 'wb') as f:
+    pickle.dump(log.data, f)
 
 run_observables(log, folder)
     

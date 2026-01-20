@@ -32,8 +32,8 @@ def _count_relevant_eigenvalues(sorted_eigenvalues, threshold_ratio=1e3):
 
 def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
     """
-    Computes and plots the eigenvalues of the S-matrix at 5 key iterations:
-    0%, 25%, 50%, 75%, and 100% of the training process.
+    Computes and plots the eigenvalues of the S-matrix.
+    Can plot start, end, or all iterations.
 
     Args:
         vstate: The variational state.
@@ -57,7 +57,7 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
         print(f"Warning: No model files found in {models_dir}. Skipping.")
         return None, None
 
-    # Define the 5 key iteration points
+    # Define the iteration points
     if part_training == 'start':
         indices_to_plot = [
             0,  # First iteration
@@ -66,7 +66,7 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
             3,
             4,
         ]
-    if part_training == 'end':
+    elif part_training == 'end':
         indices_to_plot = [
         4 *(num_models - 1) // 8,  # 2/4 iteration
         5*(num_models - 1) // 8,  # 1/4 iteration
@@ -74,6 +74,8 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
         7 * (num_models - 1) // 8,  # 4/4 iteration
         num_models - 1  # Last iteration
         ]
+    elif part_training == 'all':
+        indices_to_plot = list(range(num_models))
 
     # Ensure unique indices, especially for short runs
     indices_to_plot = sorted(list(set(indices_to_plot)))
@@ -85,8 +87,17 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
 
     print(f"Processing model at iterations: {indices_to_plot}")
 
+    # Setup colormap for 'all' case
+    cmap = None
+    if part_training == 'all':
+        cmap = plt.get_cmap('viridis')
+
     for i, model_idx in enumerate(indices_to_plot):
         model_file = models_dir / f"model_{model_idx}.mpack"
+        if not model_file.exists():
+             print(f"Warning: Model file {model_file} does not exist. Skipping.")
+             continue
+
         with open(model_file, "rb") as f:
             vstate.variables = flax.serialization.from_bytes(
                 vstate.variables, f.read()
@@ -109,38 +120,51 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
             plt.plot(indices, sorted_eigenval, lw=1.5, color='green',label=f'Iteration {model_idx}' if i == 0 else "", alpha=0.5)
         elif part_training == 'end':
             plt.plot(indices, sorted_eigenval, lw=1.5, color='orange',label=f'Iteration {model_idx}' if i == 0 else "", alpha=0.5)
-
-
+        elif part_training == 'all':
+            # Use color gradient
+            color = cmap(i / (len(indices_to_plot) - 1) if len(indices_to_plot) > 1 else 0)
+            plt.plot(indices, sorted_eigenval, lw=1.5, color=color, alpha=0.5)
 
     # --- Calculate and report the mean of the relevant eigenvalue counts ---
     mean_relevant_eigenvalues = np.mean(relevant_eigenvalues_counts) if relevant_eigenvalues_counts else 0
     std_relevant_eigenvalues = np.std(relevant_eigenvalues_counts) if relevant_eigenvalues_counts else 0
-    print(f"Mean number of relevant S-matrix eigenvalues (over 5 models): {mean_relevant_eigenvalues:.2f} ± {std_relevant_eigenvalues:.2f}")
+    print(f"Mean number of relevant S-matrix eigenvalues: {mean_relevant_eigenvalues:.2f} ± {std_relevant_eigenvalues:.2f}")
     # Add this information to the plot title
     plt.title(f"Eigenvalue Spectrum of S-matrix (Avg. Relevant Eigenvalues: {mean_relevant_eigenvalues:.2f})")
 
     # --- Finalize and save the plot ---
-    plt.title("Eigenvalue Spectrum of S-matrix at Different Training Iterations")
     plt.xlabel("Eigenvalue Index (sorted descending)")
     plt.ylabel("Eigenvalue Magnitude")
     plt.yscale("log")
     plt.grid(True, which="both", linestyle="--", alpha=0.5)
-    plt.legend()
+    
+    if part_training != 'all':
+        plt.legend()
+    else:
+        # Add colorbar for 'all'
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=num_models-1))
+        sm.set_array([])
+        cbar = plt.colorbar(sm, ax=plt.gca())
+        cbar.set_label('Model Iteration')
+
     plt.tight_layout()
 
     if part_training == 'start':
         save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration_start_training.png"
     elif part_training == 'end':
         save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration_end_training.png"        
+    elif part_training == 'all':
+        save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration_all_training.png"
+        
     plt.savefig(save_plot_path, dpi=300)
     print(f"✅ Plot saved to {save_plot_path}")
     plt.show()
 
     # --- Save all computed eigenvalues ---
-    save_data_path = Path(folder_path) / "Sign_plot" / "S_matrix_eigenvalues_5_points.pkl"
+    save_data_path = Path(folder_path) / "Sign_plot" / f"S_matrix_eigenvalues_{part_training}.pkl"
     with open(save_data_path, 'wb') as f:
         pickle.dump(all_eigenvalues, f)
-    print(f"S-matrix eigenvalues for 5 iterations saved to {save_data_path}")
+    print(f"S-matrix eigenvalues saved to {save_data_path}")
 
     return all_eigenvalues, mean_relevant_eigenvalues
 

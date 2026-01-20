@@ -285,9 +285,7 @@ if __name__ == "__main__":
 
     # Define a list of model paths to process
     model_paths = [
-        "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers1_d8_heads1_patch2_sample1024_lr0.0075_iter20_parityTrue_rotTrue_latest_model",
-        "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d8_heads1_patch2_sample1024_lr0.0075_iter20_parityTrue_rotTrue_latest_model"
-        ]
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex"]
     
     # Loop through each model path and process it
     for model_path in model_paths:

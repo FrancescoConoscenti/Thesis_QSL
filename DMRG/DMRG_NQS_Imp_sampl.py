@@ -26,7 +26,104 @@ except ImportError:
     print("Warning: ViT model not found.")
 
 
-#%%
+def Fidelity_vs_Iterations(folder, vstate, params):
+    print("\n--- Calculating Fidelity vs Iterations ---")
+    L = params['L']
+    J2 = params['J2']
+    N_sites = L * L
+    n_samples = 1024
+
+    samples_filename = f"DMRG/trained_models/samples_L{L}_J2_{J2}.pkl"
+    
+    if os.path.exists(samples_filename):
+        print(f"Loading samples from {samples_filename}")
+        with open(samples_filename, 'rb') as f:
+            data = pickle.load(f)
+            samples = data['samples']
+            psi_DMRG_sampled = data['psi_DMRG_sampled']
+    else:
+        # Load DMRG State
+        dmrg_filename = f"DMRG/trained_models/dmrg_L{L}_J2_{J2}.pkl.gz"
+        if not os.path.exists(dmrg_filename):
+            print(f"DMRG file not found: {dmrg_filename}")
+            return
+
+        print(f"Loading DMRG state from {dmrg_filename}")
+        with gzip.open(dmrg_filename, 'rb') as f:
+            DMRG_vstate = pickle.load(f)
+
+        # Sample from DMRG
+        print(f"Generating {n_samples} samples from DMRG...")
+        ops_z = ['Sigmaz'] * N_sites
+        samples = np.zeros((n_samples, N_sites), dtype=int)
+        psi_DMRG_sampled = np.zeros(n_samples, dtype=np.complex128)
+        
+        for n in range(n_samples):
+            sigmas, psi_DMRG = DMRG_vstate.sample_measurements(first_site=0, last_site=N_sites-1, ops=ops_z, complex_amplitude=True)
+            samples[n, :] = sigmas
+            psi_DMRG_sampled[n] = psi_DMRG
+            
+        print(f"Saving samples to {samples_filename}")
+        with open(samples_filename, 'wb') as f:
+            pickle.dump({'samples': samples, 'psi_DMRG_sampled': psi_DMRG_sampled}, f)
+
+    # Iterate over NQS models
+    models_dir = os.path.join(folder, "models")
+    if not os.path.exists(models_dir):
+        print("Models directory not found.")
+        return
+
+    files = [f for f in os.listdir(models_dir) if f.endswith(".mpack")]
+    files_with_iter = []
+    for f in files:
+        match = re.search(r"model_(\d+)", f)
+        if match:
+            files_with_iter.append((int(match.group(1)), f))
+    
+    files_with_iter.sort(key=lambda x: x[0])
+    
+    iterations = []
+    fidelities = []
+    amp = []
+    sign = []
+    
+    for n_iter, filename in files_with_iter:
+        filepath = os.path.join(models_dir, filename)
+        with open(filepath, 'rb') as f:
+            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+        
+        log_values = vstate.log_value(samples)
+        psi_RBM_sampled = np.exp(np.array(log_values))
+        
+        fid = Fidelity_sampled(psi_DMRG_sampled, psi_RBM_sampled)
+        iterations.append(n_iter)
+        fidelities.append(fid)
+
+        amp_overlap = Amplitude_Overlap_sampled(psi_DMRG_sampled, psi_RBM_sampled)
+        sign_overlap = Sign_Overlap_sampled(psi_DMRG_sampled, psi_RBM_sampled)
+        amp.append(amp_overlap)
+        sign.append(sign_overlap)   
+        
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(iterations, fidelities, 'o-', label='Fidelity (Sampled)')
+    plt.plot(iterations, amp, 's-', label='Amplitude Overlap')
+    plt.plot(iterations, sign, '^-', label='Sign Overlap')
+    plt.xlabel("Iterations")
+    plt.ylabel("Overlap / Fidelity")
+    plt.title(f"Fidelity & Overlaps vs Iterations (L={L}, J2={J2})")
+    plt.grid(True)
+    plt.legend()
+    
+    plot_dir = os.path.join(folder, "Fidelity_plot")
+    os.makedirs(plot_dir, exist_ok=True)
+    plt.savefig(os.path.join(plot_dir, "fidelity_vs_iter.png"))
+    plt.close()
+    
+    np.savetxt(os.path.join(plot_dir, "fidelity_vs_iter.txt"), np.column_stack((iterations, fidelities, amp, sign)), header="Iter Fidelity Amp_Overlap Sign_Overlap")
+
+
 def Observable_Importance_sampling(J2, NQS_path=None, vstate=None):
 
     # --- Parameters ---
