@@ -12,7 +12,7 @@ import sys
 import os
 import argparse
 import pickle
-import re
+import helper
 
 from ViT_Heisenberg.ViT_model import ViT_sym
 
@@ -55,18 +55,18 @@ seed = int(args.seed)
 # 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
-num_layers      = 2     # number of Tranformer layers
-d_model         = 24    # dimensionality of the embedding space
-n_heads         = 4     # number of heads
+num_layers      = 1     # number of Tranformer layers
+d_model         = 2    # dimensionality of the embedding space
+n_heads         = 1     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024
-N_opt           = 5000
+N_opt           = 9
 
-number_data_points = 20
+number_data_points = 9
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
@@ -155,106 +155,38 @@ vmc = VMC_SR(
 # Optimization
 log = nk.logging.RuntimeLog()
 
-start_block = 0
-if os.path.exists(save_model):
-    model_files = [f for f in os.listdir(save_model) if f.startswith("model_") and f.endswith(".mpack")]
-    indices = []
-    for f in model_files:
-        match = re.search(r"model_(\d+)\.mpack", f)
-        if match:
-            indices.append(int(match.group(1)))
-    
-    if indices:
-        last_block = max(indices)
-        if last_block <= block_iter:
-            print(f"Resuming from block {last_block} (iteration {last_block * save_every})")
-            with open(os.path.join(save_model, f"model_{last_block}.mpack"), "rb") as f:
-                vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
-            start_block = last_block
+# Load existing log if available to append to it
+log_path = os.path.join(folder, "log.pkl")
+old_log_data = helper.load_log(folder)
+
+start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every, vstate)
 
 for i in range(start_block, block_iter):
     #Save model
-    with open(save_model +f"/model_{i}.mpack", "wb") as f:
-        bytes_out = flax.serialization.to_bytes(vstate.variables)
-        f.write(bytes_out)
+    print("i=", i)
+    with open(save_model +f"/model_{i}.mpack", 'wb') as file:
+        file.write(flax.serialization.to_bytes(vstate))
 
     vmc.run(n_iter=save_every, out=log)
+    
+    # Save log incrementally
+    current_log_data = helper.merge_log_data(old_log_data, log.data)
+    with open(log_path, 'wb') as f:
+        pickle.dump(current_log_data, f)
 
 # Save the final model state after the last optimization step
 with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
-    bytes_out = flax.serialization.to_bytes(vstate.variables)
+    bytes_out = flax.serialization.to_bytes(vstate)
     f.write(bytes_out)
 
+final_log_data = helper.merge_log_data(old_log_data, log.data)
 
 #####################################################################################################
 
-with open(os.path.join(folder, "log.pkl"), 'wb') as f:
-    pickle.dump(log.data, f)
+with open(log_path, 'wb') as f:
+    pickle.dump(final_log_data, f)
 
-run_observables(log, folder)
+Energy(helper.MockLog(log.data), L, folder_energy)
+run_observables(helper.MockLog(log.data), folder)
     
-"""
-#Correlation function
-vstate.n_samples = 1024
-Corr_Struct(lattice, vstate, L, folder, hilbert)
-if L == 4:
-    #Exact
-    E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
-elif L==6:
-    E_exact = Exact_gs_en_6x6(J2)
-
-E_vs = Energy(log, L, folder_energy, E_exact=E_exact)
-#Rel Err
-Relative_Error(E_vs, E_exact, L)
-#Magn
-Magnetization(vstate, lattice, hilbert)
-#Variance
-variance = Variance(log, folder_energy)
-#Vscore
-Vscore(L, variance, E_vs)
-#count Params
-count_params = vit_param_count(n_heads, num_layers, patch_size, d_model, L*L)
-print(f"params={count_params}")
-
-if L == 4:
-    #Fidelity
-    fidelity = Fidelity(vstate, ket_gs)
-    print(f"Fidelity <vstate|exact> = {fidelity}")
-
-    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Sign_single_config(ket_gs, vstate, hilbert, 3, L, folder, one_avg = "one")
-    configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
-    amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
-    amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
-    sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
-    S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "end", one_avg = "one")
-
-    variables = {
-            #'sign_vstate_MCMC': sign_vstate_MCMC,
-            'sign_vstate': sign_vstate,
-            'sign_exact': sign_exact,
-            'fidelity': fidelity,
-            'configs': configs,
-            'sign_vstate_config': sign_vstate_config,
-            'weight_exact': weight_exact,
-            'weight_vstate': weight_vstate,
-            'amp_overlap': amp_overlap,
-            'sign_overlap': sign_overlap,
-            #'eigenvalues': eigenvalues
-        }
-
-    with open(folder+"/variables", 'wb') as f:
-        pickle.dump(variables, f)                   
-
-elif L==6:
-    print("6x6")
-    Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
-
-    variables = {
-            
-        }
-
-    with open(folder+"/variables", 'wb') as f:
-        pickle.dump(variables, f)   
-
-"""
 sys.stdout.close()

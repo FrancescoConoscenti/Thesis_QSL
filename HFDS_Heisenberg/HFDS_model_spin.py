@@ -29,7 +29,7 @@ class HiddenFermion(nn.Module):
   U: float = 8.0
 
   def setup(self):
-    logger.info("Setting up HiddenFermion model.")
+    #logger.info("Setting up HiddenFermion model.")
     # orbital Initialization
     self.n_modes = 2 * self.L*self.L
     self.n_elecs = self.L * self.L
@@ -45,7 +45,7 @@ class HiddenFermion(nn.Module):
       #L = int(jnp.sqrt(self.lattice.n_nodes))
       idx = jnp.arange(self.L* self.L).reshape(self.L, self.L)
       self.idx_rot = jnp.flip(idx.T, axis=1).reshape(-1)
-    logger.info("HiddenFermion model setup complete.")
+    #logger.info("HiddenFermion model setup complete.")
 
 
   def selu(self,x):
@@ -56,7 +56,7 @@ class HiddenFermion(nn.Module):
 
 
   def calc_psi(self,x):
-    logger.debug("Executing calc_psi.")
+    #logger.debug("Executing calc_psi.")
 
     #1, 2, 3.
     orbitals = self.orbitals(x)
@@ -109,7 +109,7 @@ class HiddenFermion(nn.Module):
   
 
   def __call__(self,x):
-    logger.debug("Calling HiddenFermion model.")
+    #logger.debug("Calling HiddenFermion model.")
 
     x_sym = self.gen_sym_samples(x)
   

@@ -85,7 +85,6 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
     relevant_eigenvalues_counts = []
     plt.figure(figsize=(12, 7))
 
-    print(f"Processing model at iterations: {indices_to_plot}")
 
     # Setup colormap for 'all' case
     cmap = None
@@ -99,9 +98,11 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, part_training, one_avg):
              continue
 
         with open(model_file, "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(
-                vstate.variables, f.read()
-            )
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
 
         # Compute S-matrix and its eigenvalues for the current model state
         S_matrix = compute_S_matrix_single_model(vstate, hi)

@@ -47,6 +47,6 @@ def init_orbitals_mf(L, bounds, dtype):
     upmatrix = ft(k_arr, n_elecs//2, sigmaz = +1)
     dnmatrix = ft(k_arr, n_elecs//2, sigmaz = -1)
     mf = jnp.block([[upmatrix, jnp.zeros(upmatrix.shape)], [jnp.zeros(dnmatrix.shape),dnmatrix]]).T
-    jax.debug.print("MF init orbitals shape: {x}",x=mf.shape)
+    #jax.debug.print("MF init orbitals shape: {x}",x=mf.shape)
 
     return dtype(mf)

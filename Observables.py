@@ -24,7 +24,7 @@ from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Ma
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.S_matrix_vs_iteration import plot_S_matrix_eigenvalues
-from Elaborate.Sign_Obs import MarshallSignOperator as SignObs
+from Elaborate.Sign_Obs_MCMC import MarshallSignObs
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_Iterations
 from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
 
@@ -143,7 +143,11 @@ def run_observables(log, folder):
             files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
             last_model = files[-1]
             with open(os.path.join(models_dir, last_model), 'rb') as f:
-                vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+                data = f.read()
+                try:
+                    vstate = flax.serialization.from_bytes(vstate, data)
+                except KeyError:
+                    vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
             print(f"Loaded model: {last_model}")
         else:
             print("No model files found in models directory.")
@@ -160,6 +164,7 @@ def run_observables(log, folder):
     # Correlation function
     vstate.n_samples = 1024
     Corr_Struct(lattice, vstate, L, folder, hilbert)
+
     
     if L == 4:
         # Exact
@@ -170,12 +175,13 @@ def run_observables(log, folder):
 
     if log is not None:
         E_vs_final = Energy(log, L, folder_energy, E_exact=E_exact)
-        rel_err_E = Relative_Error(E_vs_final, E_exact, L)
 
     if log is None:
         E_vs_final = vstate.expect(hamiltonian).mean.real
-        rel_err_E = Relative_Error(E_vs_final, E_exact, L)
         
+    #Rel Err
+    rel_err_E = Relative_Error(E_vs_final, E_exact, L)
+
     # Magn
     Magnetization(vstate, lattice, hilbert)
     
@@ -245,20 +251,22 @@ def run_observables(log, folder):
                 'eigenvalues_S': eigenvalues,
                 'rank_S': rank,
         })
-        for key, value in variables.items():
-            print(f"{key} = {value}")
+        print(f"rank_S = {variables['rank_S']}")
 
         #Sign MCMC
         n_samples = 2048
         vstate.n_samples = n_samples
-        sign_MCMC = vstate.expect(SignObs)
+        sign_op = MarshallSignObs(hilbert)
+        sign_MCMC = vstate.expect(sign_op)
 
         variables.update({
                 'sign_vstate_MCMC': sign_MCMC.mean,
         })
         for key, value in variables.items():
-            print(f"{key} = {value}")
-
+            if key != 'eigenvalues_S':
+                print(f"{key} = {value}")
+        
+        """
         #DMRG Observables via Importance Samplings
         results = Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
         Fidelity_vs_Iterations(folder, vstate, params)
@@ -272,6 +280,7 @@ def run_observables(log, folder):
                 'Overlap_sign_NQS_DMRG': results['Overlap_sign_NQS_DMRG'],
                 'Overlap_amp_NQS_DMRG': results['Overlap_amp_NQS_DMRG'],
         })
+        """
 
         with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
             pickle.dump(variables, f)                   

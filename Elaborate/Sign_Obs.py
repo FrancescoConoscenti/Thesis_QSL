@@ -182,7 +182,11 @@ def Marshall_Sign_full_hilbert(vstate, folder_path, hi):
 
     for i in range(num_files):
         with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
 
         sign[i], signs_vstate[i,:] = _marshal_sign_full_hilbert(vstate, hi) 
 
@@ -250,7 +254,11 @@ def Fidelity_iteration(vstate, ket_gs, folder_path):
 
     for i in range(num_files):
         with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
         
         fidelity[i] = Fidelity(vstate, ket_gs)
        
@@ -278,7 +286,11 @@ def Marshall_Sign_and_Weights_single_config(ket_gs, vstate, folder_path, L, hi, 
     # Calculate variational weights and signs for each model
     for i in range(num_files):
         with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
 
         # Calculate for each state
         for j in range(number_states):
@@ -294,7 +306,11 @@ def Amplitude_overlap_configs(ket_gs, vstate, folder_path, hi):
 
     for i in range(num_files):
         with open(folder_path + f"/models/model_{i}.mpack", "rb") as f:
-            vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
 
         Overlap[i], _ = Amp_overlap_configs(ket_gs, vstate, hi)
 
@@ -325,5 +341,3 @@ def Sign_overlap(ket_gs, signs_vstate, signs_exact):
     sign_overlap_configs = signs_vstate * signs_exact
 
     return sign_overlap, sign_overlap_configs
-
-

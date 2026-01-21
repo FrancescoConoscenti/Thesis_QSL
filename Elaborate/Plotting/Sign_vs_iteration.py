@@ -592,7 +592,11 @@ def plot_Overlap_vs_Weight(ket_gs, vstate, hi, folder_path, one_avg):
     number_models = len([name for name in os.listdir(f"{folder_path}/models") if os.path.isfile(os.path.join(f"{folder_path}/models", name))])
     model_index = number_models - 1
     with open(folder_path + f"/models/model_{model_index}.mpack", "rb") as f:
-        vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+        data = f.read()
+        try:
+            vstate = flax.serialization.from_bytes(vstate, data)
+        except KeyError:
+            vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
 
     # Get all states and amplitudes
     all_states = hi.all_states()
