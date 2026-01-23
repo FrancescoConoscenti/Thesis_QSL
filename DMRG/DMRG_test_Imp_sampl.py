@@ -60,15 +60,15 @@ if __name__ == "__main__":
         Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
     else:
         DMRG_vstate, energy_per_site = DMRG_vstate_optimization(hamiltonian, model_params, filename=dmrg_filename)
-
-        Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
-        results = {"final_energy_DMRG": energy_per_site[-1]}
         
+        results = {"final_energy_DMRG": energy_per_site[-1]}
         results_filename = os.path.join(model_storage_dir, f"final_energy_L{model_params['Lx']}_J2_{model_params['J2']}.pkl")
         with open(results_filename, "wb") as f:
             pickle.dump(results, f)
         print(f"Results saved to {results_filename}")
-    
+        
+        Correlations_Structure_Factor(DMRG_vstate, model_params, hamiltonian)
+
     
     # --- RBM ---
     #RBM_vstate, ha = RBM_vstate_optimization(model_params, n_iter, filename=rbm_filename) # ha is the NetKet Hamiltonian for exact diagonalization

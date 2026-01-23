@@ -61,6 +61,10 @@ def plot_correlation_function(corr_r, model_params):
 
 def plot_structure_factor(S_q_periodic, model_params):
 
+    Lx = model_params.get('Lx', 'N/A')
+    Ly = model_params.get('Ly', 'N/A')
+    J2 = model_params.get('J2', 'N/A')
+
     plt.figure(figsize=(6,5))
     plt.imshow(np.abs(S_q_periodic).T, origin='lower', cmap='viridis')
     plt.colorbar(label='|S(q)|')
