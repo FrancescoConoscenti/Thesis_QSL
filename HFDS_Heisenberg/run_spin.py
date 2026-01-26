@@ -1,18 +1,3 @@
-try:
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    import jax
-    jax.distributed.initialize()
-
-    print(f"Rank={rank}: Total number of GPUs: {jax.device_count()}, devices: {jax.devices()}")
-    print(f"Rank={rank}: Local number of GPUs: {jax.local_device_count()}, devices: {jax.local_devices()}", flush=True)
-
-    # wait for all processes to show their devices
-    comm.Barrier()
-except:
-  pass
-
 import sys
 import argparse
 import jax
@@ -22,7 +7,13 @@ import os
 import flax
 import helper
 import logging
-os.environ['JAX_TRACEBACK_FILTERING'] = 'off'
+import pickle
+os.environ["JAX_PLATFORM_NAME"] = "gpu"
+
+print("Total devices:", jax.device_count())
+print("Local devices:", jax.local_device_count())
+print("Devices:", jax.devices())
+
 import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
@@ -79,17 +70,17 @@ rotation = True
 # 15k params for L=6 n_hid=4 features=64 layers=1
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
-n_hid_ferm       = 1
-features         = 1    #hidden units per layer
+n_hid_ferm       = 6
+features         = 128    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 16
+n_samples        = 1024
 chunk_size       = 1024
-N_opt            = 2
+N_opt            = 2000
 
-number_data_points = 2
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 

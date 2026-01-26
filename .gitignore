@@ -1,15 +1,19 @@
 model_*
-__pycache__
+*__pycache__*
 slurm.*
 DMRG/trained_models/
 *.pkl
 *.pkl.gz
 *.npy
 *.png
+*.pyc
 
 DMRG/plot/
-Elaborate/plot/
 **/seed_*/
 **/variables
 **/output.txt*.pkl.gz
 *.npy
+
+__pycache__/
+*.pyc
+DMRG/__pycache__/DMRG.cpython-311.pyc

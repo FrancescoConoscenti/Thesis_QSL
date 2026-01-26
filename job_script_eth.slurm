@@ -1,19 +1,25 @@
 #!/bin/bash
-#SBATCH --job-name=HFDS_4x4
+#SBATCH --job-name=40kgpu
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=4GB
+#SBATCH --gpus=1
+#SBATCH --gres=gpumem:24g
 
-#SBATCH --time=3-00:00:00
-#SBATCH --array=0-17
+#SBATCH --time=10-00:00:00
+#SBATCH --array=0-8
 
-source ../netket_venv/bin/activate
+module load stack/2024-06
+module load gcc/12.2.0
+module load openmpi/4.1.6
+module load python/3.11.6
+source ../gpu_netket_venv1/bin/activate
 
-export JAX_PLATFORMS=cpu
+#export JAX_PLATFORMS=cpu
 
-J_VALUES=( 0.4 0.50 0.55 0.6 0.7)
+J_VALUES=(0.50 0.55 0.6)
 SEED_VALUES=(1 2 3)
 OUTPUT_VALUES=(psi exact_sign)
 
@@ -33,8 +39,10 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 #srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
-
+sleep 2
 srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
+sleep 2
+#srun python -m try_gpus
 #srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" #--J2 "$J" 
 
 #srun python -m ED.quspin_MCState
