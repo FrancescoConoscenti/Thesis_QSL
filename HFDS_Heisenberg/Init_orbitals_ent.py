@@ -4,6 +4,7 @@ import netket as nk
 import jax
 from flax import linen as nn
 from jax.nn.initializers import normal, zeros
+from typing import Callable
 
 from HFDS_Heisenberg.MF_Init import init_orbitals_mf
 #from HFDS_Heisenberg.Optimized_Gutwiller_MF_Init import optimized_gutzwiller_params
@@ -30,7 +31,7 @@ def compute_orbital_selection(x, orbitals_full, N_sites):
   return orbitals_full[idx, :] # Simple indexing for a single sample
 
  
-class Orbitals(nn.Module):
+class Orbitals_ent(nn.Module):
   L: int
   n_elecs: int
   n_hid: int
@@ -39,6 +40,7 @@ class Orbitals(nn.Module):
   bounds: str
   dtype: type = jnp.float64
   U: float = 8.0
+  kernel_init: Callable = normal(0.1)
 
   def _init_gutzwiller(self, key, shape, dtype):
     #logger.info(f"Initializing Gutzwiller orbitals with h={self.h_opt}, phi={self.phi_opt}")
@@ -60,11 +62,11 @@ class Orbitals(nn.Module):
     elif self.MFinit=="G_MF":
         self.orbitals_mfmf = self.param('orbitals_mf', self._init_gutzwiller, (N_sites, self.n_elecs), self.dtype)
     elif self.MFinit=="random":
-        self.orbitals_mfmf = self.param('orbitals_mf', normal(0.1),(2*N_sites,self.n_elecs), self.dtype)
+        self.orbitals_mfmf = self.param('orbitals_mf', self.kernel_init,(2*N_sites,self.n_elecs), self.dtype)
     else:
         raise NotImplementedError("This MF initialization is not implemented! Chose one of: Fermi, random")
     
-    self.orbitals_mfhf = self.param('orbitals_hf', normal(0.1),(2*N_sites,self.n_hid), self.dtype)
+    self.orbitals_mfhf = self.param('orbitals_hf', self.kernel_init,(2*N_sites,self.n_hid), self.dtype)
     #self.orbitals_mfhf = self.param('orbitals_hf', zeros,(2*N_sites,self.n_hid), self.dtype)
 
 

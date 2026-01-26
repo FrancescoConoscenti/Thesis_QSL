@@ -77,4 +77,5 @@ def Variance(log, folder=None):
 #Vscore
 def Vscore(L, variance, E_vs):
     v_score = L*L*variance/(E_vs*L*L*4)
-    print(f"V-score = {v_score}")
+    print(f"Vscore = {v_score}")
+    return v_score

@@ -55,18 +55,18 @@ seed = int(args.seed)
 # 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
-num_layers      = 1     # number of Tranformer layers
-d_model         = 2    # dimensionality of the embedding space
-n_heads         = 1     # number of heads
+num_layers      = 3     # number of Tranformer layers
+d_model         = 30   # dimensionality of the embedding space
+n_heads         = 6     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
-N_samples       = 1024
-N_opt           = 9
+N_samples       = 1024  # number of MC samples
+N_opt           = 3000
 
-number_data_points = 9
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 

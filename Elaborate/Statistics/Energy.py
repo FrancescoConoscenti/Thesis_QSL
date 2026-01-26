@@ -29,7 +29,7 @@ def Energy(log, L, folder, E_exact=None):
     # S = sigma/2 => S*S = 1/4 * sigma*sigma.
     energy_per_site = log.data["Energy"]["Mean"].real / (L * L * 4)
     E_vs = energy_per_site[-1]
-    print("Last value: ", energy_per_site[-1])
+    #print("Last value: ", energy_per_site[-1])
 
     plt.figure()
     plt.plot(energy_per_site)

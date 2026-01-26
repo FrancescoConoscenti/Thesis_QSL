@@ -53,6 +53,19 @@ def Corr_Struct(lattice, vstate, L, folder, hi):
     plt.yticks([0, 1/2*L, L], ['0', 'π', '2π'])
     plt.savefig(f'{folder}/physical_obs/Struct.png')
 
+    # Sharpness at (π,π)
+    S_pi_pi = np.abs(S_q_periodic[L//2, L//2])
+    
+    # S(Q + delta q) - average over nearest neighbors
+    S_neighbors = (np.abs(S_q_periodic[L//2+1, L//2]) + 
+                   np.abs(S_q_periodic[L//2-1, L//2]) + 
+                   np.abs(S_q_periodic[L//2, L//2+1]) + 
+                   np.abs(S_q_periodic[L//2, L//2-1])) / 4.0
+
+    R = 1 - S_neighbors/S_pi_pi
+    
+    return R
+
 def Corr_Struct_Exact(lattice, ket_gs, L, J, folder, hi):
 
     N_tot = lattice.n_nodes
@@ -78,6 +91,7 @@ def Corr_Struct_Exact(lattice, ket_gs, L, J, folder, hi):
             counts[r0, r1] += 1
     corr_r /= counts 
     corr_r[0, 0] = 0  # set C(0) = 0
+
 
     plt.figure(figsize=(6,5))
     plt.imshow(corr_r, origin='lower', cmap='viridis')

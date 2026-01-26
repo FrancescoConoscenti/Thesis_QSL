@@ -401,8 +401,7 @@ amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amp
 amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs_exact_np, vstate, hi, folder, one_avg = "one")
 sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs_exact_np, vstate, hi, folder, "one")
 vstate.n_samples = 1024
-eigenvalues_start, number_relevant_S_eigenvalues_start = plot_S_matrix_eigenvalues(vstate, folder, hi, part_training='start', one_avg="one")
-eigenvalues_end, number_relevant_S_eigenvalues_end = plot_S_matrix_eigenvalues(vstate, folder, hi, part_training='end', one_avg="one")
+eigenvalues, rel_1, rel_2, rel_3 = plot_S_matrix_eigenvalues(vstate, folder, hi, one_avg="one")
   
 variables = {
         'E_init': E_init,
@@ -418,10 +417,10 @@ variables = {
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
         'sign_overlap': sign_overlap,
-        'eigenvalues_start': eigenvalues_start,
-        'eigenvalues_end': eigenvalues_end,
-        'number_relevant_S_eigenvalues_start': number_relevant_S_eigenvalues_start,
-        'number_relevant_S_eigenvalues_end': number_relevant_S_eigenvalues_end
+        'eigenvalues': eigenvalues,
+        'number_relevant_S_eigenvalues_first': rel_1,
+        'number_relevant_S_eigenvalues_rest_ratio': rel_2,
+        'number_relevant_S_eigenvalues_rest_norm': rel_3
     }
 
 with open(folder+"/variables", 'wb') as f:

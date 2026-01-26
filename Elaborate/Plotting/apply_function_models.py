@@ -164,7 +164,7 @@ def apply_to_files(root_folder: str, model):
 
                         vstate, ha, hi = initialize_vstate(first_level, J2, model)
 
-                        S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
+                        eigenvalues, rel_1, rel_2, rel_3 = plot_S_matrix_eigenvalues(vstate, folder, hi,  one_avg = "one")
   
                         count += 1
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                         #amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hi, seed_path, one_avg = "one")
                         #amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hi, seed_path, one_avg = "one")
                         #sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hi, seed_path, "one")
-                        S_matrices, eigenvalues = plot_S_matrix_eigenvalues(vstate, seed_path, hi,  one_avg = "one")
+                        eigenvalues, rel_1, rel_2, rel_3 = plot_S_matrix_eigenvalues(vstate, seed_path, hi,  one_avg = "one")
                         
                         """variables = {
                                 #'sign_vstate_MCMC': sign_vstate_MCMC,

@@ -23,10 +23,12 @@ from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact
 from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Sign_vs_iteration import *
-from Elaborate.Plotting.S_matrix_vs_iteration import plot_S_matrix_eigenvalues
+from Elaborate.Plotting.S_matrix_vs_iteration import plot_S_matrix_eigenvalues, calculate_relevant_eigenvalues, Plot_S_matrix_histogram
 from Elaborate.Sign_Obs_MCMC import MarshallSignObs
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_Iterations
 from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
+
+from Entanglement.Entanglement import compute_renyi2_entropy
 
 # Mock class for log if not available
 class MockLog:
@@ -160,18 +162,29 @@ def run_observables(log, folder):
 
 
     # --- Observables Calculation ---
+
+    variables = {}
     
     # Correlation function
     vstate.n_samples = 1024
-    Corr_Struct(lattice, vstate, L, folder, hilbert)
+    R = Corr_Struct(lattice, vstate, L, folder, hilbert)
 
+    variables.update({
+        'R': R,
+    })
+    print(f"Correlation Ratio R = {R}")
     
+
     if L == 4:
         # Exact
         E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
     elif L == 6:
         E_exact = Exact_gs_en_6x6(J2)
         ket_gs = None
+    else:
+        E_exact = None
+        ket_gs = None
+
 
     if log is not None:
         E_vs_final = Energy(log, L, folder_energy, E_exact=E_exact)
@@ -179,8 +192,6 @@ def run_observables(log, folder):
     if log is None:
         E_vs_final = vstate.expect(hamiltonian).mean.real
         
-    #Rel Err
-    rel_err_E = Relative_Error(E_vs_final, E_exact, L)
 
     # Magn
     Magnetization(vstate, lattice, hilbert)
@@ -190,15 +201,81 @@ def run_observables(log, folder):
         variance = Variance(log, folder_energy)
         
         # Vscore
-        Vscore(L, variance, E_vs_final)
+        vscore = Vscore(L, variance, E_vs_final)
     
     # count Params
     if params['model_type'] == 'ViT':
         count_params = vit_param_count(params['n_heads'], params['num_layers'], params['patch_size'], params['d_model'], L*L)
-        print(f"params={count_params}")
+        
     elif params['model_type'] == 'HFDS':
         count_params = hidden_fermion_param_count(L*L, params['n_hid'], L, L, params['layers'], params['features'])
-        print(f"params={count_params}")
+        
+
+    variables.update({
+        'E_vs_final': E_vs_final,
+        'params': count_params,
+        'vscore': vscore,
+        'variance': variance
+    })
+
+    print(f"Final Energy per site: {E_vs_final} (Exact: {E_exact})")
+    print(f"Variance: {variance}")
+    print(f"V-score: {vscore}")
+    print(f"Number of parameters: {count_params}")
+
+    # Renyi Entropy S2
+    n_samples = 4096
+    s2, s2_error = compute_renyi2_entropy(vstate, n_samples=n_samples)
+
+    variables.update({
+            's2': s2,
+            's2_error': s2_error,
+    })
+    print(f"Renyi S2 = {s2} ± {s2_error} (n_samples={n_samples})")
+    
+
+    #QGT
+    all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm = calculate_relevant_eigenvalues(vstate, folder, hilbert, threshold_ratio_rest=1e-2)
+    Plot_S_matrix_histogram(all_eigenvalues, folder, one_avg = "one")
+    plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
+    variables.update({
+            'eigenvalues_S': all_eigenvalues,
+            'mean_rest_ratio': mean_rest_ratio,
+            'mean_rest_norm': mean_rest_norm,
+            'relevant_count_first': relevant_count_first,
+    })
+    
+    print(f"QGT relevant eigenvalues - first: {relevant_count_first}, mean rest ratio: {mean_rest_ratio}, mean rest norm: {mean_rest_norm}")
+
+    #Sign MCMC
+    n_samples = 4096
+    vstate.n_samples = n_samples
+    sign_op = MarshallSignObs(hilbert)
+    sign_MCMC = vstate.expect(sign_op)
+
+    variables.update({
+            'sign_vstate_MCMC': sign_MCMC.mean,
+    })
+
+    print(f"Marshall Sign (MCMC): {sign_MCMC.mean} ± {sign_MCMC.variance**0.5}")
+        
+
+    with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
+        pickle.dump(variables, f) 
+
+ 
+    ################################################################################################
+
+    
+    #Rel Err
+    if L == 6 or L ==4:
+        rel_err_E = Relative_Error(E_vs_final, E_exact, L)
+
+    variables.update({
+        'rel_err_E': rel_err_E,
+        'E_exact': E_exact
+    })
+
 
     if L == 4 and ket_gs is not None:
         # Fidelity
@@ -210,12 +287,10 @@ def run_observables(log, folder):
         amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
         amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
         sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
-        eigenvalues, rank = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "all", one_avg = "one")
+        eigenvalues, rel_1, rel_2, rel_3 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
 
-        variables = {
-                'E_exact': E_exact,
-                'E_vs_final': E_vs_final,
-                'rel_err_E': rel_err_E,
+        variables.update({
+
                 'sign_vstate': sign_vstate,
                 'sign_exact': sign_exact,
                 'fidelity': fidelity,
@@ -226,45 +301,15 @@ def run_observables(log, folder):
                 'amp_overlap': amp_overlap,
                 'sign_overlap': sign_overlap,
                 'eigenvalues_S': eigenvalues,
-                'rank_S': rank,
+                'rank_S': rel_1,
                 'params': count_params
-            }
+            })
         
         with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
             pickle.dump(variables, f)                   
 
     elif L == 6:
         print("6x6")
-
-        variables = {
-                'E_exact': E_exact,
-                'E_vs_final': E_vs_final,
-                'rel_err_E': rel_err_E,
-                'params': count_params
-        }
-        for key, value in variables.items():
-            print(f"{key} = {value}")
-
-        #QGT
-        eigenvalues, rank = plot_S_matrix_eigenvalues(vstate, folder, hilbert,  part_training = "all", one_avg = "one")
-        variables.update({
-                'eigenvalues_S': eigenvalues,
-                'rank_S': rank,
-        })
-        print(f"rank_S = {variables['rank_S']}")
-
-        #Sign MCMC
-        n_samples = 2048
-        vstate.n_samples = n_samples
-        sign_op = MarshallSignObs(hilbert)
-        sign_MCMC = vstate.expect(sign_op)
-
-        variables.update({
-                'sign_vstate_MCMC': sign_MCMC.mean,
-        })
-        for key, value in variables.items():
-            if key != 'eigenvalues_S':
-                print(f"{key} = {value}")
         
         """
         #DMRG Observables via Importance Samplings
@@ -285,14 +330,11 @@ def run_observables(log, folder):
         with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
             pickle.dump(variables, f)                   
 
-        for key, value in variables.items():
-            print(f"{key} = {value}")
-
     sys.stdout.close()
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_latest_model"
     log = None
 
     if not os.path.exists(model_path):
