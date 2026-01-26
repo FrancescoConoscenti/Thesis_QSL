@@ -255,6 +255,7 @@ def run_observables(log, folder):
 
     variables.update({
             'sign_vstate_MCMC': sign_MCMC.mean,
+            'sign_vstate_MCMC_variance': sign_MCMC.variance
     })
 
     print(f"Marshall Sign (MCMC): {sign_MCMC.mean} ± {sign_MCMC.variance**0.5}")

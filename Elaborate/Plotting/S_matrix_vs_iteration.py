@@ -186,7 +186,7 @@ def Plot_S_matrix_histogram(eigenvalues, folder_path, one_avg, bins=50):
     if isinstance(eigenvalues, dict):
         iter_keys = [k for k in eigenvalues.keys() if k.startswith('iter_')]
         if iter_keys:
-            sorted_keys = sorted(iter_keys, key=lambda x: int(x.split('_')[0]))
+            sorted_keys = sorted(iter_keys, key=lambda x: int(x.split('_')[1]))
             keys_to_plot = [sorted_keys[0]]
             if len(sorted_keys) > 1:
                 keys_to_plot.append(sorted_keys[-1])
