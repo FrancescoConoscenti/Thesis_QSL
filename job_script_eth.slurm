@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=40kgpu
+#SBATCH --job-name=50kgpu
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=4GB
 #SBATCH --gpus=2
-#SBATCH --gres=gpumem:24g
+#SBATCH --gres=gpumem:16g
 
 #SBATCH --time=10-00:00:00
 #SBATCH --array=0-8
@@ -19,7 +19,7 @@ source ../gpu_netket_venv1/bin/activate
 
 #export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.50 0.55 0.6)
+J_VALUES=(0.5 0.55 0.6)
 SEED_VALUES=(1 2 3)
 OUTPUT_VALUES=(psi exact_sign)
 
