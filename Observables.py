@@ -259,8 +259,6 @@ def run_observables(log, folder):
     n_samples_entropy = 8192
     n_samples_sign = 8192
     
-
-    """
     # Renyi Entropy S2
     s2, s2_error = compute_renyi2_entropy(vstate, n_samples=n_samples_entropy)
 
@@ -269,8 +267,6 @@ def run_observables(log, folder):
             's2_error': s2_error,
     })
     print(f"Renyi S2 = {s2} ± {s2_error} (n_samples={n_samples_entropy})")
-    
-    """
 
     #Sign MCMC
     vstate.n_samples = n_samples_sign
@@ -332,7 +328,7 @@ def run_observables(log, folder):
             'sign_MCMC_history': sign_MCMC_history,
             'sign_MCMC_variance_history': sign_MCMC_variance_history
     })
-    
+    """
 
     with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
         pickle.dump(variables, f) 
@@ -356,7 +352,7 @@ def run_observables(log, folder):
     except Exception as e:
         print(f"⚠️ Skipping QGT calculation due to error (likely OOM): {e}")
 
-    """
+    
     
     with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
         pickle.dump(variables, f) 

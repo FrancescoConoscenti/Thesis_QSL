@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=50kgpu
+#SBATCH --job-name=8x850kgpu
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -9,7 +9,7 @@
 #SBATCH --gres=gpumem:16g
 
 #SBATCH --time=10-00:00:00
-#SBATCH --array=0-8
+#SBATCH --array=0-14
 
 module load stack/2024-06
 module load gcc/12.2.0
@@ -19,7 +19,7 @@ source ../gpu_netket_venv1/bin/activate
 
 #export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.5 0.55 0.6)
+J_VALUES=(0.4 0.5 0.55 0.6 0.7)
 SEED_VALUES=(1 2 3)
 OUTPUT_VALUES=(psi exact_sign)
 
@@ -39,9 +39,9 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 #srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
-sleep 2
+sleep 10
 srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
-sleep 2
+sleep 10
 #srun python -m try_gpus
 #srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" #--J2 "$J" 
 

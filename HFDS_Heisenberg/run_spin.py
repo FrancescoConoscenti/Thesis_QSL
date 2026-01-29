@@ -64,23 +64,35 @@ rotation = True
 # 6k params for L=4 n_hid=4 features=64 layers=1
 # 13k params for L=4 n_hid=6 features=128 layers=1
 
-# 1k ...
+# 6x6
 # 3.8k params for L=6 n_hid=1 features=16 layers=1
 # 6k params for L=6 n_hid=2 features=32 layers=1
 # 15k params for L=6 n_hid=4 features=64 layers=1
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
-n_hid_ferm       = 1
-features         = 1    #hidden units per layer
+# 8x8
+# 40k params for L=6 n_hid=6 features=64 layers=1
+# 50k params for L=6 n_hid=8 features=64 layers=1
+# 91k params for L=6 n_hid=8 features=128 layers=1
+#10x10
+# 68k params for L=6 n_hid=8 features=64 layers=1
+# 84k params for L=6 n_hid=8 features=64 layers=1
+# 145k params for L=6 n_hid=8 features=128 layers=1
+#12x12
+# 110k params for L=6 n_hid=8 features=64 layers=1
+# 132k params for L=6 n_hid=8 features=64 layers=1
+
+n_hid_ferm       = 8
+features         = 64    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 128
-chunk_size       = 128
-N_opt            = 2
+n_samples        = 1024
+chunk_size       = 1024
+N_opt            = 3000
 
-number_data_points = 2
+number_data_points = 3000
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
@@ -199,6 +211,8 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
     f.write(bytes_out)
 
 final_log_data = helper.merge_log_data(old_log_data, log.data)
+
+#################################################################################################################
 
 print("Running observables computation...")
 run_observables(helper.MockLog(log.data), folder)
