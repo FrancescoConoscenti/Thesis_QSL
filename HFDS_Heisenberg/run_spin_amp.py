@@ -36,7 +36,7 @@ from Elaborate.Statistics.Error_Stat import *
 from Elaborate.Statistics.count_params import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
-from Elaborate.Plotting.S_matrix_vs_iteration import *
+from Elaborate.Plotting.QGT_vs_iteration import *
 
 from jax import numpy as jnp
 import netket as nk
@@ -132,7 +132,7 @@ os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+sys.stdout = open(f"{folder}/output.txt", "a") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph

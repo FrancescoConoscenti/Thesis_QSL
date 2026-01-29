@@ -129,51 +129,51 @@ def plot_rbm_sweep(N, variances, alphas, n_samples=2000, n_seeds=1):
     save_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(save_dir, exist_ok=True)
     hi = nk.hilbert.Spin(s=0.5, N=N)
-    results_var = []
-    results_alpha = []
-    results_entropy = []
+    entropy_grid = np.zeros((len(alphas), len(variances)))
 
-    for alpha in alphas:
-        for var in variances:
+    for i, alpha in enumerate(alphas):
+        for j, var in enumerate(variances):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 stddev = np.sqrt(var)
                 initializer = jax.nn.initializers.normal(stddev=stddev)
                 ma = nk.models.RBM(alpha=alpha, kernel_init=initializer, hidden_bias_init=initializer, visible_bias_init=initializer)
-                
+
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
-                
+
                 s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
                 s2_accum += s2
                 clean_up()
 
-            results_var.append(var)
-            results_alpha.append(alpha)
-            results_entropy.append(s2_accum / n_seeds)
-    
+            entropy_grid[i, j] = s2_accum / n_seeds
+
     plt.figure(figsize=(10, 6))
-    sc = plt.scatter(results_var, results_alpha, c=results_entropy, cmap='viridis', s=150, marker='s')
-    plt.colorbar(sc, label='Renyi-2 Entropy')
+    dv = (variances[1] - variances[0]) / 2. if len(variances) > 1 else 0.5
+    da = (np.array(alphas)[1] - np.array(alphas)[0]) / 2. if len(alphas) > 1 else 0.5
+    extent = [np.min(variances) - dv, np.max(variances) + dv, np.min(alphas) - da, np.max(alphas) + da]
+    im = plt.imshow(entropy_grid, cmap='viridis', origin='lower', extent=extent, aspect='auto', interpolation='none')
+    plt.colorbar(im, label='Renyi-2 Entropy')
     plt.xlabel('Variance of Initialization')
     plt.ylabel('Alpha (RBM density)')
     plt.title(f'Entanglement vs Initialization Variance and Model Density (N={N}, n_samples={n_samples}, n_seeds={n_seeds})')
     plt.grid(True, alpha=0.3)
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep.png'))
-    print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Sweep.png')} (RBM)")
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep_RBM1.png'))
+    print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Sweep_RBM.png')} (RBM)")
 
 def plot_vit_sweep(N, variances, d_models, n_samples=2000, n_seeds=1):
     print("Starting ViT sweep...")
+    num_layers = 2
+    n_heads = 4
+    patch_size = 2
     save_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(save_dir, exist_ok=True)
     hi = nk.hilbert.Spin(s=0.5, N=N)
-    results_vit_var = []
-    results_vit_d = []
-    results_vit_entropy = []
-    
-    for d in d_models:
-        for var in variances:
+    entropy_grid = np.zeros((len(d_models), len(variances)))
+
+    for i, d in enumerate(d_models):
+        for j, var in enumerate(variances):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 stddev = np.sqrt(var)
@@ -181,7 +181,7 @@ def plot_vit_sweep(N, variances, d_models, n_samples=2000, n_seeds=1):
                     initializer = jax.nn.initializers.normal(stddev=stddev)
                 else:
                     initializer = jax.nn.initializers.zeros
-                ma = ViT_ent(num_layers=2, d_model=d, n_heads=2, patch_size=1, kernel_init=initializer)
+                ma = ViT_ent(num_layers=num_layers, d_model=d, n_heads=n_heads, patch_size=patch_size, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
@@ -190,17 +190,18 @@ def plot_vit_sweep(N, variances, d_models, n_samples=2000, n_seeds=1):
                 s2_accum += s2
                 clean_up()
 
-            results_vit_var.append(var)
-            results_vit_d.append(d)
-            results_vit_entropy.append(s2_accum / n_seeds)
+            entropy_grid[i, j] = s2_accum / n_seeds
 
     plt.figure(figsize=(10, 6))
-    sc = plt.scatter(results_vit_var, results_vit_d, c=results_vit_entropy, cmap='viridis', s=150, marker='s')
-    plt.colorbar(sc, label='Renyi-2 Entropy')
+    dv = (variances[1] - variances[0]) / 2. if len(variances) > 1 else 0.5
+    dd = (np.array(d_models)[1] - np.array(d_models)[0]) / 2. if len(d_models) > 1 else 0.5
+    extent = [np.min(variances) - dv, np.max(variances) + dv, np.min(d_models) - dd, np.max(d_models) + dd]
+    im = plt.imshow(entropy_grid, cmap='viridis', origin='lower', extent=extent, aspect='auto', interpolation='none')
+    plt.colorbar(im, label='Renyi-2 Entropy')
     plt.xlabel('Variance (Approx)')
     plt.ylabel('d_model')
-    plt.title(f'Entanglement ViT (N={N}, n_samples={n_samples}, n_seeds={n_seeds})')
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep_ViT.png'))
+    plt.title(f'Entanglement ViT (N={N}, n_samples={n_samples}, n_seeds={n_seeds}, num_layers={num_layers}, n_heads={n_heads}, patch_size={patch_size})')
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep_ViT1.png'))
     print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Sweep_ViT.png')}")
 
 def plot_hfds_sweep(N, variances, n_hids, n_samples=2000, n_seeds=1):
@@ -208,12 +209,10 @@ def plot_hfds_sweep(N, variances, n_hids, n_samples=2000, n_seeds=1):
     save_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(save_dir, exist_ok=True)
     hi = nk.hilbert.Spin(s=0.5, N=N)
-    results_hfds_var = []
-    results_hfds_nhid = []
-    results_hfds_entropy = []
-    
-    for nh in n_hids:
-        for var in variances:
+    entropy_grid = np.zeros((len(n_hids), len(variances)))
+
+    for i, nh in enumerate(n_hids):
+        for j, var in enumerate(variances):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 stddev = np.sqrt(var)
@@ -231,17 +230,18 @@ def plot_hfds_sweep(N, variances, n_hids, n_samples=2000, n_seeds=1):
                 s2_accum += s2
                 clean_up()
 
-            results_hfds_var.append(var)
-            results_hfds_nhid.append(nh)
-            results_hfds_entropy.append(s2_accum / n_seeds)
+            entropy_grid[i, j] = s2_accum / n_seeds
 
     plt.figure(figsize=(10, 6))
-    sc = plt.scatter(results_hfds_var, results_hfds_nhid, c=results_hfds_entropy, cmap='viridis', s=150, marker='s')
-    plt.colorbar(sc, label='Renyi-2 Entropy')
+    dv = (variances[1] - variances[0]) / 2. if len(variances) > 1 else 0.5
+    dnh = (np.array(n_hids)[1] - np.array(n_hids)[0]) / 2. if len(n_hids) > 1 else 0.5
+    extent = [np.min(variances) - dv, np.max(variances) + dv, np.min(n_hids) - dnh, np.max(n_hids) + dnh]
+    im = plt.imshow(entropy_grid, cmap='viridis', origin='lower', extent=extent, aspect='auto', interpolation='none')
+    plt.colorbar(im, label='Renyi-2 Entropy')
     plt.xlabel('Variance (Approx)')
     plt.ylabel('n_hiddens')
     plt.title(f'Entanglement HFDS (N={N}, n_samples={n_samples}, n_seeds={n_seeds})')
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep_HFDS.png'))
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Sweep_HFDS1.png'))
     print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Sweep_HFDS.png')}")
 
 def plot_rbm_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
@@ -279,11 +279,15 @@ def plot_rbm_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
     plt.ylabel('Renyi-2 Entropy')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_RBM.png'))
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_RBM1.png'))
     print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Scaling_N_RBM.png')}")
 
 def plot_vit_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
     print("\nStarting ViT Scaling sweep...")
+    num_layers = 2
+    n_heads = 4
+    d_models = 64
+    patch_size = 2
     save_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(save_dir, exist_ok=True)
     plt.figure(figsize=(10, 6))
@@ -298,7 +302,7 @@ def plot_vit_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 hi = nk.hilbert.Spin(s=0.5, N=N)
-                ma = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=initializer)
+                ma = ViT_ent(num_layers=num_layers, d_model=d_models, n_heads=n_heads, patch_size=patch_size, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
@@ -312,13 +316,16 @@ def plot_vit_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
         plt.plot(N_values, entropies_vit, marker='s', linestyle='--', label=f'Var={var}')
     plt.xlabel('Number of Spins (N)')
     plt.ylabel('Renyi-2 Entropy')
+    plt.title(f'ViT Entanglement Scaling (num_layers={num_layers}, n_heads={n_heads}, d_model={d_models}, n_samples={n_samples}, n_seeds={n_seeds})')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_ViT.png'))
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_ViT1.png'))
     print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Scaling_N_ViT.png')}")
 
 def plot_hfds_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
     print("\nStarting HFDS Scaling sweep...")
+    n_hids = 4
+    hidden_features = 64
     save_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(save_dir, exist_ok=True)
     plt.figure(figsize=(10, 6))
@@ -338,7 +345,7 @@ def plot_hfds_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 hi = nk.hilbert.Spin(s=0.5, N=N)
-                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=2, layers=1, features=16, MFinit="random", hilbert=hi, kernel_init=initializer)
+                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=n_hids, layers=1, features=hidden_features, MFinit="random", hilbert=hi, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
@@ -352,27 +359,27 @@ def plot_hfds_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
         plt.plot(valid_N, entropies_hfds, marker='^', linestyle=':', label=f'Var={var}')
     plt.xlabel('Number of Spins (N)')
     plt.ylabel('Renyi-2 Entropy')   
-    plt.title(f'HFDS Entanglement Scaling (n_hid=2, n_samples={n_samples}, n_seeds={n_seeds})')
+    plt.title(f'HFDS Entanglement Scaling (n_hid={n_hids}, hid_feat={hidden_features}, n_samples={n_samples}, n_seeds={n_seeds})')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_HFDS.png'))
+    plt.savefig(os.path.join(save_dir, 'Entanglement_Scaling_N_HFDS1.png'))
     print(f"Plot saved to {os.path.join(save_dir, 'Entanglement_Scaling_N_HFDS.png')}")
 
 # --- Example Usage ---
 if __name__ == "__main__":
     # Define system
-    N = 64
-    n_samples = 20000 #20k
-    n_seeds = 50
+    N = 36
+    n_samples = 1024 #20k
+    n_seeds = 1
     
     # Parameters to vary
-    variances = np.linspace(0, 1, 20)
+    variances = np.linspace(0, 1, 5)
     alphas = [2 , 4,  6,  8,  10,  12,  14,  16,  18,  20, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
-    d_models = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
+    d_models = [4, 8, 12, 16, 20]#, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
     n_hids = [1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10 ,11 ,12 ,13 ,14 ,15 ,16 ,17 ,18 ,19 ,20]
 
     #plot_rbm_sweep(N, variances, alphas, n_samples=n_samples, n_seeds=n_seeds)
-    #plot_vit_sweep(N, variances, d_models, n_samples=n_samples, n_seeds=n_seeds)
+    plot_vit_sweep(N, variances, d_models, n_samples=n_samples, n_seeds=n_seeds)
     #plot_hfds_sweep(N, variances, n_hids, n_samples=n_samples, n_seeds=n_seeds)
 
     N_values = [ 16, 36, 64, 100, 144]
@@ -380,4 +387,4 @@ if __name__ == "__main__":
     
     #plot_rbm_scaling(N_values, variances_lines, n_seeds=n_seeds, n_samples=n_samples)
     #plot_vit_scaling(N_values, variances_lines, n_seeds=n_seeds, n_samples=n_samples)
-    plot_hfds_scaling(N_values, variances_lines, n_seeds=n_seeds, n_samples=n_samples)
+    #plot_hfds_scaling(N_values, variances_lines, n_seeds=n_seeds, n_samples=n_samples)

@@ -47,6 +47,7 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
     relevant_eigenvalues_counts = []
     relevant_counts_rest_ratio = []
     relevant_counts_rest_norm = []
+    relevant_counts_rest_norm_12 = []
     relevant_count_first = 0
 
     for i, model_idx in enumerate(indices_to_plot):
@@ -76,15 +77,19 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
             if sorted_eigenval[0] > 0:
                 norm_eigs = sorted_eigenval / sorted_eigenval[0]
                 c_norm = np.sum(norm_eigs > 1e-16)
+                c_norm_12 = np.sum(norm_eigs > 1e-12)
             else:
                 c_norm = 0
+                c_norm_12 = 0
             relevant_counts_rest_norm.append(c_norm)
+            relevant_counts_rest_norm_12.append(c_norm_12)
             
 
     mean_rest_ratio = np.mean(relevant_counts_rest_ratio) if relevant_counts_rest_ratio else 0
     mean_rest_norm = np.mean(relevant_counts_rest_norm) if relevant_counts_rest_norm else 0
+    mean_rest_norm_12 = np.mean(relevant_counts_rest_norm_12) if relevant_counts_rest_norm_12 else 0
     
-    return all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm
+    return all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12
 
 def plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_relevant_eigenvalues, num_models):
     folder_save_QGT = folder_path+"/QGT_plot"
@@ -118,7 +123,24 @@ def plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_r
 
     plt.tight_layout()
 
-    save_plot_path = Path(folder_save_QGT) / "S_matrix_spectrum_vs_iteration.png"
+    # Determine suffix
+    param_count = None
+    try:
+        with open(Path(folder_path)/"variables.pkl", "rb") as f:
+            data = pickle.load(f)
+            param_count = data.get("count_params", data.get("params", None))
+    except:
+        pass
+        
+    m_type = "Model"
+    if "ViT" in str(folder_path): m_type = "ViT"
+    elif "HFDS" in str(folder_path): m_type = "HFDS"
+    
+    suffix = f"_{m_type}"
+    if param_count is not None:
+        suffix += f"_{param_count}params"
+
+    save_plot_path = Path(folder_save_QGT) / f"S_matrix_spectrum_vs_iteration{suffix}.png"
         
     plt.savefig(save_plot_path, dpi=300)
     #print(f"✅ Plot saved to {save_plot_path}")
@@ -136,10 +158,10 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_
         one_avg: A string indicating the context (e.g., "one" for a single run).
     """
 
-    all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm= calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest)
+    all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12 = calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest)
     
     if not all_eigenvalues:
-        return None, None, None, None
+        return None, None, None, None, None
 
     indices_to_plot = sorted([int(k.split('_')[1]) for k in all_eigenvalues.keys()])
     num_models = len(indices_to_plot)
@@ -152,6 +174,8 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_
         pickle.dump(all_eigenvalues, f)
     #print(f"S-matrix eigenvalues saved to {save_data_path}")
 
+    return all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12
+
 
 def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
 
@@ -161,6 +185,23 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
     indices = np.arange(len(sorted_eigenval))  # x-axis: eigenvalue index
 
     # Plot
+    # Determine suffix
+    param_count = None
+    try:
+        with open(Path(folder_path)/"variables.pkl", "rb") as f:
+            data = pickle.load(f)
+            param_count = data.get("count_params", data.get("params", None))
+    except:
+        pass
+        
+    m_type = "Model"
+    if "ViT" in str(folder_path): m_type = "ViT"
+    elif "HFDS" in str(folder_path): m_type = "HFDS"
+    
+    suffix = f"_{m_type}"
+    if param_count is not None:
+        suffix += f"_{param_count}params"
+
     plt.figure(figsize=(8,4))
     plt.plot(indices, sorted_eigenval, lw=1.5, color='darkgreen', marker='.', markersize=3, linestyle='-')
     
@@ -173,7 +214,7 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
         save_path = folder_path.parent /"plot_avg"/"S_matrix_spectrum.png"
         plt.savefig(save_path)
     if one_avg == "one":
-        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_spectrum.png")
+        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_spectrum{suffix}.png")
     
 
 
@@ -182,6 +223,23 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
 def Plot_S_matrix_histogram(eigenvalues, folder_path, one_avg, bins=50):
 
     plt.figure(figsize=(8,6))
+
+    # Determine suffix
+    param_count = None
+    try:
+        with open(Path(folder_path)/"variables.pkl", "rb") as f:
+            data = pickle.load(f)
+            param_count = data.get("count_params", data.get("params", None))
+    except:
+        pass
+        
+    m_type = "Model"
+    if "ViT" in str(folder_path): m_type = "ViT"
+    elif "HFDS" in str(folder_path): m_type = "HFDS"
+    
+    suffix = f"_{m_type}"
+    if param_count is not None:
+        suffix += f"_{param_count}params"
 
     if isinstance(eigenvalues, dict):
         iter_keys = [k for k in eigenvalues.keys() if k.startswith('iter_')]
@@ -218,6 +276,6 @@ def Plot_S_matrix_histogram(eigenvalues, folder_path, one_avg, bins=50):
         save_path = folder_path.parent /"plot_avg"/"S_matrix_histogram.png"
         plt.savefig(save_path)
     if one_avg == "one":
-        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_histogram.png")
+        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_histogram{suffix}.png")
 
     plt.show()

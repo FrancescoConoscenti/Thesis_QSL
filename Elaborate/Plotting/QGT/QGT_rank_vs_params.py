@@ -37,6 +37,8 @@ def get_data_from_average(model_folder, j_val, part_training='end'):
             data = pickle.load(f)
         
         n_params = data.get('params')
+        if n_params is None:
+            n_params = data.get('count_params')
         
         # If params not in pickle, try to read from output.txt in the same J folder (if seeds exist)
         if n_params is None:
@@ -110,7 +112,7 @@ def plot_relevant_eigenvalues_vs_params(model_paths, j_val, part_training='end')
             
         marker, color, type_label = get_model_style(model_path)
         # Create a label (simplified)
-        label = Path(model_path).name
+        label = f"{type_label} ({n_params} params)"
         data.append((n_params, n_eigs, n_eigs_std, label, marker, color))
 
     if not data:
@@ -137,7 +139,7 @@ def plot_relevant_eigenvalues_vs_params(model_paths, j_val, part_training='end')
     
     plt.tight_layout()
     
-    save_path = f"/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Relevant_S_Eigenvalues_vs_Params_J{j_val}_{part_training}.png"
+    save_path = f"/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/QGT/QGT_rank_vs_Params_J{j_val}_{part_training}.png"
     if not os.path.exists(os.path.dirname(save_path)):
         save_path = save_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
         

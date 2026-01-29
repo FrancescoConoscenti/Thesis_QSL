@@ -43,7 +43,7 @@ from Elaborate.Statistics.Error_Stat import *
 from Elaborate.Statistics.count_params import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Plotting.Sign_vs_iteration import *
-from Elaborate.Plotting.S_matrix_vs_iteration import *
+from Elaborate.Plotting.QGT_vs_iteration import *
  
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2", required=False)

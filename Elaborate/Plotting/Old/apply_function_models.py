@@ -10,7 +10,7 @@ from Elaborate.Statistics.Corr_Struct import *
 from Elaborate.Statistics.Error_Stat import *
 from Elaborate.Plotting.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
-from Elaborate.Plotting.S_matrix_vs_iteration import plot_S_matrix_eigenvalues
+from Elaborate.Plotting.QGT_vs_iteration import plot_S_matrix_eigenvalues
 import pickle
 import re
 from pathlib import Path

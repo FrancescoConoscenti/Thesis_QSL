@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-def plot_S_eigenvalues_vs_Js(base_folder, Js, num_eigenvalues_to_plot=1000):
+def plot_S_eigenvalues_vs_Js(base_folder, Js, num_eigenvalues_to_plot=None):
     """
     For a single model, reads S-matrix eigenvalues from saved pickle files for different J values
     Reads S-matrix eigenvalues from saved pickle files for different J values
@@ -89,11 +89,9 @@ def plot_S_eigenvalues_vs_Js(base_folder, Js, num_eigenvalues_to_plot=1000):
             print(f"Warning: Could not find eigenvalues for J={J_val}. Skipping.")
             continue
             
-        # Sort eigenvalues in descending order of magnitude
-        sorted_eigenvalues = np.sort(np.abs(eigenvalues))[::-1] 
+        # Sort eigenvalues in descending order of magnitu        sorted_eigenvalues = np.sort(eigenvalues)[::-1] 
 
-        # Select the top N eigenvalues to plot and create the corresponding x-axis
-        eigenvalues_to_plot = sorted_eigenvalues[:num_eigenvalues_to_plot]
+        # Select the top N eigenvalues to plot and create the corresponding x-ax        eigenvalues_to_plot = sorted_eigenvalues
         indices = np.arange(len(eigenvalues_to_plot))
         
         # Plot the spectrum for the current J value using the sliced data
@@ -116,7 +114,7 @@ def plot_S_eigenvalues_vs_Js(base_folder, Js, num_eigenvalues_to_plot=1000):
     print(f"✅ Plot saved to {save_path}")
     plt.show()
 
-def plot_S_eigenvalues_models_vs_J(model_paths, Js, num_eigenvalues_to_plot=1000):
+def plot_S_eigenvalues_models_vs_J(model_paths, Js, num_eigenvalues_to_plot=None):
     """
     For each J value, creates a plot comparing the S-matrix eigenvalue spectrum
     across multiple models.
@@ -177,8 +175,8 @@ def plot_S_eigenvalues_models_vs_J(model_paths, Js, num_eigenvalues_to_plot=1000
                     print(f"Warning: No eigenvalue data in {eigenvalues_file}. Skipping.")
                     continue
                 
-                sorted_eigenvalues = np.sort(np.abs(eigenvalues.flatten()))[::-1]
-                eigenvalues_to_plot = sorted_eigenvalues[:num_eigenvalues_to_plot]
+                sorted_eigenvalues = np.sort(eigenvalues.flatten())[::-1]
+                eigenvalues_to_plot = sorted_eigenvalues
                 indices = np.arange(len(eigenvalues_to_plot))
                 
                 ax.plot(indices, eigenvalues_to_plot, label=model_type_label, color=colors[i], alpha=0.8)
@@ -323,8 +321,8 @@ if __name__ == '__main__':
     if not os.path.exists(model_path_single):
         model_path_single = model_path_single.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
     Js_to_plot_single = [0.0, 0.2, 0.4, 0.5, 0.7]
-    #plot_S_eigenvalues_vs_Js(model_path_single, Js_to_plot_single, num_eigenvalues_to_plot=1000)
-    plot_S_eigenvalues_histogram_vs_Js(model_path_single, Js_to_plot_single, bins=200)
+    plot_S_eigenvalues_vs_Js(model_path_single, Js_to_plot_single)
+    #plot_S_eigenvalues_histogram_vs_Js(model_path_single, Js_to_plot_single, bins=200)
     
     
     """
@@ -332,5 +330,5 @@ if __name__ == '__main__':
     model_paths_multi = ["/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/Vision_new/layers2_d8_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_modepsi_sym3"]
 
     Js_to_plot_multi = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7]
-    plot_S_eigenvalues_models_vs_J(model_paths_multi, Js_to_plot_multi, num_eigenvalues_to_plot=1000)
+    plot_S_eigenvalues_models_vs_J(model_paths_multi, Js_to_plot_multi)
     """

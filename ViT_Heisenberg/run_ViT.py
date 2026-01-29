@@ -15,16 +15,7 @@ import pickle
 import helper
 
 from ViT_Heisenberg.ViT_model import ViT_sym
-
-from Elaborate.Statistics.Energy import *
-from Elaborate.Statistics.Corr_Struct import *
-from Elaborate.Statistics.Error_Stat import *
-from Elaborate.Statistics.count_params import *
-from Elaborate.Plotting.Sign_vs_iteration import *
-from Elaborate.Plotting.Sign_vs_iteration import *
-from Elaborate.Plotting.S_matrix_vs_iteration import *
-
-from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
+from Elaborate.Statistics.Energy import Energy, plot_energy
 
 from Observables import run_observables
 
@@ -56,15 +47,15 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 3     # number of Tranformer layers
-d_model         = 30   # dimensionality of the embedding space
-n_heads         = 6     # number of heads
+d_model         = 40   # dimensionality of the embedding space
+n_heads         = 8     # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
 N_samples       = 1024  # number of MC samples
-N_opt           = 3000
+N_opt           = 4000
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
@@ -186,7 +177,7 @@ final_log_data = helper.merge_log_data(old_log_data, log.data)
 with open(log_path, 'wb') as f:
     pickle.dump(final_log_data, f)
 
-Energy(helper.MockLog(log.data), L, folder_energy)
+
 run_observables(helper.MockLog(log.data), folder)
     
 sys.stdout.close()

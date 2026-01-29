@@ -24,9 +24,9 @@ from Elaborate.Statistics.Energy import *
 from Elaborate.Statistics.Corr_Struct import *
 from Elaborate.Statistics.Error_Stat import *
 from Elaborate.Statistics.count_params import *
-from Elaborate.Plotting.Sign_vs_iteration import *
+from Elaborate.Plotting.Old.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
-from Elaborate.Plotting.S_matrix_vs_iteration import *
+from Elaborate.Plotting.QGT.QGT_vs_iteration import *
 
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
@@ -40,7 +40,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 6
+L       = 8
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -70,17 +70,17 @@ rotation = True
 # 15k params for L=6 n_hid=4 features=64 layers=1
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
-n_hid_ferm       = 6
-features         = 128    #hidden units per layer
+n_hid_ferm       = 1
+features         = 1    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 1024
-chunk_size       = 1024
-N_opt            = 2000
+n_samples        = 128
+chunk_size       = 128
+N_opt            = 2
 
-number_data_points = 20
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 

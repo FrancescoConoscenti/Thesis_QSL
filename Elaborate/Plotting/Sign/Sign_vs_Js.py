@@ -1,8 +1,6 @@
 import re
 import os
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
-from matplotlib.patches import Patch
 import pickle
 from pathlib import Path
 import numpy as np
@@ -82,47 +80,85 @@ def get_marshall_signs_from_seeds(model_folder, j_val):
 #main
 if __name__ == "__main__":
 
-    model_HFDS = None
-    model_ViT = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads4_patch2_sample1024_lr0.0075_iter500_parityTrue_rotTrue_latest_model"
+    models_HFDS = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex"
+                ]
+    models_ViT = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
+        ]
 
     # --- Plot setup ---
     fig, ax = plt.subplots(figsize=(8, 5))
 
     # --- Style setup ---
-    marker_ViT = "o"
-    marker_HFDS = "^"
-    color_ViT = "tab:orange"
-    color_HFDS = "tab:blue"
+    markers_list = ["o", "s", "D", "^", "v", "P", "X", "*"]
 
-    # --- Plot HFDS model ---
-    if model_HFDS and os.path.exists(model_HFDS):
-        print(f"Processing HFDS: {model_HFDS}")
-        first_plot = True
-        for J_val in get_available_js(model_HFDS):
-            signs = get_marshall_signs_from_seeds(model_HFDS, J_val)
-            if signs:
-                ax.scatter([J_val]*len(signs), signs, color=color_HFDS, marker=marker_HFDS, s=80, alpha=0.7, edgecolors='none', label="HFDS" if first_plot else "")
-                first_plot = False
+    # --- Plot HFDS models ---
+    for i, model_path in enumerate(models_HFDS):
+        if model_path and os.path.exists(model_path):
+            print(f"Processing HFDS: {model_path}")
+            marker = markers_list[i % len(markers_list)]
+            
+            if "4x4" in model_path:
+                label_name = "HFDS 4x4"
+                color = "cornflowerblue"
+            elif "6x6" in model_path:
+                label_name = "HFDS 6x6"
+                color = "navy"
+            else:
+                label_name = f"HFDS {i+1}"
+                color = "tab:blue"
+            
+            js = []
+            means = []
+            
+            for J_val in get_available_js(model_path):
+                signs = get_marshall_signs_from_seeds(model_path, J_val)
+                if signs:
+                    js.append(J_val)
+                    means.append(np.mean(np.abs(signs)))
+            
+            if js:
+                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
-    # --- Plot ViT model ---
-    if model_ViT and os.path.exists(model_ViT):
-        print(f"Processing ViT: {model_ViT}")
-        first_plot = True
-        for J_val in get_available_js(model_ViT):
-            signs = get_marshall_signs_from_seeds(model_ViT, J_val)
-            if signs:
-                ax.scatter([J_val]*len(signs), signs, color=color_ViT, marker=marker_ViT, s=80, alpha=0.7, edgecolors='none', label="ViT" if first_plot else "")
-                first_plot = False
+    # --- Plot ViT models ---
+    for i, model_path in enumerate(models_ViT):
+        if model_path and os.path.exists(model_path):
+            print(f"Processing ViT: {model_path}")
+            marker = markers_list[i % len(markers_list)]
+            
+            if "4x4" in model_path:
+                label_name = "ViT 4x4"
+                color = "sandybrown"
+            elif "6x6" in model_path:
+                label_name = "ViT 6x6"
+                color = "chocolate"
+            else:
+                label_name = f"ViT {i+1}"
+                color = "tab:orange"
+            
+            js = []
+            means = []
+            
+            for J_val in get_available_js(model_path):
+                signs = get_marshall_signs_from_seeds(model_path, J_val)
+                if signs:
+                    js.append(J_val)
+                    means.append(np.mean(np.abs(signs)))
+            
+            if js:
+                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
     # --- Labels, title, legend ---
     ax.set_xlabel("$J_2$", fontsize=12)
     ax.set_ylabel("Marshall Sign", fontsize=12)
     ax.set_title("Marshall Sign vs $J_2$")
     ax.grid(True, linestyle="--", alpha=0.4)
-    ax.legend(frameon=False)
+    ax.legend(loc='best', fontsize=10)
 
     fig.tight_layout()
-    save_path = "Elaborate/plot/MarshallSign_vs_J2_ViT_HFDS.png"
+    save_path = "Elaborate/plot/Sign/MarshallSign_vs_J2_ViT_HFDS.png"
     if not os.path.exists(os.path.dirname(save_path)):
         save_path = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
