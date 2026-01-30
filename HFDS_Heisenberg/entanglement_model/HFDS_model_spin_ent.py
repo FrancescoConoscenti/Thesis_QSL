@@ -8,7 +8,7 @@ from netket.jax import logsumexp_cplx
 import logging
 from typing import Callable
 
-from HFDS_Heisenberg.Init_orbitals_ent import Orbitals_ent
+from HFDS_Heisenberg.entanglement_model.Init_orbitals_ent import Orbitals_ent
 
 
 logger = logging.getLogger(__name__)

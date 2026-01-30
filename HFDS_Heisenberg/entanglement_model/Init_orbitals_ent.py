@@ -58,7 +58,7 @@ class Orbitals_ent(nn.Module):
     N_sites = self.L * self.L
 
     if self.MFinit=="Fermi":
-        self.orbitals_mfmf = self.param('orbitals_mf',self._init_mf,(N_sites,self.n_elecs), self.dtype)
+        self.orbitals_mfmf = self.param('orbitals_mf',self._init_mf,(2*N_sites,self.n_elecs), self.dtype)
     elif self.MFinit=="G_MF":
         self.orbitals_mfmf = self.param('orbitals_mf', self._init_gutzwiller, (N_sites, self.n_elecs), self.dtype)
     elif self.MFinit=="random":

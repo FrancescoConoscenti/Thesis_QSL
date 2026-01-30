@@ -133,6 +133,7 @@ if __name__ == "__main__":
     # Add paths for different system sizes (4x4, 6x6, etc.) for each model type
     
     vit_models = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
         # 4x4
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
         # 6x6

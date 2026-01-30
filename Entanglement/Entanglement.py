@@ -11,7 +11,7 @@ import os
 import gc
 sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 from ViT_Heisenberg.ViT_model_ent import ViT_ent
-from HFDS_Heisenberg.HFDS_model_spin_ent import HiddenFermion_ent
+from HFDS_Heisenberg.entanglement_model.HFDS_model_spin_ent import HiddenFermion_ent
 
 def compute_renyi2_entropy(vstate, partition_indices=None, n_samples=1024, chunk_size=None):
     """
@@ -115,6 +115,11 @@ def compute_renyi2_entropy(vstate, partition_indices=None, n_samples=1024, chunk
     # Propagate error: Delta(ln x) = Delta(x) / x
     entropy_error = float(jnp.sqrt(stats.variance / total_samples) / stats.mean.real)
 
+    # Normalize by max entropy
+    max_entropy = len(partition_indices) * np.log(2)
+    entropy_mean /= max_entropy
+    entropy_error /= max_entropy
+
     return entropy_mean, entropy_error
 
 def clean_up():
@@ -123,6 +128,36 @@ def clean_up():
     except AttributeError:
         pass
     gc.collect()
+
+def check_zero_variance_output(vstate):
+    # Sample a small batch to check outputs
+    samples = vstate.sample(n_samples=16)
+    samples = samples.reshape(-1, vstate.hilbert.size)
+    log_psi = vstate.log_value(samples)
+    
+    print(f"\n[Zero Variance Check]")
+    print(f"Log Psi (first 5): {log_psi[:5]}")
+    print(f"Max |Log Psi|: {jnp.max(jnp.abs(log_psi))}")
+    print(f"Is zero? {jnp.allclose(log_psi, 0j, atol=1e-7)}\n")
+
+    # Check parameters for non-zero values
+    print("Scanning parameters for non-zeros...")
+    params = vstate.parameters
+    
+    def scan_params(params, path=""):
+        if hasattr(params, 'items'):
+            for k, v in params.items():
+                scan_params(v, f"{path}/{k}")
+        else:
+            # Leaf node (array). Check kernels and attention matrices.
+            # Note: LayerNorm 'scale' is expected to be 1.0, so we skip it or check for != 1.
+            if "kernel" in path or "alpha" in path or "V" in path or "W" in path:
+                max_val = jnp.max(jnp.abs(params))
+                if max_val > 1e-7:
+                    print(f"  -> Non-zero param at '{path}': max {max_val}")
+
+    scan_params(params)
+    print("Scan complete.\n")
 
 def plot_rbm_sweep(N, variances, alphas, n_samples=2000, n_seeds=1):
     print("Starting RBM parameter sweep...")
@@ -142,6 +177,9 @@ def plot_rbm_sweep(N, variances, alphas, n_samples=2000, n_seeds=1):
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
+
+                if var == 0 and seed == 0:
+                    check_zero_variance_output(vstate)
 
                 s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
                 s2_accum += s2
@@ -181,10 +219,13 @@ def plot_vit_sweep(N, variances, d_models, n_samples=2000, n_seeds=1):
                     initializer = jax.nn.initializers.normal(stddev=stddev)
                 else:
                     initializer = jax.nn.initializers.zeros
-                ma = ViT_ent(num_layers=num_layers, d_model=d, n_heads=n_heads, patch_size=patch_size, kernel_init=initializer)
+                ma = ViT_ent(num_layers=num_layers, d_model=d, n_heads=n_heads, patch_size=patch_size, transl_invariant=True, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
+
+                if var == 0 and seed == 0:
+                    check_zero_variance_output(vstate)
 
                 s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
                 s2_accum += s2
@@ -221,10 +262,13 @@ def plot_hfds_sweep(N, variances, n_hids, n_samples=2000, n_seeds=1):
                 else:
                     initializer = jax.nn.initializers.zeros
                 L_side = int(np.sqrt(N))
-                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=nh, layers=1, features=16, MFinit="random", hilbert=hi, kernel_init=initializer)
+                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=nh, layers=1, features=16, MFinit="Fermi", hilbert=hi, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
+
+                if var == 0 and seed == 0:
+                    check_zero_variance_output(vstate)
 
                 s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
                 s2_accum += s2
@@ -302,7 +346,7 @@ def plot_vit_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 hi = nk.hilbert.Spin(s=0.5, N=N)
-                ma = ViT_ent(num_layers=num_layers, d_model=d_models, n_heads=n_heads, patch_size=patch_size, kernel_init=initializer)
+                ma = ViT_ent(num_layers=num_layers, d_model=d_models, n_heads=n_heads, patch_size=patch_size, transl_invariant=True, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
@@ -345,7 +389,7 @@ def plot_hfds_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
             s2_accum = 0.0
             for seed in range(n_seeds):
                 hi = nk.hilbert.Spin(s=0.5, N=N)
-                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=n_hids, layers=1, features=hidden_features, MFinit="random", hilbert=hi, kernel_init=initializer)
+                ma = HiddenFermion_ent(L=L_side, network="FFNN", n_hid=n_hids, layers=1, features=hidden_features, MFinit="Fermi", hilbert=hi, kernel_init=initializer)
                 sampler = nk.sampler.MetropolisLocal(hi)
                 vstate = nk.vqs.MCState(sampler, ma, n_samples=1024, seed=seed)
                 vstate.init_parameters()
@@ -368,15 +412,15 @@ def plot_hfds_scaling(N_values, variances_lines, n_seeds=10, n_samples=2000):
 # --- Example Usage ---
 if __name__ == "__main__":
     # Define system
-    N = 36
-    n_samples = 1024 #20k
+    N = 16
+    n_samples = 1024#32768*2 #200k
     n_seeds = 1
     
     # Parameters to vary
-    variances = np.linspace(0, 1, 5)
-    alphas = [2 , 4,  6,  8,  10,  12,  14,  16,  18,  20, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
-    d_models = [4, 8, 12, 16, 20]#, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
-    n_hids = [1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10 ,11 ,12 ,13 ,14 ,15 ,16 ,17 ,18 ,19 ,20]
+    variances = np.linspace(0, 1, 3)
+    alphas = [2 , 10]#,  6,  8,  10,  12,  14,  16,  18,  20, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
+    d_models = [4, 20]#, 16, 20, 22, 24, 26, 28, 30, 32, 34 ,36 ,38 ,40]
+    n_hids = [1 ,4]#, 4 ,5 ,6 ,7 ,8 ,9 ,10 ,11 ,12 ,13 ,14 ,15 ,16 ,17 ,18 ,19 ,20]
 
     #plot_rbm_sweep(N, variances, alphas, n_samples=n_samples, n_seeds=n_seeds)
     plot_vit_sweep(N, variances, d_models, n_samples=n_samples, n_seeds=n_seeds)

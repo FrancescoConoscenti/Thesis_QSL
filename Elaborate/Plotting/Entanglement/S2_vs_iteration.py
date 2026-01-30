@@ -122,7 +122,7 @@ def plot_s2_vs_iteration(model_paths, save_name="S2_vs_iteration.png"):
 if __name__ == "__main__":
     # Example usage
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model/J=0.55"
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model/J=0.5"
         
     ]
     plot_s2_vs_iteration(models)

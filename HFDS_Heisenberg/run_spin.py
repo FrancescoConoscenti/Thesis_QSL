@@ -40,7 +40,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 8
+L       = 4
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -82,21 +82,21 @@ rotation = True
 # 110k params for L=6 n_hid=8 features=64 layers=1
 # 132k params for L=6 n_hid=8 features=64 layers=1
 
-n_hid_ferm       = 8
-features         = 64    #hidden units per layer
+n_hid_ferm       = 1
+features         = 1    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
 n_samples        = 1024
 chunk_size       = 1024
-N_opt            = 3000
+N_opt            = 2
 
-number_data_points = 3000
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
-n_chains         = n_samples//2
+n_chains         = n_samples//4
 
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
@@ -193,7 +193,6 @@ start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every,
 
 for i in range(start_block, block_iter):
     #Save model
-    print("i=", i)
     with open(save_model +f"/model_{i}.mpack", 'wb') as file:
         file.write(flax.serialization.to_bytes(vstate))
 

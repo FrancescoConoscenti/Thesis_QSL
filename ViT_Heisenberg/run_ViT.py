@@ -14,6 +14,10 @@ import argparse
 import pickle
 import helper
 
+print("Total devices:", jax.device_count())
+print("Local devices:", jax.local_device_count())
+print("Devices:", jax.devices())
+
 from ViT_Heisenberg.ViT_model import ViT_sym
 from Elaborate.Statistics.Energy import Energy, plot_energy
 
@@ -26,24 +30,26 @@ parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 6  # Linear size of the lattice
+L = 8  # Linear size of the lattice
 
 
 n_dim = 2
 J2 = args.J2
 seed = int(args.seed)
-
+#4x4
 # 1k params for L=4 num_layers=2 d_model=8 n_heads=4 patch_size=2
 # 3.4k params for L=4 num_layers=1 d_model=16 n_heads=4 patch_size=2
 # 6k params for L=4 num_layers=2 d_model=16 n_heads=4 patch_size=2
 # 13.6k params for L=4 num_layers=2 d_model=24 n_heads=6 patch_size=2
-
+#6x6
 # 1k params for L=6 num_layers=2 d_model=8 n_heads=4 patch_size=2
 # 3k params for L=6 num_layers=1 d_model=16 n_heads=4 patch_size=2
 # 6k params for L=6 num_layers=2 d_model=16 n_heads=4 patch_size=2
 # 15k params for L=6 num_layers=2 d_model=24 n_heads=6 patch_size=2
 # 43k params for L=6 num_layers=3 d_model=36 n_heads=6 patch_size=2
 # 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
+# 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
+#8x8
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 3     # number of Tranformer layers
@@ -55,6 +61,8 @@ parity = True
 rotation = True
 
 N_samples       = 1024  # number of MC samples
+n_chains        = N_samples
+chunk_size      = 1024
 N_opt           = 4000
 
 number_data_points = 20
@@ -111,7 +119,7 @@ sampler = nk.sampler.MetropolisExchange(
     hilbert=hilbert,
     graph=lattice,
     d_max=2,
-    n_chains=N_samples,
+    n_chains=n_chains,
     sweep_size=lattice.n_nodes,
 )
 
@@ -125,7 +133,7 @@ vstate = nk.vqs.MCState(
     n_samples=N_samples,
     n_discard_per_chain=16,
     variables=params,
-    chunk_size=512,
+    chunk_size=chunk_size,
 )
 
 N_params = nk.jax.tree_size(vstate.parameters)
@@ -154,7 +162,6 @@ start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every,
 
 for i in range(start_block, block_iter):
     #Save model
-    print("i=", i)
     with open(save_model +f"/model_{i}.mpack", 'wb') as file:
         file.write(flax.serialization.to_bytes(vstate))
 
