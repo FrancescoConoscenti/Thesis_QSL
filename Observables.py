@@ -206,7 +206,7 @@ def compute_sign(vstate, hilbert, n_samples=32768):
     vstate.n_samples = n_samples
     sign_op = MarshallSignObs(hilbert)
     sign_MCMC = vstate.expect(sign_op)
-    print(f"Marshall Sign (MCMC): {sign_MCMC.mean} ± {sign_MCMC.variance**0.5}")
+    print(f"Marshall Sign (MCMC): {sign_MCMC.mean} ± {sign_MCMC.error_of_mean} (n_samples={n_samples})")
     return sign_MCMC.mean, sign_MCMC.variance
 
 def compute_entanglement_history(folder, vstate, n_samples_entropy=4096):
@@ -320,6 +320,71 @@ def compute_L6_observables(vstate, J2, folder, params):
         'Overlap_amp_NQS_DMRG': results['Overlap_amp_NQS_DMRG'],
     }
 
+def analyze_coupling_matrix(vstate, folder, save_name="coupling_spectrum.png"):
+    # 1. Access the parameters (vstate.parameters is a FrozenDict)
+    params = vstate.parameters
+    
+    # Try to find the coupling matrix
+    # For HFDS, we look for 'orbitals_hf' which couples physical sites to hidden fermions
+    # Or 'hidden_0'/'kernel' which couples inputs to the first hidden layer
+    matrix = None
+    matrix_name = "Unknown"
+    
+    if 'orbitals' in params and 'orbitals_hf' in params['orbitals']:
+        matrix = params['orbitals']['orbitals_hf']
+        matrix_name = "orbitals_hf"
+    elif 'hidden_0' in params and 'kernel' in params['hidden_0']:
+        matrix = params['hidden_0']['kernel']
+        matrix_name = "hidden_0_kernel"
+    elif 'Dense_0' in params and 'kernel' in params['Dense_0']:
+        matrix = params['Dense_0']['kernel']
+        matrix_name = "Dense_0_kernel"
+
+    if matrix is None:
+        print(f"analyze_coupling_matrix: Could not find a suitable matrix. Keys: {params.keys()}")
+        return None, None
+
+    # Convert to numpy array
+    matrix = np.array(matrix)
+    
+    # Ensure 2D
+    if matrix.ndim > 2:
+        matrix = matrix.reshape(-1, matrix.shape[-1])
+
+    # 2. Compute Singular Value Decomposition (SVD)
+    try:
+        s = np.linalg.svd(matrix, compute_uv=False)
+    except Exception as e:
+        print(f"analyze_coupling_matrix: SVD failed: {e}")
+        return None, None
+    
+    # 3. Calculate Effective Rank (Shannon entropy based)
+    s_sum = np.sum(s)
+    if s_sum > 1e-12:
+        p = s / s_sum
+        entropy = -np.sum(p * np.log(p + 1e-12))
+        eff_rank = np.exp(entropy)
+    else:
+        eff_rank = 0.0
+    
+    # 4. Visualization
+    plt.figure(figsize=(8, 5))
+    plt.plot(s, 'o-', markersize=4, label=f"Eff. Rank: {eff_rank:.2f}")
+    plt.yscale('log')
+    plt.title(f"Singular Value Spectrum of {matrix_name}")
+    plt.xlabel("Index")
+    plt.ylabel("Singular Value (log scale)")
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.legend()
+    
+    save_path = os.path.join(folder, "physical_obs", save_name)
+    plt.savefig(save_path)
+    plt.close()
+    print(f"Coupling matrix analysis ({matrix_name}) saved to {save_path}")
+    print(f"Effective Rank: {eff_rank}")
+
+    return s, eff_rank
+
 def save_variables(folder, variables):
     with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
         pickle.dump(variables, f)
@@ -359,7 +424,7 @@ def run_observables(log, folder):
     variables['R'] = R
 
     # 2. Exact Energy
-    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
+    #E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
 
     # 3. Energy Stats
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
@@ -368,9 +433,9 @@ def run_observables(log, folder):
         rel_err_E = Relative_Error(E_vs_final_per_site, E_exact, L)
         variables['rel_err_E'] = rel_err_E
         print(f"Relative Error in Energy: {rel_err_E}")
-
+    
     # 4. Magnetization
-    compute_magnetization(vstate, lattice, hilbert)
+    #compute_magnetization(vstate, lattice, hilbert)
 
     # 5. Param Count
     count_params = compute_param_count(params, L)
@@ -384,7 +449,7 @@ def run_observables(log, folder):
     })
 
     # 6. Entropy
-    n_samples_entropy = 8192
+    n_samples_entropy = 532768
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
@@ -393,7 +458,7 @@ def run_observables(log, folder):
     save_variables(folder, variables)
 
     #7. Sign
-    n_samples_sign = 32768
+    n_samples_sign = 65536
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
@@ -401,8 +466,8 @@ def run_observables(log, folder):
     })
     save_variables(folder, variables)
     
-    # 8. entanglement History
     """
+    # 8. entanglement History
     n_samples_entropy_history = 65536
     s2_hist, s2_err_hist = compute_entanglement_history(folder, vstate, n_samples_entropy=n_samples_entropy_history)
     variables.update({
@@ -411,6 +476,8 @@ def run_observables(log, folder):
     })
     save_variables(folder, variables)
 
+    """
+    """
     # 9. Sign History
     sign_hist, sign_var_hist = compute_sign_history(folder, vstate, hilbert, n_samples_sign=8192)
     variables.update({
@@ -422,10 +489,10 @@ def run_observables(log, folder):
     """
 
     # 9. QGT
-    """
+    
     qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
 
     # 10. System specific observables
     """
@@ -438,12 +505,24 @@ def run_observables(log, folder):
         variables.update(l6_vars)
         save_variables(folder, variables)"""
 
+    # 11. Coupling Matrix Analysis
+    """if params['model_type'] == 'HFDS':
+        s, eff_rank = analyze_coupling_matrix(vstate, folder)
+
+        variables.update({
+            'coupling_spectrum': s,
+            'coupling_effective_rank': eff_rank
+        })
+        save_variables(folder, variables)
+    """
+    
+
     sys.stdout.close()
 
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model/J=0.6"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_run_present_HFDS_present"
     log=None
 
     if not os.path.exists(model_path):

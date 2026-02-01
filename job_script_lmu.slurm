@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ent_var
+#SBATCH --job-name=4x4svd
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -23,7 +23,7 @@
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
-export JAX_PLATFORMS=cpu
+#export JAX_PLATFORMS=cpu
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 
@@ -47,7 +47,7 @@ sleep 10
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
 sleep 10
 #srun python -m Entanglement.Entanglement
-srun python -m Entanglement.test_var_init
+#srun python -m Entanglement.test_var_init
 
 
-#srun python -m Observables
+srun python -m Observables
