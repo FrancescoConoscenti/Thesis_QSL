@@ -254,7 +254,7 @@ class OuputHead(nn.Module):
 
     def __call__(self, x):
 
-        z = self.out_layer_norm(x.mean(axis=1))
+        z = self.out_layer_norm(x.sum(axis=1))
 
         out_real = self.norm2(self.output_layer0(z))
         out_imag = self.norm3(self.output_layer1(z))

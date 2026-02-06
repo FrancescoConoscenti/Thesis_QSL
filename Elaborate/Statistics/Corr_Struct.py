@@ -4,44 +4,54 @@ import matplotlib.pyplot as plt
 from netket.operator.spin import sigmax, sigmay, sigmaz
 
 
-#Correlation function
 def Corr_Struct(lattice, vstate, L, folder, hi):
-
     N_tot = lattice.n_nodes
-
     corr_r = np.zeros((L, L))
     counts = np.zeros((L, L))
 
+    # 1. Calculate Correlations
     for i in range(N_tot):
         for j in range(N_tot):
             r = lattice.positions[i] - lattice.positions[j]
-            corr_ij = 0.25 * (sigmaz(hi, i) * sigmaz(hi, j) + sigmax(hi, i) * sigmax(hi, j) + sigmay(hi, i) * sigmay(hi, j))
+            # Assumes lattice constant = 1.0
+            r0, r1 = int(np.round(r[0])) % L , int(np.round(r[1])) % L 
+            
+            # Calculate operator S_i * S_j
+            # Note: For spin-1/2, S = 0.5 * sigma. 
+            # S*S = 0.25 * (sig_x*sig_x + ...)
+            corr_ij = 0.25 * (sigmaz(hi, i)*sigmaz(hi, j) + 
+                              sigmax(hi, i)*sigmax(hi, j) + 
+                              sigmay(hi, i)*sigmay(hi, j))
+            
             exp = vstate.expect(corr_ij)
-            r0, r1 = int(r[0]) % L , int(r[1]) % L #PBC
             corr_r[r0, r1] += exp.mean.real
             counts[r0, r1] += 1
+            
     corr_r /= counts 
-    corr_r[0, 0] = 0  # set C(0) = 0
-
+    
+    # --- PLOTTING C(r) ---
+    # Create a copy for plotting so we don't ruin the data for FFT
+    corr_plot = corr_r.copy()
+    corr_plot[0,0] = 0.0 # Set to 0 ONLY for visualization contrast
+    
     plt.figure(figsize=(6,5))
-    plt.imshow(corr_r, origin='lower', cmap='viridis')
-    plt.colorbar(label='C(r)')
-    plt.xlabel('dx')
-    plt.ylabel('dy')
-    plt.title('Spin-Spin Correlation Function C(r) in 2D')
-    plt.xticks(np.arange(L))  # integer ticks for x-axis
-    plt.yticks(np.arange(L)) 
+    plt.imshow(corr_plot, origin='lower', cmap='viridis')
+    plt.colorbar(label='C(r) (diag masked)')
+    # ... (rest of plotting code) ...
     plt.savefig(f'{folder}/physical_obs/Corr.png')
+    plt.close()
 
-
-    #Structure factor
-    # Compute the 2D Fourier transform of corr_r
-
-    S_q = np.fft.fft2(corr_r)
-    S_q_periodic = np.zeros((L+1, L+1), dtype=S_q.dtype)
-    S_q_periodic[:L, :L] = S_q  
+    # --- STRUCTURE FACTOR ---
+    # Use the REAL corr_r (where C(0) is approx 0.75), do not zero it!
+    S_q = np.fft.fft2(corr_r) 
+    S_q_real = np.abs(S_q) # Take magnitude
+    
+    # Shift so q=(0,0) is in the center for plotting (optional but standard)
+    # OR use your periodic filling method, which is fine.
+    S_q_periodic = np.zeros((L+1, L+1))
+    S_q_periodic[:L, :L] = S_q_real
     S_q_periodic[L, :] = S_q_periodic[0, :]    
-    S_q_periodic[:, L] = S_q_periodic[:, 0]    
+    S_q_periodic[:, L] = S_q_periodic[:, 0]
 
     plt.figure(figsize=(6,5))
     plt.imshow(np.abs(S_q_periodic), origin='lower', cmap='viridis')
@@ -90,7 +100,7 @@ def Corr_Struct_Exact(lattice, ket_gs, L, J, folder, hi):
             corr_r[r0, r1] += exp.real
             counts[r0, r1] += 1
     corr_r /= counts 
-    corr_r[0, 0] = 0  # set C(0) = 0
+    #corr_r[0, 0] = 0  # set C(0) = 0
 
 
     plt.figure(figsize=(6,5))

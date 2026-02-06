@@ -13,8 +13,6 @@ from tenpy.algorithms.exact_diag import get_full_wavefunction
 from DMRG.plot.Plotting import *
 from DMRG.Observable.Corr_Struct import Correlations_Structure_Factor
 
-from netket.experimental.driver import VMC_SR
-
 from jax import numpy as jnp
 import os
 import netket as nk

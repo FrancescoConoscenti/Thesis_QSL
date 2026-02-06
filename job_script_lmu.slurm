@@ -1,8 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=4x4svd
+#SBATCH --job-name=QGThfds
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
+##SBATCH -p inter
+##SBATCH --gres=gpu:h100nvl:1
 
 ##SBATCH -p inter
 ##SBATCH --gres=gpu:v100:1
@@ -11,15 +13,13 @@
 ##SBATCH --gres=gpu:a40:1
 
 ##SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=8
 
-
-#SBATCH --mem=256G
+#SBATCH --mem=1024G
 #SBATCH --time=2-00:00:00
-##SBATCH --array=0-14
+##SBATCH --array=0-8
 
 #SBATCH --export=ALL,XLA_PYTHON_CLIENT_PREALLOCATE=false,XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
-
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
@@ -27,10 +27,10 @@ source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 
+nvidia-smi
 
-
-J_VALUES=(0.4 0.5 0.55 0.6 0.7)
-SEED_VALUES=(1 2 3)
+J_VALUES=(0.5 0.55 0.6)
+SEED_VALUES=(2 3 4)
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
@@ -48,6 +48,5 @@ sleep 10
 sleep 10
 #srun python -m Entanglement.Entanglement
 #srun python -m Entanglement.test_var_init
-
 
 srun python -m Observables

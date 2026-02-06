@@ -29,8 +29,8 @@ from Elaborate.Plotting.QGT.QGT_vs_iteration import plot_S_matrix_eigenvalues, c
 from Elaborate.Sign_Obs_MCMC import MarshallSignObs
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_Iterations
 from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
-
-from Entanglement.Entanglement import compute_renyi2_entropy
+from Elaborate.Sign_complexity import compute_sign_complexity
+from Entanglement.Entanglement import compute_entanglement_scaling, plot_entanglement_scaling, compute_renyi2_entropy
 
 # Mock class for log if not available
 class MockLog:
@@ -209,6 +209,7 @@ def compute_sign(vstate, hilbert, n_samples=32768):
     print(f"Marshall Sign (MCMC): {sign_MCMC.mean} ± {sign_MCMC.error_of_mean} (n_samples={n_samples})")
     return sign_MCMC.mean, sign_MCMC.variance
 
+
 def compute_entanglement_history(folder, vstate, n_samples_entropy=4096):
     s2_history = []
     s2_error_history = []
@@ -288,9 +289,11 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
     configs, sign_vstate_config, weight_exact, weight_vstate = plot_Weight_single(ket_gs, vstate, hilbert, 8, L, folder, one_avg = "one")
     amp_overlap, fidelity, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_Amplitude_Err_Fidelity(ket_gs, vstate, hilbert, folder, one_avg = "one")
     amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
+    sector_amp_err, sector_sign_err = plot_Sector_Overlap_err_vs_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
     eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
-
+    Plot_Energy_Fidelity(log, fidelity, folder, one_avg="one", L =4, plot_variance=False, fidelity_var=None)
+    
     return {
         'sign_vstate': sign_vstate,
         'sign_exact': sign_exact,
@@ -301,6 +304,8 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
         'weight_vstate': weight_vstate,
         'amp_overlap': amp_overlap,
         'sign_overlap': sign_overlap,
+        'sector_amp_err': sector_amp_err,
+        'sector_sign_err': sector_sign_err,
         'eigenvalues_S': eigenvalues,
         'rank_S': rel_1,
         'params': count_params
@@ -419,12 +424,12 @@ def run_observables(log, folder):
         with open(variables_path, 'rb') as f:
             variables = pickle.load(f)
     
-    # 1. Correlations
+    """# 1. Correlations
     R = compute_correlations(vstate, lattice, L, folder, hilbert)
     variables['R'] = R
 
     # 2. Exact Energy
-    #E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
+    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
 
     # 3. Energy Stats
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
@@ -446,25 +451,47 @@ def run_observables(log, folder):
         'vscore': vscore,
         'variance': variance_per_site,
         'count_params': count_params
-    })
+    })"""
 
     # 6. Entropy
-    n_samples_entropy = 532768
+    """
+    n_samples_entropy = 524288
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
     save_variables(folder, variables)
+    """
+    #6. Entanglement Scaling
+    """
+    results = compute_entanglement_scaling(vstate, L, n_samples=65536) 
+    plot_entanglement_scaling(results, save_path=folder+"/physical_obs/entanglement_scaling.png")
+    variables.update({'entanglement_scaling': results})
+    save_variables(folder, variables)
+    """
 
     #7. Sign
-    n_samples_sign = 65536
+    """
+    n_samples_sign = 262144
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)
+    
+    
+    # 8. Sign Complexity
+    """
+    mean_sensitivity, std_sensitivity= compute_sign_complexity(vstate, n_samples=65536, batch_size=256)
+    variables.update({
+        'sign_complexity_mean_sensitivity': mean_sensitivity,
+        'sign_complexity_std_sensitivity': std_sensitivity
+        })
+    save_variables(folder, variables)
+    """
+    
     
     """
     # 8. entanglement History
@@ -486,17 +513,16 @@ def run_observables(log, folder):
     })
     save_variables(folder, variables)
     
-    """
-
-    # 9. QGT
     
-    qgt_vars = compute_qgt(vstate, folder, hilbert)
+    
+    # 9. QGT
+    """qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)
-
+    save_variables(folder, variables)"""
+    
     # 10. System specific observables
-    """
-    if L == 4 and ket_gs is not None:
+    
+    """if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
         save_variables(folder, variables)"""
@@ -506,7 +532,8 @@ def run_observables(log, folder):
         save_variables(folder, variables)"""
 
     # 11. Coupling Matrix Analysis
-    """if params['model_type'] == 'HFDS':
+    """
+    if params['model_type'] == 'HFDS':
         s, eff_rank = analyze_coupling_matrix(vstate, folder)
 
         variables.update({
@@ -522,7 +549,7 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_run_present_HFDS_present"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex/J=0.6"
     log=None
 
     if not os.path.exists(model_path):

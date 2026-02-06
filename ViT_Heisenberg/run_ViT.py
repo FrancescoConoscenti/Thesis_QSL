@@ -30,7 +30,7 @@ parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 8  # Linear size of the lattice
+L = 6  # Linear size of the lattice
 
 
 n_dim = 2
@@ -49,20 +49,23 @@ seed = int(args.seed)
 # 43k params for L=6 num_layers=3 d_model=36 n_heads=6 patch_size=2
 # 36k params for L=6 num_layers=2 d_model=40 n_heads=8 patch_size=2
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
+# k params for L=6 num_layers=2 d_model=60 n_heads=10 patch_size=2
 #8x8
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
-num_layers      = 3     # number of Tranformer layers
-d_model         = 40   # dimensionality of the embedding space
-n_heads         = 8     # number of heads
+num_layers      = 2     # number of Tranformer layers
+d_model         = 60   # dimensionality of the embedding space
+n_heads         = 10    # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
 rotation = True
 
-N_samples       = 1024  # number of MC samples
-n_chains        = N_samples
-chunk_size      = 1024
+#n_samples = 8192   n_chains  = 256   chunk_size = 4096
+
+N_samples       = 4096   # number of MC samples
+n_chains        = 256     # number of Markov chains
+chunk_size      = 4096      # chunk size for the MC samples
 N_opt           = 4000
 
 number_data_points = 20
@@ -90,6 +93,13 @@ print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{p
 # Hilbert space of spins on the graph
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
+
+# ------------- define symmetries ------------------------
+"""
+translation_group_representation = nk.symmetry.canonical_representation(
+    hilbert=hilbert,
+    group=lattice.translation_group())
+"""
 
 # Heisenberg J1-J2 spin hamiltonian
 hamiltonian = nk.operator.Heisenberg(
@@ -131,25 +141,30 @@ vstate = nk.vqs.MCState(
     model=vit_module,
     sampler_seed=subkey,
     n_samples=N_samples,
-    n_discard_per_chain=16,
+    n_discard_per_chain=128,
     variables=params,
     chunk_size=chunk_size,
 )
+
+"""
+vstate_sym = translation_group_representation.project(
+    state=vstate, 
+    character_index=0)
+"""
 
 N_params = nk.jax.tree_size(vstate.parameters)
 print("Number of parameters = ", N_params, flush=True)
 
 
-# Variational monte carlo driver
-from netket.experimental.driver import VMC_SR
+from netket.experimental.driver import VMC_SRt
 
-vmc = VMC_SR(
+vmc = VMC_SRt(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    mode="complex",
-) 
+    jacobian_mode="complex",
+)
 
 # Optimization
 log = nk.logging.RuntimeLog()

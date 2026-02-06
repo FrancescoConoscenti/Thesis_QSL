@@ -32,6 +32,7 @@ import jax.numpy as jnp
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 from Elaborate.Sign_Obs import Fidelity
 from Elaborate.Sign_Obs import *
+from Elaborate.Statistics.Energy import Energy
 
 
 """def plot_Sign_full_MCMC(marshall_op, vstate, folder_path, n_samples, hi):
@@ -439,35 +440,36 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap, fidelity, sign_err, folder
     fig, ax1 = plt.subplots(figsize=(10, 6))
     
     # Amplitude Overlap
-    ax1.plot(x_axis, amp_overlap, marker='o', label='Amplitude Overlap configs',markersize=8, linewidth=2, color='pink')
+    ax1.plot(x_axis, 1-amp_overlap, marker='o', label='1 - Amplitude Overlap configs',markersize=8, linewidth=2, color='pink')
 
     if one_avg == "avg" and plot_variance and error_var is not None:
         std_dev = np.sqrt(error_var)
-        ax1.errorbar(x_axis, amp_overlap, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
+        ax1.errorbar(x_axis, 1-amp_overlap, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
 
     # Sign Overlap
-    ax1.plot(x_axis, sign_err, marker='o', label='Sign overlap',markersize=8, linewidth=2, color='tab:blue')
+    ax1.plot(x_axis, 1-sign_err, marker='o', label='1 - Sign overlap',markersize=8, linewidth=2, color='tab:blue')
 
     if one_avg == "avg" and plot_variance and sign_err_var is not None:
         std_dev = np.sqrt(sign_err_var)
-        ax1.errorbar(x_axis, sign_err, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
+        ax1.errorbar(x_axis, 1-sign_err, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
     ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("Amplitude Overlap / Sign Overlap/ Fidelity", fontsize=12)
+    ax1.set_ylabel("1 - (Amplitude Overlap / Sign Overlap/ Fidelity)", fontsize=12)
+    ax1.set_yscale('log')
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.grid(True, alpha=0.3)
 
     # Fidelity
-    ax1.plot(x_axis, fidelity, marker='s', label='Fidelity',markersize=8, linewidth=2, color='tab:red')
+    ax1.plot(x_axis, 1-fidelity, marker='s', label='1 - Fidelity',markersize=8, linewidth=2, color='tab:red')
 
     if one_avg == "avg" and plot_variance and fidelity_var is not None:
         std_dev = np.sqrt(fidelity_var)
-        ax1.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
+        ax1.errorbar(x_axis, 1-fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
     # Combine legends from both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
     ax1.legend(lines1, labels1, loc='best')
-    fig.suptitle("Amplitude Overlap full Hilbert space & Sign Overlap & Fidelity", fontsize=14)
+    fig.suptitle("1 - (Amplitude Overlap & Sign Overlap & Fidelity)", fontsize=14)
     plt.tight_layout()
 
     if one_avg == "avg":
@@ -501,20 +503,25 @@ def Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overla
     if plot_variance and amplitude_overlap_var is not None and sign_overlap_var is not None:
         xerr = np.sqrt(amplitude_overlap_var)
         yerr = np.sqrt(sign_overlap_var)
-        ax.errorbar(amplitude_overlap, sign_overlap, xerr=xerr, yerr=yerr,
+        ax.errorbar(1-amplitude_overlap, 1-sign_overlap, xerr=xerr, yerr=yerr,
                     fmt='o', color='purple', capsize=5, alpha=0.7, label='Models with Variance')
     else:
-        ax.scatter(amplitude_overlap, sign_overlap, marker='o', color='purple', alpha=0.7, label='Models')
+        ax.scatter(1-amplitude_overlap, 1-sign_overlap, marker='o', color='purple', alpha=0.7, label='Models')
 
-    ax.set_xlabel("Amplitude Overlap (Amplitude Overlap configs)", fontsize=12)
-    ax.set_ylabel("Sign Overlap", fontsize=12)
-    ax.set_title("Sign Overlap vs Amplitude Overlap", fontsize=14)
+    ax.set_xlabel("1 - Amplitude Overlap", fontsize=12)
+    ax.set_ylabel("1 - Sign Overlap", fontsize=12)
+    ax.set_title("1 - Sign Overlap vs 1 - Amplitude Overlap", fontsize=14)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(1e-5, 1)
+    ax.set_ylim(1e-5, 1)
+    ax.plot([1e-5, 1], [1e-5, 1], 'k--', alpha=0.5)
     ax.grid(True, alpha=0.3)
     ax.legend(loc='best')
 
     # Set x and y axis limits from 0 to 1
-    ax.set_xlim(0.5, 1)
-    ax.set_ylim(0.5, 1)
+    #ax.set_xlim(0.5, 1)
+    #ax.set_ylim(0.5, 1)
     plt.tight_layout()
 
     if one_avg == "avg":
@@ -693,4 +700,201 @@ def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_
         plt.savefig(f"{folder_path}/Sign_plot/Overlap_vs_Weight.png")
 
     plt.show()
- 
+
+def plot_Sector_Overlap_err_vs_iteration(ket_gs, vstate, hi, folder_path, one_avg):
+    
+    # Get number of models
+    models_dir = os.path.join(str(folder_path), "models")
+    if not os.path.exists(models_dir):
+        print("Models directory not found")
+        return
+
+    model_files = [f for f in os.listdir(models_dir) if f.endswith(".mpack")]
+    # Sort model files by index
+    model_files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
+    num_models = len(model_files)
+
+    # Exact weights and signs
+    psi_exact = ket_gs.reshape(-1)
+    weights_exact = np.abs(psi_exact)**2
+    
+    # Define sectors
+    # Sector 1: 10^-4 <= p <= 1
+    mask1 = (weights_exact >= 1e-4)
+    # Sector 2: 10^-6 <= p < 10^-4
+    mask2 = (weights_exact >= 1e-6) & (weights_exact < 1e-4)
+    # Sector 3: p < 10^-6
+    mask3 = (weights_exact < 1e-6)
+
+    # Prepare arrays to store results
+    # Shape: (num_models, 3)
+    sector_amp_err = np.zeros((num_models, 3))
+    sector_sign_err = np.zeros((num_models, 3))
+
+    # Precompute exact signs
+    _, signs_exact = Marshall_Sign_exact(ket_gs, hi)
+    
+    # Loop over models
+    for i, model_file in enumerate(model_files):
+        with open(os.path.join(models_dir, model_file), "rb") as f:
+            data = f.read()
+            try:
+                vstate = flax.serialization.from_bytes(vstate, data)
+            except KeyError:
+                vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
+        
+        # Compute variational wavefunction
+        all_states = hi.all_states()
+        psi_vstate_log = vstate.log_value(all_states)
+        psi_vstate_unnorm = np.exp(psi_vstate_log)
+        norm_vstate = np.sqrt(np.sum(np.abs(psi_vstate_unnorm)**2))
+        psi_vstate_norm = psi_vstate_unnorm / norm_vstate
+
+        # Amplitude overlap per config
+        amp_vstate = np.abs(psi_vstate_norm)
+        amp_exact = np.abs(psi_exact)
+        numerator = 2 * amp_vstate * amp_exact
+        denominator = amp_vstate**2 + amp_exact**2
+        # Avoid division by zero
+        amp_overlap_per_config = np.divide(numerator, denominator, out=np.ones_like(numerator), where=denominator!=0)
+        
+        # Sign overlap per config
+        _, signs_vstate = Marshall_Sign_full_hilbert_one(vstate, hi)
+        
+        # Sign overlap per config: +1 if signs match, -1 if not.
+        sign_overlap_per_config = signs_vstate * signs_exact
+        
+        # Calculate means for each sector
+        # 1 - overlap
+        amp_err = 1.0 - amp_overlap_per_config
+        sign_err = 1.0 - sign_overlap_per_config
+
+        for s_idx, mask in enumerate([mask1, mask2, mask3]):
+            if np.sum(mask) > 0:
+                sector_amp_err[i, s_idx] = np.mean(amp_err[mask])
+                sector_sign_err[i, s_idx] = np.mean(sign_err[mask])
+            else:
+                sector_amp_err[i, s_idx] = np.nan
+                sector_sign_err[i, s_idx] = np.nan
+
+    Plot_Sector_Overlap_err_vs_iteration(sector_amp_err, sector_sign_err, folder_path, one_avg)
+    return sector_amp_err, sector_sign_err
+
+def Plot_Sector_Overlap_err_vs_iteration(sector_amp_err, sector_sign_err, folder_path, one_avg):
+    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    colors = ['red', 'green', 'blue']
+    labels = ["1e-4 ≤ p ≤ 1","1e-6 ≤ p < 1e-4","p < 1e-6"]
+    
+    for s_idx in range(3):
+        # Filter out NaNs
+        valid = ~np.isnan(sector_amp_err[:, s_idx])
+        if np.any(valid):
+            ax.scatter(sector_amp_err[valid, s_idx], sector_sign_err[valid, s_idx], 
+                       marker='o', color=colors[s_idx], alpha=0.7, label=labels[s_idx])
+            # Optionally connect points with line to show trajectory
+            ax.plot(sector_amp_err[valid, s_idx], sector_sign_err[valid, s_idx], 
+                    color=colors[s_idx], alpha=0.3)
+
+    ax.set_xlabel("Mean (1 - Amplitude Overlap)", fontsize=12)
+    ax.set_ylabel("Mean (1 - Sign Overlap)", fontsize=12)
+    ax.set_title("Sector-wise Error Evolution", fontsize=14)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(1e-3, 1)
+    ax.set_ylim(1e-3, 1)
+    ax.plot([1e-3, 1], [1e-3, 1], 'k--', alpha=0.5)
+    ax.grid(True, alpha=0.3)
+    ax.legend(loc='best')
+
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        folder_path = Path(folder_path)
+        save_path = folder_path.parent / "plot_avg" / "Sector_Overlap_Error.png"
+        plt.savefig(save_path)
+    if one_avg == "one":
+        plt.savefig(f"{folder_path}/Sign_plot/Sector_Overlap_Error.png")
+    
+    plt.show()
+
+def Plot_Energy_Fidelity(log, fidelity, folder_path, one_avg, L, plot_variance=False, fidelity_var=None):
+
+    energy_iter = None
+    if log is not None:
+        _, energy_iter = Energy(log, L)
+    
+    num_models = len(fidelity)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    
+    if total_iterations is None and energy_iter is not None:
+        total_iterations = len(energy_iter)
+
+    # x_energy calculation moved inside if block
+
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
+    
+    x_fidelity = np.arange(num_models) * save_every
+
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+    one_minus_fid = 1.0 - np.array(fidelity)
+
+    if log is not None:
+        x_energy = np.linspace(0, total_iterations, len(energy_iter))
+        # Energy
+        ax1.plot(x_energy, energy_iter, label='Energy', color='tab:blue', linewidth=2)
+        ax1.set_xlabel("Iterations", fontsize=12)
+        ax1.set_ylabel("Energy", color='tab:blue', fontsize=12)
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
+        ax1.grid(True, alpha=0.3)
+
+        # 1 - Fidelity
+        ax2 = ax1.twinx()
+        ax2.plot(x_fidelity, one_minus_fid, marker='s', label='1 - Fidelity', markersize=6, linewidth=2, color='tab:red')
+        
+        if one_avg == "avg" and plot_variance and fidelity_var is not None:
+            std_dev = np.sqrt(fidelity_var)
+            ax2.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
+
+        ax2.set_ylabel("1 - Fidelity", color='tab:red', fontsize=12)
+        ax2.tick_params(axis='y', labelcolor='tab:red')
+        ax2.set_yscale('log')
+
+        fig.suptitle("Energy & (1 - Fidelity)", fontsize=14)
+        
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc='best')
+    else:
+        # Only Fidelity
+        ax1.plot(x_fidelity, one_minus_fid, marker='s', label='1 - Fidelity', markersize=6, linewidth=2, color='tab:red')
+        
+        if one_avg == "avg" and plot_variance and fidelity_var is not None:
+            std_dev = np.sqrt(fidelity_var)
+            ax1.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
+
+        ax1.set_xlabel("Iterations", fontsize=12)
+        ax1.set_ylabel("1 - Fidelity", color='tab:red', fontsize=12)
+        ax1.tick_params(axis='y', labelcolor='tab:red')
+        ax1.set_yscale('log')
+        ax1.grid(True, alpha=0.3)
+        ax1.legend(loc='best')
+        fig.suptitle("1 - Fidelity", fontsize=14)
+    
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        folder_path = Path(folder_path)
+        save_path = folder_path.parent / "plot_avg" / "Energy_&_1-Fidelity.png"
+        os.makedirs(save_path.parent, exist_ok=True)
+        plt.savefig(save_path)
+    if one_avg == "one":
+        save_dir = Path(folder_path) / "Energy_plot"
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(save_dir / "Energy_&_1-Fidelity.png")
+    
+    plt.show()

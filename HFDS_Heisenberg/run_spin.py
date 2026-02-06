@@ -17,7 +17,6 @@ print("Devices:", jax.devices())
 import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
-from netket.experimental.driver import VMC_SR
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 
 from Elaborate.Statistics.Energy import *
@@ -40,7 +39,7 @@ args = parser.parse_args()
 spin = True
 
 #Physical param
-L       = 4
+L       = 6
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -55,8 +54,9 @@ dtype   = "complex"
 MFinitialization = "Fermi" #G_MF#random #Fermi
 determinant_type = "hidden"
 bounds  = "PBC"
-parity = True
-rotation = True
+parity = False
+rotation = False
+
 
 #Varaitional state param
 # 1k params for L=4 n_hid=1 features=16 layers=1
@@ -84,13 +84,13 @@ rotation = True
 
 n_hid_ferm       = 1
 features         = 1    #hidden units per layer
-hid_layers       = 1
+hid_layers       = 2
 
 #Network param
 lr               = 0.02
-n_samples        = 1024
-chunk_size       = 1024
-N_opt            = 2
+n_samples        = 128
+chunk_size       = 128
+N_opt            = 5
 
 number_data_points = 2
 save_every       = N_opt//number_data_points
@@ -118,13 +118,18 @@ os.makedirs(model_path+"/plot_avg", exist_ok=True)
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
 
-# Hilbert space of spins on the graph
+# ------------- define lattice and hilbert space ------------------------
 boundary_conditions = 'pbc' 
 lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
 hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
 print(f"hilbert space size = ",hi.size)
 
-
+# ------------- define symmetries ------------------------
+"""
+translation_group_representation = nk.symmetry.canonical_representation(
+    hilbert=hi,
+    group=lattice.translation_group())
+"""
 # ------------- define Hamiltonian ------------------------
 ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
 
@@ -169,20 +174,40 @@ vstate = nk.vqs.MCState(
     chunk_size=chunk_size,
     n_discard_per_chain=128) #defines the variational state object
 
+"""
+vstate_sym = translation_group_representation.project(
+    state=vstate, 
+    character_index=0)
+"""
+
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
-vmc = VMC_SR(
+from netket.experimental.driver.vmc_srt import VMC_SRt
+
+vmc = VMC_SRt(
     hamiltonian=ha,
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    mode = 'complex'
-) 
+    jacobian_mode="complex",
+)
 
 log = nk.logging.RuntimeLog()
+
+"""sr = nk.optimizer.SR(
+    diag_shift=1e-4,     
+    holomorphic=True
+)
+
+vmc = nk.driver.VMC(
+    hamiltonian=ha,
+    optimizer=optimizer,
+    variational_state=vstate,
+    preconditioner=sr
+) """
 
 
 # Load existing log if available to append to it
@@ -194,7 +219,7 @@ start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every,
 for i in range(start_block, block_iter):
     #Save model
     with open(save_model +f"/model_{i}.mpack", 'wb') as file:
-        file.write(flax.serialization.to_bytes(vstate))
+        file.write(flax.serialization.to_bytes(vstate.variables))
 
     vmc.run(n_iter=save_every, out=log)
     
@@ -206,7 +231,7 @@ for i in range(start_block, block_iter):
 
 # Save the final model state after the last optimization step
 with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
-    bytes_out = flax.serialization.to_bytes(vstate)
+    bytes_out = flax.serialization.to_bytes(vstate.variables)
     f.write(bytes_out)
 
 final_log_data = helper.merge_log_data(old_log_data, log.data)

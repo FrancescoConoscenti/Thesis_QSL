@@ -108,6 +108,10 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
     
     markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
     colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
+    
+    all_data = []
+    all_js_set = set()
+    all_mean_ranks = []
 
     for i, model_path in enumerate(model_paths):
         if not os.path.exists(model_path):
@@ -125,35 +129,76 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
         for j in js:
             vals = get_qgt_rank_from_seeds(model_path, j)
             if vals:
-                mean_ranks.append(np.mean(vals))
+                mean_val = np.mean(vals)
+                mean_ranks.append(mean_val)
+                all_mean_ranks.append(mean_val)
                 if len(vals) > 1:
                     std_ranks.append(np.std(vals) / np.sqrt(len(vals)))
                 else:
                     std_ranks.append(0.0)
                 valid_js.append(j)
+                all_js_set.add(j)
         
         if valid_js:
-            n_params = get_param_count(model_path)
-            if "ViT" in str(model_path):
-                base_label = "ViT"
-            elif "HFDS" in str(model_path):
-                base_label = "HFDS"
-            else:
-                base_label = Path(model_path).name
-            
-            if n_params is not None:
-                label = f"{base_label} ({n_params} params)"
-            else:
-                label = base_label
+            all_data.append({
+                'model_path': model_path,
+                'valid_js': valid_js,
+                'mean_ranks': mean_ranks,
+                'std_ranks': std_ranks,
+                'color': colors[i % len(colors)]
+            })
 
-            plt.errorbar(valid_js, mean_ranks, yerr=std_ranks, label=label, 
-                         marker=markers[i % len(markers)], color=colors[i % len(colors)], capsize=5, linestyle='-', alpha=0.8)
+    sorted_all_js = sorted(list(all_js_set))
+    j_map = {j: idx for idx, j in enumerate(sorted_all_js)}
+
+    total_width = 0.8
+    n_models = len(all_data)
+    if n_models > 0:
+        bar_width = total_width / n_models
+    else:
+        bar_width = total_width
+
+    for i, data in enumerate(all_data):
+        model_path = data['model_path']
+        valid_js = data['valid_js']
+        mean_ranks = data['mean_ranks']
+        std_ranks = data['std_ranks']
+        color = data['color']
+
+        n_params = get_param_count(model_path)
+        if "ViT" in str(model_path):
+            base_label = "ViT"
+        elif "HFDS" in str(model_path):
+            base_label = "HFDS"
+        else:
+            base_label = Path(model_path).name
+        
+        if n_params is not None:
+            label = f"{base_label} ({n_params} params)"
+        else:
+            label = base_label
+
+        indices = [j_map[j] for j in valid_js]
+        offset = (i - (n_models - 1) / 2) * bar_width
+        
+        plt.bar(np.array(indices) + offset, mean_ranks, yerr=std_ranks, width=bar_width, label=label, 
+                     color=color, capsize=5, alpha=0.8, edgecolor='none')
 
     plt.xlabel("$J_2$", fontsize=12)
     plt.ylabel("QGT Rank", fontsize=12)
     plt.title("QGT Rank vs $J_2$", fontsize=14)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
+    
+    plt.xticks(range(len(sorted_all_js)), sorted_all_js)
+
+    if all_mean_ranks:
+        min_val = min(all_mean_ranks)
+        max_val = max(all_mean_ranks)
+        margin = (max_val - min_val) * 0.2 if max_val > min_val else min_val * 0.1
+        if margin == 0: margin = 1
+        bottom = max(0, min_val - margin)
+        plt.ylim(bottom=bottom)
     
     save_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/QGT/{save_name}"
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -164,7 +209,7 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
 
 if __name__ == "__main__":
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model"
     ]
     
     plot_qgt_rank_vs_js(models)
