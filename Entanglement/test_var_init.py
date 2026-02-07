@@ -513,7 +513,9 @@ def test_hfds_Fermi_init():
 
 def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs Variance ---")
-    save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
+    save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
+    if not os.path.exists(save_dir):
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS", "HFDS Random"]
@@ -542,7 +544,7 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
          lambda h: nk.sampler.MetropolisExchange(h, graph=g_vit))
     ]
 
-    models_config = [m for m in all_models_config if m[0] in models_to_plot]
+    models_config = [m for m in all_models_config if models_to_plot is None or m[0] in models_to_plot]
 
     for name, model_builder, hilbert, sampler_builder in models_config:
         print(f"Processing {name}...")
@@ -575,7 +577,7 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
 
     # Calculate Xavier for ViT
     mean_xavier = None
-    if "ViT" in models_to_plot:
+    if models_to_plot is None or "ViT" in models_to_plot:
         print("Processing ViT Xavier...")
         xavier_s2_vals = []
         init_xavier = jax.nn.initializers.xavier_uniform()
@@ -615,7 +617,9 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
 
 def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs L ---")
-    save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
+    save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
+    if not os.path.exists(save_dir):
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS"]
@@ -624,6 +628,7 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
     
     results = {} # results[name][var] = {'L': [], 'mean': [], 'err': []}
     xavier_results = {'L': [], 'mean': [], 'err': []} if "ViT" in models_to_plot else None
+    xavier_results = {'L': [], 'mean': [], 'err': []} if (models_to_plot is None or "ViT" in models_to_plot) else None
 
     for L in L_values:
         print(f"Processing L={L} (N={L*L})...")
@@ -648,7 +653,7 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
                 ("HFDS", hfds, hi_constrained, nk.sampler.MetropolisExchange(hi_constrained, graph=g))
             ]
             
-            models_list = [m for m in all_models_list if m[0] in models_to_plot]
+            models_list = [m for m in all_models_list if models_to_plot is None or m[0] in models_to_plot]
             
             for name, model, hi, sampler in models_list:
                 s2_vals = []
@@ -669,7 +674,7 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
                 print(f"  {name} Var={var} L={L}: S2={mean:.4f}")
         
         # ViT Xavier
-        if "ViT" in models_to_plot:
+        if models_to_plot is None or "ViT" in models_to_plot:
             print(f"  ViT Xavier L={L}...")
             init_xavier = jax.nn.initializers.xavier_uniform()
             vit_xavier = ViT_ent(num_layers=2, d_model=8, n_heads=4, patch_size=2, kernel_init=init_xavier)
@@ -721,7 +726,9 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
 
 def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs L (Varying Hidden Size) ---")
-    save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
+    save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
+    if not os.path.exists(save_dir):
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS", "HFDS Random"]
@@ -786,7 +793,7 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
                 ("HFDS Random", hfds_rand, hi_constrained, nk.sampler.MetropolisExchange(hi_constrained, graph=g))
             ]
             
-            models_list = [m for m in all_models_list if m[0] in models_to_plot]
+            models_list = [m for m in all_models_list if models_to_plot is None or m[0] in models_to_plot]
             
             for name, model, hi, sampler in models_list:
                 s2_vals = []
@@ -807,7 +814,7 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
                 print(f"  {name} ({size_label}) L={L}: S2={mean:.4f}")
             
             # ViT Xavier
-            if "ViT" in models_to_plot:
+            if models_to_plot is None or "ViT" in models_to_plot:
                 d_model = params['ViT']
                 init_xavier = jax.nn.initializers.xavier_uniform()
                 vit_xavier = ViT_ent(num_layers=2, d_model=d_model, n_heads=4, patch_size=2, kernel_init=init_xavier)
@@ -863,7 +870,9 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
 
 def plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs Variance & Hidden Size Map ---")
-    save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
+    save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
+    if not os.path.exists(save_dir):
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
     
     # Ranges
@@ -881,6 +890,13 @@ def plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=4096, models_
             "param_name": "d_model",
             "h_values": [4, 8, 16, 32, 64],
             "builder": lambda h, init: ViT_ent(num_layers=2, d_model=h, n_heads=4, patch_size=2, kernel_init=init),
+            "hilbert": hi_vit,
+            "sampler": nk.sampler.MetropolisLocal(hi_vit)
+        },
+        "ViTXavier": {
+            "param_name": "d_model",
+            "h_values": [4, 8, 16, 32, 64],
+            "builder": lambda h, _: ViT_ent(num_layers=2, d_model=h, n_heads=4, patch_size=2, kernel_init=jax.nn.initializers.xavier_uniform()),
             "hilbert": hi_vit,
             "sampler": nk.sampler.MetropolisLocal(hi_vit)
         },
@@ -981,7 +997,9 @@ def plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=4096, models_
 
 def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs L & Hidden Size Map ---")
-    save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
+    save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
+    if not os.path.exists(save_dir):
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
     
     L_values = [4, 6, 8, 10]
@@ -1125,12 +1143,12 @@ def main():
     #test_entanglement_entropy_hfds(n_samples=65536)
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
-    #plot_entropy_vs_variance(n_seeds=1, n_samples=16, models_to_plot = ["ViT"])
-    plot_entropy_vs_L(n_seeds=1, n_samples=16, models_to_plot = ["ViT"])
-    #plot_entropy_vs_L_hidden_size(n_seeds=1, n_samples=16, models_to_plot = ["ViT"])
+    plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"])
+    #plot_entropy_vs_L(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS"])
+    #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
     
-    #plot_entropy_vs_variance_hidden_size_map(n_seeds=1, n_samples=16, models_to_plot = ["ViTrandom", "ViTXavier"])
-    #plot_entropy_vs_L_hidden_size_map(n_seeds=1, n_samples=16, models_to_plot = ["ViTrandom",  "ViTXavier"])
+    #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    #plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plot=["ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
 
 if __name__ == "__main__":
     main()
