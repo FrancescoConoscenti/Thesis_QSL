@@ -75,10 +75,15 @@ def get_marshall_signs_for_J(model_folder, target_J):
     return signs
 
 def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
-    plt.figure(figsize=(8, 6))
+    save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Sign")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Collect data
+    plot_data = []
     
     for label, models, color, marker in datasets:
         inv_Ls = []
+        inv_Ns = []
         means = []
         errors = []
         
@@ -91,6 +96,7 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
             signs = get_marshall_signs_for_J(model_path, target_J)
             if signs:
                 inv_Ls.append(1.0/L)
+                inv_Ns.append(1.0/(L*L))
                 means.append(np.mean(np.abs(signs)))
                 # Standard error of the mean across seeds
                 if len(signs) > 1:
@@ -104,11 +110,25 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
             # Sort by 1/L
             sorted_indices = np.argsort(inv_Ls)
             inv_Ls = np.array(inv_Ls)[sorted_indices]
+            inv_Ns = np.array(inv_Ns)[sorted_indices]
             means = np.array(means)[sorted_indices]
             errors = np.array(errors)[sorted_indices]
             
-            plt.errorbar(inv_Ls, means, yerr=errors, label=label, 
-                         color=color, marker=marker, capsize=5, linestyle='-', alpha=0.8)
+            plot_data.append({
+                'label': label,
+                'inv_Ls': inv_Ls,
+                'inv_Ns': inv_Ns,
+                'means': means,
+                'errors': errors,
+                'color': color,
+                'marker': marker
+            })
+
+    # Plot 1: 1/L
+    plt.figure(figsize=(8, 6))
+    for d in plot_data:
+        plt.errorbar(d['inv_Ls'], d['means'], yerr=d['errors'], label=d['label'], 
+                     color=d['color'], marker=d['marker'], capsize=5, linestyle='-', alpha=0.8)
 
     plt.xlabel("$1/L$", fontsize=14)
     plt.ylabel("Mean Marshall Sign", fontsize=14)
@@ -117,13 +137,30 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
     plt.legend(fontsize=12)
     plt.xlim(left=0)
 
-    save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Sign")
-    save_dir.mkdir(parents=True, exist_ok=True)
-    full_save_path = save_dir / (save_name+"J="+str(target_J)+".png")
-    
-    plt.savefig(full_save_path, dpi=300, bbox_inches='tight')
-    print(f"Plot saved to {full_save_path}")
+    full_save_path_L = save_dir / (save_name+"_1_L_J="+str(target_J)+".png")
+    plt.savefig(full_save_path_L, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {full_save_path_L}")
     plt.show()
+    plt.close()
+
+    # Plot 2: 1/N
+    plt.figure(figsize=(8, 6))
+    for d in plot_data:
+        plt.errorbar(d['inv_Ns'], d['means'], yerr=d['errors'], label=d['label'], 
+                     color=d['color'], marker=d['marker'], capsize=5, linestyle='-', alpha=0.8)
+
+    plt.xlabel("$1/N$", fontsize=14)
+    plt.ylabel("Mean Marshall Sign", fontsize=14)
+    plt.title(f"Marshall Sign vs $1/N$ at $J_2={target_J}$", fontsize=16)
+    plt.grid(True, linestyle="--", alpha=0.4)
+    plt.legend(fontsize=12)
+    plt.xlim(left=0)
+    
+    full_save_path_N = save_dir / (save_name+"_1_N_J="+str(target_J)+".png")
+    plt.savefig(full_save_path_N, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {full_save_path_N}")
+    plt.show()
+    plt.close()
 
 if __name__ == "__main__":
     
@@ -132,24 +169,20 @@ if __name__ == "__main__":
     # --- Define your datasets here ---
     # Add paths for different system sizes (4x4, 6x6, etc.) for each model type
     
-    vit_models = [
+    models_HFDS = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
+                ]
+    models_ViT = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
-        # 4x4
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
-        # 6x6
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
-    ]
-    
-    hfds_models = [
-        # 4x4
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
-        # 6x6
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
-    ]
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
+        ]
 
     datasets = [
-        ("ViT", vit_models, "tab:orange", "o"),
-        ("HFDS", hfds_models, "tab:blue", "s")
+        ("ViT", models_ViT , "tab:orange", "o"),
+        ("HFDS", models_HFDS, "tab:blue", "s")
     ]
     
     plot_sign_vs_inv_L(datasets, target_J)

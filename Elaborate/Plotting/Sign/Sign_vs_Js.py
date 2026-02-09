@@ -82,109 +82,111 @@ if __name__ == "__main__":
 
     models_HFDS = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
-                   "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
+                   "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
                 ]
     models_ViT = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
-        "/cluster/home/fconoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
         ]
 
+    # --- Plot setup ---
+    fig, ax = plt.subplots(figsize=(8, 5))
+
     # --- Style setup ---
-    markers_list = ["o", "s", "D", "^", "v", "P", "X", "*"]
+    lattice_markers = {"4x4": "o", "6x6": "s", "8x8": "D", "10x10": "^"}
 
-    plot_configs = [
-        {
-            "ylabel": "1 - Marshall Sign",
-            "title": "1 - Marshall Sign vs $J_2$",
-            "yscale": "log",
-            "filename": "MarshallSign_Error_vs_J2_ViT_HFDS.png",
-            "transform": lambda s: 1.0 - np.mean(np.abs(s))
-        },
-        {
-            "ylabel": "Marshall Sign",
-            "title": "Marshall Sign vs $J_2$",
-            "yscale": "linear",
-            "filename": "MarshallSign_vs_J2_ViT_HFDS.png",
-            "transform": lambda s: np.mean(np.abs(s))
-        }
-    ]
+    # --- Plot HFDS models ---
+    for i, model_path in enumerate(models_HFDS):
+        if model_path and os.path.exists(model_path):
+            print(f"Processing HFDS: {model_path}")
+            
+            if "4x4" in model_path:
+                label_name = "HFDS 4x4"
+                color = "cornflowerblue"
+                marker = lattice_markers["4x4"]
+            elif "6x6" in model_path:
+                label_name = "HFDS 6x6"
+                color = "navy"
+                marker = lattice_markers["6x6"]
+            elif "8x8" in model_path:
+                label_name = "HFDS 8x8"
+                color = "blue"
+                marker = lattice_markers["8x8"]
+            elif "10x10" in model_path:
+                label_name = "HFDS 10x10"
+                color = "navy"
+                marker = lattice_markers["10x10"]
+            else:
+                label_name = f"HFDS {i+1}"
+                color = "tab:blue"
+                marker = "v"
+            
+            js = []
+            means = []
+            
+            for J_val in get_available_js(model_path):
+                signs = get_marshall_signs_from_seeds(model_path, J_val)
+                if signs:
+                    js.append(J_val)
+                    means.append(np.mean(np.abs(signs)))
+            
+            if js:
+                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
-    for config in plot_configs:
-        fig, ax = plt.subplots(figsize=(8, 5))
+    # --- Plot ViT models ---
+    for i, model_path in enumerate(models_ViT):
+        if model_path and os.path.exists(model_path):
+            print(f"Processing ViT: {model_path}")
+            
+            if "4x4" in model_path:
+                label_name = "ViT 4x4"
+                color = "sandybrown"
+                marker = lattice_markers["4x4"]
+            elif "6x6" in model_path:
+                label_name = "ViT 6x6"
+                color = "chocolate"
+                marker = lattice_markers["6x6"]
+            elif "8x8" in model_path:
+                label_name = "ViT 8x8"
+                color = "brown"
+                marker = lattice_markers["8x8"]
+            elif "10x10" in model_path:
+                label_name = "ViT 10x10"
+                color = "chocolate"
+                marker = lattice_markers["10x10"]
+            else:
+                label_name = f"ViT {i+1}"
+                color = "tab:orange"
+                marker = "v"
+            
+            js = []
+            means = []
+            
+            for J_val in get_available_js(model_path):
+                signs = get_marshall_signs_from_seeds(model_path, J_val)
+                if signs:
+                    js.append(J_val)
+                    means.append(np.mean(np.abs(signs)))
+            
+            if js:
+                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
-        # --- Plot HFDS models ---
-        for i, model_path in enumerate(models_HFDS):
-            if model_path and os.path.exists(model_path):
-                print(f"Processing HFDS: {model_path}")
-                marker = markers_list[i % len(markers_list)]
-                
-                if "4x4" in model_path:
-                    label_name = "HFDS 4x4"
-                    color = "cornflowerblue"
-                elif "6x6" in model_path:
-                    label_name = "HFDS 6x6"
-                    color = "navy"
-                else:
-                    label_name = f"HFDS {i+1}"
-                    color = "tab:blue"
-                
-                js = []
-                means = []
-                
-                for J_val in get_available_js(model_path):
-                    signs = get_marshall_signs_from_seeds(model_path, J_val)
-                    if signs:
-                        js.append(J_val)
-                        means.append(config["transform"](signs))
-                
-                if js:
-                    ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+    # --- Labels, title, legend ---
+    ax.set_xlabel("$J_2$", fontsize=12)
+    ax.set_ylabel("Marshall Sign", fontsize=12)
+    ax.set_title("Marshall Sign vs $J_2$")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.legend(loc='best', fontsize=10)
 
-        # --- Plot ViT models ---
-        for i, model_path in enumerate(models_ViT):
-            if model_path and os.path.exists(model_path):
-                print(f"Processing ViT: {model_path}")
-                marker = markers_list[i % len(markers_list)]
-                
-                if "4x4" in model_path:
-                    label_name = "ViT 4x4"
-                    color = "sandybrown"
-                elif "6x6" in model_path:
-                    label_name = "ViT 6x6"
-                    color = "chocolate"
-                else:
-                    label_name = f"ViT {i+1}"
-                    color = "tab:orange"
-                
-                js = []
-                means = []
-                
-                for J_val in get_available_js(model_path):
-                    signs = get_marshall_signs_from_seeds(model_path, J_val)
-                    if signs:
-                        js.append(J_val)
-                        means.append(config["transform"](signs))
-                
-                if js:
-                    ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+    fig.tight_layout()
+    save_path = "Elaborate/plot/Sign/MarshallSign_vs_J2_ViT_HFDS.png"
+    if not os.path.exists(os.path.dirname(save_path)):
+        save_path = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-        # --- Labels, title, legend ---
-        ax.set_xlabel("$J_2$", fontsize=12)
-        ax.set_ylabel(config["ylabel"], fontsize=12)
-        ax.set_title(config["title"])
-        ax.set_yscale(config["yscale"])
-        ax.grid(True, linestyle="--", alpha=0.4)
-        ax.legend(loc='best', fontsize=10)
-
-        fig.tight_layout()
-        save_path = f"Elaborate/plot/Sign/{config['filename']}"
-        if not os.path.exists(os.path.dirname(save_path)):
-            save_path = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path)
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-        plt.savefig(save_path, dpi=300, bbox_inches="tight")
-        print(f"Plot saved to {save_path}")
-
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    print(f"Plot saved to {save_path}")
     plt.show()
     

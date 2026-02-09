@@ -165,13 +165,17 @@ def compute_entanglement_scaling(vstate, L_total, n_samples=2048, min_size=2):
     for l in subsystem_sizes:
         partition = get_square_subsystem(L_total, l)
         perimeter = 4 * l
-        
+
         S2, err = compute_renyi2_entropy(vstate, partition, n_samples=n_samples)
-        
+
+        # Un-normalize the entropy since compute_renyi2_entropy returns a normalized value
+        max_entropy = len(partition) * np.log(2)
+        S2 *= max_entropy
+        err *= max_entropy
+
         perimeters.append(perimeter)
         entropies.append(S2)
         errors.append(err)
-        
         print(f"Subsystem size: {l}×{l} | Perimeter: {perimeter} | "
               f"S2 = {S2:.4f} ± {err:.4f}")
     

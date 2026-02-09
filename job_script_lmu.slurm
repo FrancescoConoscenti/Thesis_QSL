@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=QGThfds
+#SBATCH --job-name=EntInit
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
 ##SBATCH -p inter
 ##SBATCH --gres=gpu:h100nvl:1
 
-##SBATCH -p inter
-##SBATCH --gres=gpu:v100:1
+#SBATCH -p inter
+#SBATCH --gres=gpu:v100:1
 
 ##SBATCH -p cip
 ##SBATCH --gres=gpu:a40:1
@@ -15,7 +15,7 @@
 ##SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 
-#SBATCH --mem=1024G
+#SBATCH --mem=64G
 #SBATCH --time=2-00:00:00
 ##SBATCH --array=0-8
 
@@ -42,11 +42,11 @@ J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}
 
 
-sleep 10
+#sleep 10
 #srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
-sleep 10
+#sleep 10
 #srun python -m Entanglement.Entanglement
-#srun python -m Entanglement.test_var_init
+srun python -m Entanglement.test_var_init
 
-srun python -m Observables
+#srun python -m Observables

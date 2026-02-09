@@ -209,7 +209,9 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
 
 if __name__ == "__main__":
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model"
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd4_feat64_sample4096_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex"
+
     ]
     
     plot_qgt_rank_vs_js(models)
