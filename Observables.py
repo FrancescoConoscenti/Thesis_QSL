@@ -452,7 +452,7 @@ def run_observables(log, folder):
 
     ################################################################################################à
     
-    # 1. Correlations
+    """# 1. Correlations
     R = compute_correlations(vstate, lattice, L, folder, hilbert)
     variables['R'] = R
 
@@ -479,7 +479,7 @@ def run_observables(log, folder):
         'vscore': vscore,
         'variance': variance_per_site,
         'count_params': count_params
-    })
+    })"""
 
     # 6. Entropy
     """
@@ -500,13 +500,13 @@ def run_observables(log, folder):
     """
 
     #7. Sign
-    """n_samples_sign = 32768
+    n_samples_sign = 32768//2
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
     
     
     # 8. Sign Complexity
@@ -549,10 +549,10 @@ def run_observables(log, folder):
     
     # 10. System specific observables
     
-    if L == 4 and ket_gs is not None:
+    """if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
-        save_variables(folder, variables)
+        save_variables(folder, variables)"""
     """elif L == 6:
         l6_vars = compute_L6_observables(vstate, J2, folder, params)
         variables.update(l6_vars)
@@ -576,7 +576,7 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     log = None
 
     if not os.path.exists(model_path):

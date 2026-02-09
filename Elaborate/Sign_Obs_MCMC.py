@@ -68,23 +68,3 @@ def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: MarshallSignObs):
     sigma = vstate.samples
     # Return sigma as extra_args so it gets chunked properly by NetKet
     return sigma, sigma
-
-
-# vectorized function to compute Marshall sign per sample
-def _marshal_sign_MCMC(sigma, vstate):
-    # sigma is already batched: (n_samples, n_sites)
-    N_sites = sigma.shape[1]
-    A_sites = sublattice_sites(N_sites)
-    
-    M_A = 0.5 * jnp.sum(sigma[:, A_sites], axis=1)  # (n_samples,)
-    S_A = 0.5 * (N_sites // 2)  # scalar
-    
-    log_psi = vstate.log_value(sigma)  # Batched call - (n_samples,)
-    psi = jnp.exp(log_psi)
-    sign = jnp.sign(jnp.real(psi)) * ((-1.0) ** (S_A - M_A))
-    
-    return sign
-
-# Remove the vmap wrapper - not needed!
-get_marshal_sign_MCMC = lambda vstate: lambda sigma: _marshal_sign_MCMC(sigma, vstate)
-#########################################################################################################################à

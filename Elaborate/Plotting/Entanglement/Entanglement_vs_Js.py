@@ -165,8 +165,12 @@ def plot_entanglement_vs_js(model_paths, save_name="Entanglement_vs_J2.png"):
     else:
         final_save_name = save_name + filename_suffix
 
-    save_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Entanglement/{final_save_name}"
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    save_dir = Path("/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Entanglement")
+    if not os.path.exists(save_dir):
+        save_dir = Path("/cluster/home/fconoscenti/Thesis_QSL/Elaborate/plot/Entanglement")
+
+    save_path = save_dir / final_save_name
+    os.makedirs(save_dir, exist_ok=True)
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"Plot saved to {save_path}")
@@ -174,8 +178,7 @@ def plot_entanglement_vs_js(model_paths, save_name="Entanglement_vs_J2.png"):
 
 if __name__ == "__main__":
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+        "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     ]
     
     plot_entanglement_vs_js(models)

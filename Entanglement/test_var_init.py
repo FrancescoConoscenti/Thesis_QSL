@@ -111,6 +111,7 @@ def run_entropy_test(model_name, model_builder, hilbert, sampler_ctor, variances
         # Compute entropy
         s2, err = compute_renyi2_entropy(vstate, n_samples=n_samples)
         print(f"  Var={var:.1e}: S2 (norm) = {s2:.5f} ± {err:.5f}")
+        print(f"  Var={var:.1e}: S2 = {s2:.5f} ± {err:.5f}")
 
 # --- Test Functions ---
 
@@ -395,6 +396,7 @@ def test_entanglement_entropy_vit_xavier(n_samples):
     # Compute entropy
     s2, err = compute_renyi2_entropy(vstate, n_samples=n_samples)
     print(f"  Xavier Uniform: S2 (norm) = {s2:.5f} ± {err:.5f}")
+    print(f"  Xavier Uniform: S2 = {s2:.5f} ± {err:.5f}")
 
 def test_hfds_random_init():
     print("\n--- Test 8: HFDS Random Initialization ---")
@@ -520,100 +522,115 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS", "HFDS Random"]
     variances = [0.0, 1e-7, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 2.0, 3.0, 5.0, 10, 20]
-    
-    results = {}
-    
-    # Define configurations: (Name, ModelBuilder, Hilbert, SamplerBuilder)
-    # Using N=16 (hi_vit/hi_hfds) for all models for consistency.
-    all_models_config = [
-        ("RBM", 
-         lambda init: nk.models.RBM(alpha=2, param_dtype=complex, kernel_init=init, hidden_bias_init=init, visible_bias_init=init), 
-         hi_vit, 
-         nk.sampler.MetropolisLocal),
-        ("ViT", 
-         lambda init: ViT_ent(num_layers=2, d_model=8, n_heads=4, patch_size=2, kernel_init=init), 
-         hi_vit, 
-         nk.sampler.MetropolisLocal),
-        ("HFDS", 
-         lambda init: HiddenFermion_ent(L=4, network="FFNN", n_hid=2, layers=1, features=8, MFinit="Fermi", hilbert=hi_hfds, kernel_init=init, dtype=jax.numpy.complex128), 
-         hi_hfds, 
-         lambda h: nk.sampler.MetropolisExchange(h, graph=g_vit)),
-        ("HFDS Random", 
-         lambda init: HiddenFermion_ent(L=4, network="FFNN", n_hid=2, layers=1, features=8, MFinit="random", hilbert=hi_hfds, kernel_init=init, dtype=jax.numpy.complex128), 
-         hi_hfds, 
-         lambda h: nk.sampler.MetropolisExchange(h, graph=g_vit))
-    ]
 
-    models_config = [m for m in all_models_config if models_to_plot is None or m[0] in models_to_plot]
+    L_list = [4, 6, 10]
 
-    for name, model_builder, hilbert, sampler_builder in models_config:
-        print(f"Processing {name}...")
-        means = []
-        errors = []
+    for L in L_list:
+        print(f"\nProcessing System Size {L}x{L}...")
+        N = L*L
+        g = nk.graph.Hypercube(length=L, n_dim=2, pbc=True)
+        hi_free = nk.hilbert.Spin(s=1/2, N=N)
+        hi_constrained = nk.hilbert.Spin(s=1/2, N=N, total_sz=0)
         
-        for var in variances:
-            s2_vals = []
-            for seed in range(n_seeds):
-                if var == 0:
-                    init = jax.nn.initializers.zeros
-                else:
-                    init = normal(stddev=np.sqrt(var))
-                
-                model = model_builder(init)
-                sampler = sampler_builder(hilbert)
-                
-                vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, seed=seed)
-                
-                s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
-                s2_vals.append(s2)
+        results = {}
+        
+        # Define configurations: (Name, ModelBuilder, Hilbert, SamplerBuilder)
+        all_models_config = [
+            ("RBM", 
+             lambda init: nk.models.RBM(alpha=2, param_dtype=complex, kernel_init=init, hidden_bias_init=init, visible_bias_init=init), 
+             hi_free, 
+             nk.sampler.MetropolisLocal),
+            ("ViT", 
+             lambda init: ViT_ent(num_layers=2, d_model=32, n_heads=4, patch_size=2, kernel_init=init), 
+             hi_free, 
+             nk.sampler.MetropolisLocal),
+            ("HFDS", 
+             lambda init: HiddenFermion_ent(L=L, network="FFNN", n_hid=6, layers=1, features=16, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init, dtype=jax.numpy.complex128), 
+             hi_constrained, 
+             lambda h: nk.sampler.MetropolisExchange(h, graph=g)),
+            ("HFDS Random", 
+             lambda init: HiddenFermion_ent(L=L, network="FFNN", n_hid=6, layers=1, features=16, MFinit="random", hilbert=hi_constrained, kernel_init=init, dtype=jax.numpy.complex128), 
+             hi_constrained, 
+             lambda h: nk.sampler.MetropolisExchange(h, graph=g))
+        ]
+
+        models_config = [m for m in all_models_config if models_to_plot is None or m[0] in models_to_plot]
+
+        for name, model_builder, hilbert, sampler_builder in models_config:
+            print(f"Processing {name}...")
+            means = []
+            errors = []
+            param_count = 0
             
-            mean_s2 = np.mean(s2_vals)
-            err_s2 = np.std(s2_vals) / np.sqrt(n_seeds)
-            means.append(mean_s2)
-            errors.append(err_s2)
-            print(f"  Var={var:.1e}: S2={mean_s2:.4f} +/- {err_s2:.4f}")
+            for var in variances:
+                s2_vals = []
+                for seed in range(n_seeds):
+                    if var == 0:
+                        init = jax.nn.initializers.zeros
+                    else:
+                        init = normal(stddev=np.sqrt(var))
+                    
+                    model = model_builder(init)
+                    sampler = sampler_builder(hilbert)
+                    
+                    vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, seed=seed)
+                    
+                    if param_count == 0:
+                        param_count = nk.jax.tree_size(vstate.parameters)
+                    s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
+                    s2_vals.append(s2)
+                
+                mean_s2 = np.mean(s2_vals)
+                err_s2 = np.std(s2_vals) / np.sqrt(n_seeds)
+                means.append(mean_s2)
+                errors.append(err_s2)
+                print(f"  Var={var:.1e}: S2={mean_s2:.4f} +/- {err_s2:.4f}")
+            
+            results[f"{name} ({param_count} params)"] = (means, errors)
+
+        # Calculate Xavier for ViT
+        mean_xavier = None
+        param_count_xavier = 0
+        if models_to_plot is None or "ViT" in models_to_plot:
+            print("Processing ViT Xavier...")
+            xavier_s2_vals = []
+            init_xavier = jax.nn.initializers.xavier_uniform()
+            for seed in range(n_seeds):
+                model = ViT_ent(num_layers=2, d_model=8, n_heads=4, patch_size=2, kernel_init=init_xavier)
+                sampler = nk.sampler.MetropolisLocal(hi_free)
+                vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, seed=seed)
+                if param_count_xavier == 0:
+                    param_count_xavier = nk.jax.tree_size(vstate.parameters)
+                s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
+                xavier_s2_vals.append(s2)
+            mean_xavier = np.mean(xavier_s2_vals)
+            print(f"  ViT Xavier: S2={mean_xavier:.4f}")
+
+        # Plotting Unnormalized
+        max_ent = (N // 2) * np.log(2) # Half system partition
         
-        results[name] = (means, errors)
-
-    # Calculate Xavier for ViT
-    mean_xavier = None
-    if models_to_plot is None or "ViT" in models_to_plot:
-        print("Processing ViT Xavier...")
-        xavier_s2_vals = []
-        init_xavier = jax.nn.initializers.xavier_uniform()
-        for seed in range(n_seeds):
-            model = ViT_ent(num_layers=2, d_model=8, n_heads=4, patch_size=2, kernel_init=init_xavier)
-            sampler = nk.sampler.MetropolisLocal(hi_vit)
-            vstate = nk.vqs.MCState(sampler, model, n_samples=n_samples, seed=seed)
-            s2, _ = compute_renyi2_entropy(vstate, n_samples=n_samples)
-            xavier_s2_vals.append(s2)
-        mean_xavier = np.mean(xavier_s2_vals)
-        print(f"  ViT Xavier: S2={mean_xavier:.4f}")
-
-    # Plotting Unnormalized
-    max_ent = 8 * np.log(2) # N=16, half system partition
-    
-    plt.figure(figsize=(10, 6))
-    for name, (means, errors) in results.items():
-        means_un = np.array(means) * max_ent
-        errors_un = np.array(errors) * max_ent
-        plt.errorbar(variances, means_un, yerr=errors_un, label=name, marker='o', capsize=5)
-    
-    if mean_xavier is not None:
-        mean_xavier_un = mean_xavier * max_ent
-        plt.axhline(y=mean_xavier_un, color='r', linestyle='--', label=f'ViT Xavier ({mean_xavier_un:.3f})')
-    
-    plt.xscale('symlog', linthresh=1e-5)
-    plt.xlim(left=0)
-    plt.xlabel('Variance of Initialization')
-    plt.ylabel('Renyi-2 Entropy')
-    plt.title(f'Entanglement Entropy vs Initialization Variance (N=16, Unnormalized, Avg {n_seeds} seeds, samples={n_samples})')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    save_path = get_unique_path(save_dir, "Entropy_vs_Variance_Init_Unnormalized1.png")
-    plt.savefig(save_path)
-    print(f"Plot saved to {save_path}")
+        plt.figure(figsize=(10, 6))
+        for name, (means, errors) in results.items():
+            means_un = np.array(means) * max_ent
+            errors_un = np.array(errors) * max_ent
+            plt.errorbar(variances, means_un, yerr=errors_un, label=name, marker='o', capsize=5)
+        
+        if mean_xavier is not None:
+            mean_xavier_un = mean_xavier * max_ent
+            plt.axhline(y=mean_xavier_un, color='r', linestyle='--', label=f'ViT Xavier ({param_count_xavier} params) ({mean_xavier_un:.3f})')
+        
+        plt.xscale('symlog', linthresh=1e-5)
+        plt.xlim(left=0)
+        plt.xlabel('Variance of Initialization')
+        plt.ylabel('Renyi-2 Entropy')
+        plt.title(f'Entanglement Entropy vs Initialization Variance (N={N}, Unnormalized, Avg {n_seeds} seeds, samples={n_samples})')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        save_path = get_unique_path(save_dir, f"Entropy_vs_Variance_Init_L{L}.png")
+        plt.savefig(save_path)
+        print(f"Plot saved to {save_path}")
+        plt.close()
 
 def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs L ---")
@@ -737,7 +754,7 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
     std = np.sqrt(var)
     init_fun = normal(stddev=std)
     
-    L_values = [4, 6, 8, 10]
+    L_values = [4, 6, 8]
     
     configs = {
         '4x4': {
@@ -770,6 +787,10 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
         
         config_key = f"{L}x{L}"
         current_config = configs.get(config_key)
+
+        if current_config is None:
+            print(f"Skipping L={L} (No config found for {config_key})")
+            continue
 
         for size_label in ['Small', 'Medium', 'Large']:
             params = current_config[size_label]
@@ -852,7 +873,7 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
                 
                 L_arr = np.array(data['L'])
                 max_ent = (L_arr**2 / 2.0) * np.log(2)
-                
+                # max_ent = (L_arr**2 / 2.0) * np.log(2)
                 plt.errorbar(L_arr**2, np.array(data['mean']) * max_ent, yerr=np.array(data['err']) * max_ent, 
                              label=label, color=colors[name], 
                              marker=markers[size_label], linestyle=linestyles[size_label], capsize=5)
@@ -943,6 +964,10 @@ def plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=4096, models_
                 entropy_grid[i, j] = s2_acc / n_seeds
                 print(f"  {model_name} h={h} var={var:.2f} -> S2={entropy_grid[i, j]:.4f}")
                 clean_up()
+        
+        # Un-normalize
+        max_ent = (16 // 2) * np.log(2)
+        entropy_grid *= max_ent
         
         dv = (variances[1] - variances[0]) / 2. if len(variances) > 1 else 0.5
         dnh = (np.array(h_vals)[1] - np.array(h_vals)[0]) / 2. if len(h_vals) > 1 else 0.5
@@ -1069,6 +1094,11 @@ def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=4096, models_to_plot
                 print(f"  {model_name} h={h} L={L} -> S2={entropy_grid[i, j]:.4f}")
                 clean_up()
         
+        # Un-normalize
+        for j, L in enumerate(L_values):
+            max_ent = (L*L // 2) * np.log(2)
+            entropy_grid[:, j] *= max_ent
+        
         dL = (L_values[1] - L_values[0]) / 2. if len(L_values) > 1 else 0.5
         dnh = (np.array(h_vals)[1] - np.array(h_vals)[0]) / 2. if len(h_vals) > 1 else 0.5
         extent = [np.min(L_values) - dL, np.max(L_values) + dL, np.min(h_vals) - dnh, np.max(h_vals) + dnh]
@@ -1143,12 +1173,12 @@ def main():
     #test_entanglement_entropy_hfds(n_samples=65536)
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
-    plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"])
-    #plot_entropy_vs_L(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS"])
-    #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
+    #plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"])
+    #plot_entropy_vs_L(n_seeds=10, n_samples=65536//2, models_to_plot=["ViT", "HFDS"])
+    #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536//2, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
     
-    #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
-    #plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plot=["ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_variance_hidden_size_map(n_seeds=5, n_samples=65536//4, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    #plot_entropy_vs_L_hidden_size_map(n_seeds=5, n_samples=65536//4, models_to_plot=["ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
 
 if __name__ == "__main__":
     main()

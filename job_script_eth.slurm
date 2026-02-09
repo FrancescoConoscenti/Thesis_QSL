@@ -1,18 +1,18 @@
 #!/bin/bash
-#SBATCH --job-name=4x4obs
+#SBATCH --job-name=EntVarInit
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=32GB
+#SBATCH --mem-per-cpu=16GB
 
 ##SBATCH --partition=gpupr.4h
 ##SBATCH --gres=gpu:nvidia_a100_80gb_pcie:1
 
 #SBATCH --gpus=1
-#SBATCH --gres=gpumem:32g
+#SBATCH --gres=gpumem:16g
 
-#SBATCH --time=00-04:00:00
+#SBATCH --time=01-00:00:00
 ##SBATCH --array=0-5
 
 #nvidia-smi
@@ -55,5 +55,5 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 #srun python -m ED.quspin_MCState
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
-python -m Observables
-#python -m Entanglement.test_var_init
+#python -m Observables
+python -m Entanglement.test_var_init
