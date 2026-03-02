@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=EntVarInit
+#SBATCH --job-name=Obs
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -10,10 +10,10 @@
 ##SBATCH --gres=gpu:nvidia_a100_80gb_pcie:1
 
 #SBATCH --gpus=1
-#SBATCH --gres=gpumem:16g
+#SBATCH --gres=gpumem:24g
 
 #SBATCH --time=01-00:00:00
-##SBATCH --array=0-5
+##SBATCH --array=0-8
 
 #nvidia-smi
 
@@ -26,7 +26,7 @@ source ../gpu_netket_venv1/bin/activate
 #export JAX_PLATFORMS=cpu
 
 J_VALUES=(0.5 0.55 0.6)
-SEED_VALUES=(1 2)
+SEED_VALUES=(1 2 3)
 OUTPUT_VALUES=(psi exact_sign)
 
 
@@ -55,5 +55,5 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 #srun python -m ED.quspin_MCState
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
-#python -m Observables
-python -m Entanglement.test_var_init
+srun python -m Observables
+#srun python -m Entanglement.test_var_init

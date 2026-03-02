@@ -30,7 +30,7 @@ parser.add_argument("--seed", type=float, default=1, help="seed")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 10  # Linear size of the lattice
+L = 8  # Linear size of the lattice
 
 
 n_dim = 2

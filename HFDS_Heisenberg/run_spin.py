@@ -71,18 +71,16 @@ rotation = True
 # 40k params for L=6 n_hid=6 features=128 layers=1
 # 53k params for L=6 n_hid=8 features=128 layers=1
 # 8x8
-# 40k params for L=6 n_hid=6 features=64 layers=1
-# 50k params for L=6 n_hid=8 features=64 layers=1
-# 91k params for L=6 n_hid=8 features=128 layers=1
+# 40k params for L=8 n_hid=6 features=64 layers=1
+# 50k params for L=8 n_hid=8 features=64 layers=1
+# 91k params for L=8 n_hid=8 features=128 layers=1
+# ??k params for L=8 n_hid=10 features=64 layers=1
 #10x10
 # 68k params for L=6 n_hid=8 features=64 layers=1
 # 84k params for L=6 n_hid=8 features=64 layers=1
 # 145k params for L=6 n_hid=8 features=128 layers=1
-#12x12
-# 110k params for L=6 n_hid=8 features=64 layers=1
-# 132k params for L=6 n_hid=8 features=64 layers=1
 
-n_hid_ferm       = 10
+n_hid_ferm       = 12
 features         = 64    #hidden units per layer
 hid_layers       = 1
 

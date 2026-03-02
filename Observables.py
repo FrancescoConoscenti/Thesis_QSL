@@ -452,7 +452,7 @@ def run_observables(log, folder):
 
     ################################################################################################à
     
-    """# 1. Correlations
+    # 1. Correlations
     R = compute_correlations(vstate, lattice, L, folder, hilbert)
     variables['R'] = R
 
@@ -479,28 +479,27 @@ def run_observables(log, folder):
         'vscore': vscore,
         'variance': variance_per_site,
         'count_params': count_params
-    })"""
+    })
 
     # 6. Entropy
-    """
-    n_samples_entropy = 524288
+    
+    n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
     save_variables(folder, variables)
-    """
+    
     #6. Entanglement Scaling
-    """
-    results = compute_entanglement_scaling(vstate, L, n_samples=65536) 
+    results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
     plot_entanglement_scaling(results, save_path=folder+"/physical_obs/entanglement_scaling.png")
     variables.update({'entanglement_scaling': results})
     save_variables(folder, variables)
-    """
+    
 
     #7. Sign
-    n_samples_sign = 32768//2
+    n_samples_sign = 32768*2*2
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
@@ -543,9 +542,9 @@ def run_observables(log, folder):
     """
     
     # 9. QGT
-    """qgt_vars = compute_qgt(vstate, folder, hilbert)
+    qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
     
     # 10. System specific observables
     
@@ -576,13 +575,17 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     log = None
 
     if not os.path.exists(model_path):
         model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 
     if os.path.exists(model_path):
+        if os.path.exists(os.path.join(model_path, "log.pkl")):
+            with open(os.path.join(model_path, "log.pkl"), "rb") as f:
+                log = pickle.load(f)
+
         # Check if the path is already a specific J folder
         if os.path.basename(os.path.normpath(model_path)).startswith("J=") or os.path.basename(os.path.normpath(model_path)).startswith("J2="):
             j_paths = [model_path]
