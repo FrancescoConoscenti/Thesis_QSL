@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=EntInit
+#SBATCH --job-name=ViT8
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -16,7 +16,7 @@
 #SBATCH --cpus-per-task=8
 
 #SBATCH --mem=64G
-#SBATCH --time=2-00:00:00
+#SBATCH --time=00-01:00:00
 ##SBATCH --array=0-8
 
 #SBATCH --export=ALL,XLA_PYTHON_CLIENT_PREALLOCATE=false,XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
@@ -30,7 +30,7 @@ export XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 nvidia-smi
 
 J_VALUES=(0.5 0.55 0.6)
-SEED_VALUES=(2 3 4)
+SEED_VALUES=(1 2 3)
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
@@ -42,11 +42,11 @@ J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}
 
 
-#sleep 10
-#srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
+sleep 10
+srun python -m ViT_Heisenberg.run_ViT --seed "$SEED" --J2 "$J"
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
-#sleep 10
+sleep 10
 #srun python -m Entanglement.Entanglement
-srun python -m Entanglement.test_var_init
+#srun python -m Entanglement.test_var_init
 
 #srun python -m Observables

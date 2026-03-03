@@ -7,6 +7,7 @@ from matplotlib.patches import Patch
 import pickle
 from pathlib import Path
 import numpy as np
+import matplotlib.ticker as mticker
 
 def get_available_js(model_folder):
     model_path = Path(model_folder)
@@ -267,55 +268,46 @@ def get_fidelity_from_seeds(model_folder, j_val):
 def plot_energy_vs_js(model_paths, save_name="Energy_vs_J2.png"):
     plt.figure(figsize=(10, 6))
     
-    markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
+    hfds_energies = {}
+    vit_energies = {}
 
-    gs_10x10_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Errors/gs10x10.pkl"
-    gs_10x10 = {}
-    if os.path.exists(gs_10x10_path):
-        with open(gs_10x10_path, 'rb') as f:
-            gs_10x10 = pickle.load(f)
-
-    for i, model_path in enumerate(model_paths):
+    for model_path in model_paths:
         if not os.path.exists(model_path):
             model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
             if not os.path.exists(model_path):
                 print(f"Path not found: {model_path}")
                 continue
-            
-        js = get_available_js(model_path)
-        min_energies = []
         
-        valid_js = []
+        js = get_available_js(model_path)
+        energies = {}
         
         for j in js:
             vals = get_energy_from_seeds(model_path, j)
             if vals:
-                min_energies.append(np.min(vals))
-                valid_js.append(j)
+                energies[j] = np.min(vals)
         
-        if valid_js:
-            n_params = get_param_count(model_path)
-            if "ViT" in str(model_path):
-                base_label = "ViT"
-            elif "HFDS" in str(model_path):
-                base_label = "HFDS"
-            else:
-                base_label = Path(model_path).name
-            
-            if n_params is not None:
-                label = f"{base_label} ({n_params} params)"
-            else:
-                label = base_label
+        if "HFDS" in str(model_path):
+            hfds_energies = energies
+        elif "ViT" in str(model_path):
+            vit_energies = energies
 
-            plt.plot(valid_js, min_energies, label=label, 
-                     marker=markers[i % len(markers)], color=colors[i % len(colors)], linestyle='-', alpha=0.8)
+    common_js = sorted(list(set(hfds_energies.keys()) & set(vit_energies.keys())))
+    
+    if common_js:
+        diffs = [hfds_energies[j] - vit_energies[j] for j in common_js]
+        plt.scatter(common_js, diffs, marker='o', color='tab:blue', label='$E_{HFDS} - E_{ViT}$')
+        plt.axhline(0, color='black', linestyle='--')
 
     plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("Energy per site", fontsize=12)
-    plt.title("Minimum Energy vs $J_2$", fontsize=14)
+    plt.ylabel("$E_{HFDS} - E_{ViT}$", fontsize=12)
+    plt.title("Energy Difference ($E_{HFDS} - E_{ViT}$) vs $J_2$", fontsize=14)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
+    
+    formatter = mticker.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True) 
+    formatter.set_powerlimits((-1, 1))
+    plt.gca().yaxis.set_major_formatter(formatter)
     
     save_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Errors/{save_name}"
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -570,10 +562,11 @@ def plot_fidelity_vs_js(model_paths, save_name="Infidelity_vs_J2.png"):
 
 if __name__ == "__main__":
     
-    """models = [
+    models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model"
-        ]"""
+        #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d60_heads10_patch2_sample4096_lr0.0075_iter3000_parityTrue_rotTrue_latest_model"
+        ]
     
 
     """models=[
@@ -581,27 +574,29 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
             ]"""
     
-    models=[
+    """models=[
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
-    ]
+    ]"""
+
+    #models=["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"]
     
     
     #plot_rel_error_vs_js(models)
-    plot_energy_vs_js(models)
-    #plot_energy_diff_vs_js(models)
+    #plot_energy_vs_js(models)
+    plot_energy_diff_vs_js(models)
     #plot_fidelity_vs_js(models)
 
 
-    """
+    
     folder = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Errors"
     variables = {}
     variables.update({
         "0.4": -0.52371,
-        "0.5": -0.495530,
+        "0.5": -0.4976921,
         "0.55": -0.485434,
         "0.6": -0.47604
     })
     with open(os.path.join(folder, "gs10x10.pkl"), 'wb') as f:
         pickle.dump(variables, f)
-    """
+    

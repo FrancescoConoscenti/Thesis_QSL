@@ -898,3 +898,52 @@ def Plot_Energy_Fidelity(log, fidelity, folder_path, one_avg, L, plot_variance=F
         plt.savefig(save_dir / "Energy_&_1-Fidelity.png")
     
     plt.show()
+
+def plot_Fidelity(ket_gs, vstate, folder_path, one_avg):
+
+    fidelity = Fidelity_iteration(vstate, ket_gs, folder_path)
+
+    Plot_Fidelity(fidelity, folder_path, one_avg, plot_variance=False, fidelity_var=None)
+
+    return fidelity
+
+def Plot_Fidelity(fidelity, folder_path, one_avg, plot_variance=False, fidelity_var=None):
+
+    num_models = len(fidelity)
+    total_iterations = _get_iter_from_path(str(folder_path))
+    
+    if total_iterations and num_models > 1:
+        save_every = total_iterations // (num_models-1) if num_models > 1 else total_iterations
+    else:
+        save_every = 20 # Fallback
+    
+    x_fidelity = np.arange(num_models) * save_every
+    one_minus_fid = 1.0 - np.array(fidelity)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x_fidelity, one_minus_fid, marker='s', label='1 - Fidelity', markersize=6, linewidth=2, color='tab:red')
+    
+    if one_avg == "avg" and plot_variance and fidelity_var is not None:
+        std_dev = np.sqrt(fidelity_var)
+        plt.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
+
+    plt.xlabel("Iterations", fontsize=12)
+    plt.ylabel("1 - Fidelity", fontsize=12)
+    plt.yscale('log')
+    plt.grid(True, alpha=0.3, which="both", linestyle='--')
+    plt.legend(loc='best')
+    plt.title("1 - Fidelity vs Iterations", fontsize=14)
+    
+    plt.tight_layout()
+
+    if one_avg == "avg":
+        folder_path = Path(folder_path)
+        save_path = folder_path.parent / "plot_avg" / "1-Fidelity.png"
+        os.makedirs(save_path.parent, exist_ok=True)
+        plt.savefig(save_path)
+    if one_avg == "one":
+        save_dir = Path(folder_path) / "Sign_plot"
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(save_dir / "1-Fidelity.png")
+    
+    plt.show()
