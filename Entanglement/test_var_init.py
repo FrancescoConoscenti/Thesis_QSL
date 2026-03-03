@@ -632,7 +632,7 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
         print(f"Plot saved to {save_path}")
         plt.close()
 
-def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
+def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     print("\n--- Plotting Entropy vs L ---")
     save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
     if not os.path.exists(save_dir):
@@ -719,25 +719,83 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
     markers = {1e-3: 'o', 1e-2: 's', 1e-1: 'D', 1: '^'}
     linestyles = {1e-3: '-', 1e-2: '--', 1e-1: '-.', 1: ':'}
     
+    def f_lin(x, a, b): return a * x + b
+    def f_sqrt(x, a, b): return a * np.sqrt(x) + b
+    def f_log(x, a, b): return a * np.log(x) + b
+    fit_functions = {'linear': f_lin, 'sqrt': f_sqrt, 'log': f_log}
+
     # Plotting Unnormalized
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     for name in results:
         for var in variances:
             data = results[name][var]
             params_str = ",".join(map(str, data['params']))
-            label = f"{name} Var={var} (P={params_str})"
+            base_label = f"{name} Var={var} (P={params_str})"
             L_arr = np.array(data['L'])
-            max_ent = (L_arr**2 / 2.0) * np.log(2)
-            plt.errorbar(L_arr**2, np.array(data['mean']) * max_ent, yerr=np.array(data['err']) * max_ent, 
-                         label=label, color=colors[name], 
-                         marker=markers[var], linestyle=linestyles[var], capsize=5)
-    
-    if xavier_results is not None:
+            N_arr = L_arr**2
+            max_ent = (N_arr / 2.0) * np.log(2)
+            y_data = np.array(data['mean']) * max_ent
+            y_err = np.array(data['err']) * max_ent
+
+            best_fit_name, best_popt = None, None
+            if len(L_arr) > 2:
+                min_chisqr = np.inf
+                valid_pts = np.isfinite(y_err) & (y_err > 1e-9)
+                x_fit, y_fit, y_err_fit = N_arr[valid_pts], y_data[valid_pts], y_err[valid_pts]
+
+                if len(x_fit) > 2:
+                    for fit_name, fit_func in fit_functions.items():
+                        try:
+                            popt, _ = curve_fit(fit_func, x_fit, y_fit, sigma=y_err_fit, absolute_sigma=True)
+                            residuals = y_fit - fit_func(x_fit, *popt)
+                            chisqr = np.sum((residuals / y_err_fit) ** 2)
+                            if chisqr < min_chisqr:
+                                min_chisqr, best_fit_name, best_popt = chisqr, fit_name, popt
+                        except RuntimeError:
+                            continue
+            
+            fit_label_ext = f" ({best_fit_name} fit)" if best_fit_name else ""
+            plt.errorbar(N_arr, y_data, yerr=y_err, 
+                         label=base_label + fit_label_ext, color=colors[name], 
+                         marker=markers.get(var, 'o'), linestyle='none', capsize=5)
+
+            if best_popt is not None:
+                x_plot = np.linspace(min(N_arr), max(N_arr), 200)
+                plt.plot(x_plot, fit_functions[best_fit_name](x_plot, *best_popt), 
+                         color=colors[name], linestyle=linestyles.get(var, '-'))
+
+    if xavier_results is not None and len(xavier_results['L']) > 0:
         L_x = np.array(xavier_results['L'])
-        max_ent_x = (L_x**2 / 2.0) * np.log(2)
+        N_x = L_x**2
+        max_ent_x = (N_x / 2.0) * np.log(2)
+        y_data_x = np.array(xavier_results['mean']) * max_ent_x
+        y_err_x = np.array(xavier_results['err']) * max_ent_x
         params_str_x = ",".join(map(str, xavier_results['params']))
-        plt.errorbar(L_x**2, np.array(xavier_results['mean']) * max_ent_x, yerr=np.array(xavier_results['err']) * max_ent_x,
-                     label=f'ViT Xavier (P={params_str_x})', color='red', marker='*', linestyle='-', capsize=5)
+        label_x = f'ViT Xavier (P={params_str_x})'
+
+        best_fit_name_x, best_popt_x = None, None
+        if len(L_x) > 2:
+            min_chisqr = np.inf
+            valid_pts = np.isfinite(y_err_x) & (y_err_x > 1e-9)
+            x_fit, y_fit, y_err_fit = N_x[valid_pts], y_data_x[valid_pts], y_err_x[valid_pts]
+            if len(x_fit) > 2:
+                for fit_name, fit_func in fit_functions.items():
+                    try:
+                        popt, _ = curve_fit(fit_func, x_fit, y_fit, sigma=y_err_fit, absolute_sigma=True)
+                        residuals = y_fit - fit_func(x_fit, *popt)
+                        chisqr = np.sum((residuals / y_err_fit) ** 2)
+                        if chisqr < min_chisqr:
+                            min_chisqr, best_fit_name_x, best_popt_x = chisqr, fit_name, popt
+                    except RuntimeError:
+                        continue
+        
+        fit_label_ext_x = f" ({best_fit_name_x} fit)" if best_fit_name_x else ""
+        plt.errorbar(N_x, y_data_x, yerr=y_err_x,
+                     label=label_x + fit_label_ext_x, color='red', marker='*', linestyle='none', capsize=5)
+
+        if best_popt_x is not None:
+            x_plot = np.linspace(min(N_x), max(N_x), 200)
+            plt.plot(x_plot, fit_functions[best_fit_name_x](x_plot, *best_popt_x), color='red', linestyle='-')
     
     plt.xlabel('Number of Spins N (L^2)')
     plt.ylabel('Renyi-2 Entropy')
@@ -745,7 +803,7 @@ def plot_entropy_vs_L(n_seeds=10, n_samples=4096, models_to_plot=None):
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    
+
     save_path = get_unique_path(save_dir, "Entropy_vs_L_Scaling_Unnormalized.png")
     plt.savefig(save_path)
     print(f"Plot saved to {save_path}")
@@ -885,6 +943,11 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
     markers = {'Small': 'o', 'Medium': 's', 'Large': '^'}
     linestyles = {'Small': ':', 'Medium': '--', 'Large': '-'}
     
+    def f_lin(x, a, b): return a * x + b
+    def f_sqrt(x, a, b): return a * np.sqrt(x) + b
+    def f_log(x, a, b): return a * np.log(x) + b
+    fit_functions = {'linear': f_lin, 'sqrt': f_sqrt, 'log': f_log}
+
     # Define groups to plot
     plot_groups = {
         "All": list(results.keys()),
@@ -896,19 +959,46 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
         if not model_names:
             continue
             
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(12, 7))
         for name in model_names:
             for size_label in ['Small', 'Medium', 'Large']:
                 if size_label in results[name]:
                     data = results[name][size_label]
                     params_str = ",".join(map(str, data['params']))
-                    label = f"{name} {size_label} (P={params_str})"
+                    base_label = f"{name} {size_label} (P={params_str})"
                     
                     L_arr = np.array(data['L'])
-                    max_ent = (L_arr**2 / 2.0) * np.log(2)
-                    plt.errorbar(L_arr**2, np.array(data['mean']) * max_ent, yerr=np.array(data['err']) * max_ent, 
-                                 label=label, color=colors.get(name, 'black'), 
-                                 marker=markers[size_label], linestyle=linestyles[size_label], capsize=5)
+                    N_arr = L_arr**2
+                    max_ent = (N_arr / 2.0) * np.log(2)
+                    y_data = np.array(data['mean']) * max_ent
+                    y_err = np.array(data['err']) * max_ent
+
+                    best_fit_name, best_popt = None, None
+                    if len(L_arr) > 2:
+                        min_chisqr = np.inf
+                        valid_pts = np.isfinite(y_err) & (y_err > 1e-9)
+                        x_fit, y_fit, y_err_fit = N_arr[valid_pts], y_data[valid_pts], y_err[valid_pts]
+
+                        if len(x_fit) > 2:
+                            for fit_name, fit_func in fit_functions.items():
+                                try:
+                                    popt, _ = curve_fit(fit_func, x_fit, y_fit, sigma=y_err_fit, absolute_sigma=True)
+                                    residuals = y_fit - fit_func(x_fit, *popt)
+                                    chisqr = np.sum((residuals / y_err_fit) ** 2)
+                                    if chisqr < min_chisqr:
+                                        min_chisqr, best_fit_name, best_popt = chisqr, fit_name, popt
+                                except RuntimeError:
+                                    continue
+                    
+                    fit_label_ext = f" ({best_fit_name} fit)" if best_fit_name else ""
+                    plt.errorbar(N_arr, y_data, yerr=y_err, 
+                                 label=base_label + fit_label_ext, color=colors.get(name, 'black'), 
+                                 marker=markers[size_label], linestyle='none', capsize=5)
+
+                    if best_popt is not None:
+                        x_plot = np.linspace(min(N_arr), max(N_arr), 200)
+                        plt.plot(x_plot, fit_functions[best_fit_name](x_plot, *best_popt), 
+                                 color=colors.get(name, 'black'), linestyle=linestyles[size_label])
         
         plt.xlabel('Number of Spins N (L^2)')
         plt.ylabel('Renyi-2 Entropy')
@@ -1276,12 +1366,12 @@ def main():
     #test_entanglement_entropy_hfds(n_samples=65536)
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
-    #plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"])
-    #plot_entropy_vs_L(n_seeds=10, n_samples=65536//2, models_to_plot=["ViT", "HFDS"])
-    #plot_entropy_vs_L_hidden_size(n_seeds=5, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
+    plot_entropy_vs_variance(n_seeds=1, n_samples=16, models_to_plot=["ViT", "HFDS", "HFDS Random"])
+    plot_entropy_vs_L_variance(n_seeds=1, n_samples=16, models_to_plot=["ViT", "HFDS"])
+    plot_entropy_vs_L_hidden_size(n_seeds=1, n_samples=16, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
     
     #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
+    #plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
 
 if __name__ == "__main__":
     main()

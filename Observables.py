@@ -482,7 +482,6 @@ def run_observables(log, folder):
     })
 
     # 6. Entropy
-    
     n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
@@ -492,10 +491,10 @@ def run_observables(log, folder):
     save_variables(folder, variables)
     
     #6. Entanglement Scaling
-    results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
+    """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
     plot_entanglement_scaling(results, save_path=folder+"/physical_obs/entanglement_scaling.png")
     variables.update({'entanglement_scaling': results})
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
 
     #7. Sign
@@ -575,7 +574,7 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     log = None
 
     if not os.path.exists(model_path):

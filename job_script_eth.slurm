@@ -9,8 +9,8 @@
 ##SBATCH --partition=gpupr.4h
 ##SBATCH --gres=gpu:nvidia_a100_80gb_pcie:1
 
-#SBATCH --gpus=1
-#SBATCH --gres=gpumem:24g
+##SBATCH --gpus=1
+##SBATCH --gres=gpumem:16g
 
 #SBATCH --time=01-00:00:00
 ##SBATCH --array=0-8
@@ -23,7 +23,7 @@ module load openmpi/4.1.6
 module load python/3.11.6
 source ../gpu_netket_venv1/bin/activate
 
-#export JAX_PLATFORMS=cpu
+export JAX_PLATFORMS=cpu
 
 J_VALUES=(0.5 0.55 0.6)
 SEED_VALUES=(1 2 3)
@@ -56,4 +56,4 @@ OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
 srun python -m Observables
-#srun python -m Entanglement.test_var_init
+#srun python -m Entanglement.test_var_init_no_bipartite

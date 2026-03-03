@@ -167,21 +167,12 @@ def compute_entanglement_scaling(vstate, L_total, n_samples=2048, min_size=2):
         perimeter = 4 * l
 
         S2, err = compute_renyi2_entropy(vstate, partition, n_samples=n_samples)
-<<<<<<< HEAD
 
         # Un-normalize the entropy since compute_renyi2_entropy returns a normalized value
         max_entropy = len(partition) * np.log(2)
         S2 *= max_entropy
         err *= max_entropy
 
-=======
-        
-        # Un-normalize entropy (compute_renyi2_entropy returns S2 / (N_A * ln(2)))
-        max_ent = len(partition) * np.log(2)
-        S2 *= max_ent
-        err *= max_ent
-        
->>>>>>> 2af12930 (ent_spectrum)
         perimeters.append(perimeter)
         entropies.append(S2)
         errors.append(err)
