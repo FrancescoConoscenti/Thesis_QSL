@@ -169,18 +169,24 @@ def compute_exact_energy(L, J2, hamiltonian):
     return E_exact, ket_gs
 
 def compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian):
+    # The physical Heisenberg Hamiltonian is H_phys = J * Sum(S_i.S_j).
+    # NetKet's operator is H_nk = J * Sum(sigma_i.sigma_j).
+    # Since S = sigma/2, H_nk = 4 * H_phys. This factor is used for normalization.
+    ENERGY_NORMALIZATION_FACTOR = 4.0
+    N_SITES = L * L
+
     if log is not None:
         E_vs_final_per_site, energy_per_iterations = Energy(log, L)
         if E_exact is not None:
             plot_energy(folder, energy_per_iterations, E_exact=E_exact)
         else:
             plot_energy(folder, energy_per_iterations, E_last=E_vs_final_per_site)
-        variance_per_site = Variance(log, folder_energy) / ((L*L*4)**2)
+        variance_per_site = Variance(log, L, folder_energy)
         vscore = Vscore(L, variance_per_site, E_vs_final_per_site)
     else:
         E_vs = vstate.expect(hamiltonian)
-        E_vs_final_per_site = E_vs.mean.real/(L*L*4)
-        variance_per_site = E_vs.variance.real / ((L*L*4)**2)
+        E_vs_final_per_site = E_vs.mean.real / (N_SITES * ENERGY_NORMALIZATION_FACTOR)
+        variance_per_site = E_vs.variance.real / (N_SITES * ENERGY_NORMALIZATION_FACTOR**2)
         vscore = Vscore(L, variance_per_site, E_vs_final_per_site)
     
     print(f"Final Energy from VMC: {E_vs_final_per_site}")
