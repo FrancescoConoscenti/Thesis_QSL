@@ -20,6 +20,7 @@ class HiddenFermion(nn.Module):
   features: int
   MFinit: str
   hilbert: HomogeneousHilbert
+  N_sites: int = None
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
   bounds: str="PBC"
@@ -31,9 +32,13 @@ class HiddenFermion(nn.Module):
   def setup(self):
     #logger.info("Setting up HiddenFermion model.")
     # orbital Initialization
-    self.n_modes = 2 * self.L*self.L
-    self.n_elecs = self.L * self.L
-    self.orbitals = Orbitals(self.L, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
+    N_sites = self.N_sites
+    if N_sites is None:
+        N_sites = self.L * self.L
+
+    self.n_modes = 2 * N_sites
+    self.n_elecs = N_sites
+    self.orbitals = Orbitals(self.L, N_sites, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]

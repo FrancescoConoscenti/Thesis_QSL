@@ -10,6 +10,9 @@ from ViT_Heisenberg.ViT_model_ent import ViT_ent
 from HFDS_Heisenberg.entanglement_model.HFDS_model_spin_ent import HiddenFermion_ent
 from Entanglement.Entanglement import compute_renyi2_entropy, clean_up
 
+from scipy.optimize import curve_fit 
+
+
 def get_unique_path(directory, filename):
     base, ext = os.path.splitext(filename)
     counter = 1
@@ -808,7 +811,7 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     plt.savefig(save_path)
     print(f"Plot saved to {save_path}")
 
-def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=None):
+def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=None, var=1):
     print("\n--- Plotting Entropy vs L (Varying Hidden Size) ---")
     save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
     if not os.path.exists(save_dir):
@@ -816,8 +819,7 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS", "HFDS Random"]
-    # Fixed variance for initialization
-    var = 1
+
     std = np.sqrt(var)
     init_fun = normal(stddev=std)
     
@@ -1366,12 +1368,12 @@ def main():
     #test_entanglement_entropy_hfds(n_samples=65536)
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
-    plot_entropy_vs_variance(n_seeds=1, n_samples=16, models_to_plot=["ViT", "HFDS", "HFDS Random"])
-    plot_entropy_vs_L_variance(n_seeds=1, n_samples=16, models_to_plot=["ViT", "HFDS"])
-    plot_entropy_vs_L_hidden_size(n_seeds=1, n_samples=16, models_to_plot=[ "ViT", "HFDS", "HFDS Random"])
+    plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
     
-    #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    #plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
+    plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
 
 if __name__ == "__main__":
     main()

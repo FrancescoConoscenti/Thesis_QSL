@@ -32,6 +32,7 @@ def compute_orbital_selection(x, orbitals_full, N_sites):
  
 class Orbitals(nn.Module):
   L: int
+  N_sites: int
   n_elecs: int
   n_hid: int
   MFinit: str
@@ -53,7 +54,7 @@ class Orbitals(nn.Module):
     return mf
   
   def setup(self):
-    N_sites = self.L * self.L
+    N_sites = self.N_sites
 
     if self.MFinit=="Fermi":
         self.orbitals_mfmf = self.param('orbitals_mf',self._init_mf,(N_sites,self.n_elecs), self.dtype)
@@ -75,6 +76,6 @@ class Orbitals(nn.Module):
     # Vectorize the single-sample function to work on a batch of samples `x`.
     # We vectorize over `x` (axis 0), but use the same `orbitals_full` (None) and `N_sites` (None) for all samples.
     vmapped_selection = jax.vmap(compute_orbital_selection, in_axes=(0, None, None))
-    orbitals_selected = vmapped_selection(x, orbitals_full, self.L * self.L)
+    orbitals_selected = vmapped_selection(x, orbitals_full, self.N_sites)
     
     return orbitals_selected
