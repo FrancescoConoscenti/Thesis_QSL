@@ -57,23 +57,27 @@ def Magnetization(vstate, lattice, hi):
     return tot_magn_vstate
 
 #Variance
-def Variance(log, folder=None):
+def Variance(log, L, folder=None):
     variance_history = log.data["Energy"]["Variance"]
-    variance = variance_history[-1].real
+    variance_per_site_history = np.array(variance_history)/(L * L * 4**2)
+    variance_per_site_final = variance_per_site_history[-1].real
     
     if folder is not None:
         plt.figure()
-        plt.plot(variance_history.real)
-        plt.title("Variance vs Iterations")
+        plt.plot(variance_per_site_history.real)
+        plt.title("Variance per site vs Iterations")
         plt.xlabel("Iterations")
-        plt.ylabel("Variance")
+        plt.ylabel("Variance per site")
         plt.yscale("log")
         plt.savefig(f'{folder}/Variance_log.png')
         plt.close()
 
-    return variance
+    return variance_per_site_final
 
 #Vscore
-def Vscore(L, variance, E_vs):
-    v_score = L*L*variance/(E_vs*L*L*4)
+def Vscore(L, variance_per_site, E_vs):
+    # V-score is typically defined as Var(E) / <E>^2.
+    # Here, variance_per_site is Var(E_phys_site) and E_vs is <E_phys_site>.
+    # So, the correct formula should be variance_per_site / (E_vs**2).
+    v_score = variance_per_site / (E_vs**2)
     return v_score
