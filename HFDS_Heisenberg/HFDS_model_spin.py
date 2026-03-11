@@ -6,6 +6,7 @@ import numpy as np
 from netket.hilbert.homogeneous import HomogeneousHilbert 
 from netket.jax import logsumexp_cplx
 import logging
+from typing import Any
 
 from HFDS_Heisenberg.Init_orbitals import Orbitals
 
@@ -23,7 +24,7 @@ class HiddenFermion(nn.Module):
   N_sites: int = None
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
-  bounds: str="PBC"
+  bounds: Any = "PBC"
   parity: bool = False
   rotation: bool = False
   dtype: type = jnp.float64

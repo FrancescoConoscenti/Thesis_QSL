@@ -62,7 +62,7 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
         if p_type == "Strip":
             sizes = range(1, L // 2 + 1)
         else:
-            sizes = range(1, L)
+            sizes = range(1, L // 2 + 1)
 
         # Precompute partitions
         partitions_map = {}
@@ -309,7 +309,7 @@ def plot_entropy_vs_partition_hidden_size(L=6, n_seeds=10, n_samples=4096, model
         if p_type == "Strip":
             sizes = range(1, L // 2 + 1)
         else:
-            sizes = range(1, L)
+            sizes = range(1, L // 2 + 1)
 
         partitions_map = {}
         for size in sizes:
@@ -636,7 +636,7 @@ def plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, 
         partitions = [get_strip_partition(L, w) for w in p_sizes]
         xlabel = "Partition Width (Strip)"
     else:
-        p_sizes = list(range(1, L))
+        p_sizes = list(range(1, L // 2 + 1))
         partitions = [get_square_partition(L, s) for s in p_sizes]
         xlabel = "Partition Side (Square)"
     
@@ -787,7 +787,7 @@ def plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, 
 
 def main():
 
-    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS"], variances=[1e-3, 1e-2, 1e-1, 1, 10, 100], partition_type="Square")
+    plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS"], variances=[1e-3, 1e-2, 1e-1, 1, 10, 100], partition_type="Square")
     #plot_entropy_vs_partition_hidden_size(L=10, n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"], var=10, partition_type="Square")
     
     #plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSFermi", "HFDSrandom"], var=10, partition_type="Strip")

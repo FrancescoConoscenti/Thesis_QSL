@@ -64,6 +64,16 @@ def parse_model_path(model_path):
         
         match_type = re.search(r"type([a-zA-Z]+)", model_path)
         params['dtype'] = match_type.group(1) if match_type else "complex"
+
+        match_bc = re.search(r"bc([A-Z_]+)", model_path)
+        if match_bc:
+            bc_parts = match_bc.group(1).split('_')
+            if len(bc_parts) == 2:
+                params['bc_x'] = bc_parts[0]
+                params['bc_y'] = bc_parts[1]
+            elif len(bc_parts) == 1 and bc_parts[0]:
+                params['bc_x'] = bc_parts[0]
+                params['bc_y'] = bc_parts[0]
     else:
         params['model_type'] = 'ViT'
         params['num_layers'] = int(re.search(r"layers(\d+)", model_path).group(1)) if re.search(r"layers(\d+)", model_path) else 2
@@ -82,9 +92,15 @@ def setup_environment(folder):
     sys.stdout = open(os.path.join(folder, "output.txt"), "a")
     return folder_energy
 
-def setup_system(L, J2):
+def setup_system(L, J2, params=None):
     n_dim = 2
-    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=True, max_neighbor_order=2)
+    pbc = True
+    if params is not None and "bc_x" in params and "bc_y" in params:
+        pbc_x = (params["bc_x"] == "PBC")
+        pbc_y = (params["bc_y"] == "PBC")
+        pbc = [pbc_x, pbc_y]
+
+    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=pbc, max_neighbor_order=2)
     hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
     hamiltonian = nk.operator.Heisenberg(
         hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
@@ -115,7 +131,7 @@ def setup_model(params, hilbert, L):
             hilbert=hilbert,
             stop_grad_mf=False,
             stop_grad_lower_block=False,
-            bounds="PBC",
+            bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
             parity=True,
             rotation=True,
             dtype=dtype_
@@ -433,7 +449,7 @@ def run_observables(log, folder):
     J2 = params['J2']
     print(f"Loaded params: {params}")
 
-    lattice, hilbert, hamiltonian = setup_system(L, J2)
+    lattice, hilbert, hamiltonian = setup_system(L, J2, params)
     model = setup_model(params, hilbert, L)
     
     sampler = nk.sampler.MetropolisExchange(
@@ -488,13 +504,13 @@ def run_observables(log, folder):
     })
 
     # 6. Entropy
-    n_samples_entropy = 524288//2
+    """n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -504,13 +520,13 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    n_samples_sign = 32768*2*2
+    """n_samples_sign = 32768*2*2
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     
     # 8. Sign Complexity
@@ -547,20 +563,20 @@ def run_observables(log, folder):
     """
     
     # 9. QGT
-    qgt_vars = compute_qgt(vstate, folder, hilbert)
+    """qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     # 10. System specific observables
     
-    """if L == 4 and ket_gs is not None:
+    if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
-        save_variables(folder, variables)"""
-    """elif L == 6:
+        save_variables(folder, variables)
+    elif L == 6:
         l6_vars = compute_L6_observables(vstate, J2, folder, params)
         variables.update(l6_vars)
-        save_variables(folder, variables)"""
+        save_variables(folder, variables)
 
     # 11. Coupling Matrix Analysis
     """
@@ -580,7 +596,7 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     log = None
 
     if not os.path.exists(model_path):

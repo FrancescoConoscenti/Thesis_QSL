@@ -36,20 +36,17 @@ parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
-parser.add_argument("--lattice", type=str, default="square", choices=["square", "triangular", "honeycomb", "kagome"], help="Lattice geometry")
-parser.add_argument("--bc", type=str, default="APC", choices=["PBC", "APC"], help="Boundary condition")
+#parser.add_argument("--lattice", type=str, default="square", choices=["square", "triangular", "honeycomb", "kagome"], help="Lattice geometry")
+parser.add_argument("--bc_x", type=str, default="APC", choices=["PBC", "APC"], help="Boundary condition x")
+parser.add_argument("--bc_y", type=str, default="PBC", choices=["PBC", "APC"], help="Boundary condition y")
 args = parser.parse_args()
 
 spin = True
 
 #Physical param
 L       = args.L
-if args.lattice == "honeycomb":
-    N_sites = 2 * L * L
-elif args.lattice == "kagome":
-    N_sites = 3 * L * L
-else:
-    N_sites = L * L
+N_sites = L * L
+
 n_elecs = N_sites # L*L should be half filling
 N_up    = (n_elecs+1)//2
 N_dn    = n_elecs//2
@@ -62,14 +59,14 @@ seed = int(args.seed)
 dtype   = "complex"
 MFinitialization = "Fermi" #G_MF#random #Fermi
 determinant_type = "hidden"
-bounds  = args.bc
+
+bc_x = args.bc_x
+bc_y = args.bc_y
+bounds = (bc_x, bc_y)
+
 parity = True
 rotation = True
 
-# Disable rotation symmetry for non-square lattices as HFDS rotation is hardcoded for square
-if args.lattice != "square":
-    rotation = False
-    MFinitialization = "random"
 
 #Varaitional state param
 # 1k params for L=4 n_hid=1 features=16 layers=1
@@ -93,26 +90,26 @@ if args.lattice != "square":
 # 84k params for L=6 n_hid=8 features=64 layers=1
 # 145k params for L=6 n_hid=8 features=128 layers=1
 
-n_hid_ferm       = 10
-features         = 64    #hidden units per layer
+n_hid_ferm       = 8
+features         = 32    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 16  #total number of samples
+n_samples        = 2048  #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//32  #number of parallel Markov chains
 chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
 
-N_opt            = 3000
+N_opt            = 2000
 
-number_data_points = 2
+number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
 
-model_name = f"{args.lattice}_bc{args.bc}_layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -130,20 +127,13 @@ os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
-print(f"HFDS_spin, lattice={args.lattice}, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
+print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
 
 # Hilbert space of spins on the graph
-pbc_flag = (args.bc == "PBC")
-if args.lattice == "square":
-    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=pbc_flag, max_neighbor_order=2)
-elif args.lattice == "triangular":
-    lattice = nk.graph.TriangularLattice(extent=[L, L], pbc=pbc_flag)
-elif args.lattice == "honeycomb":
-    lattice = nk.graph.HoneycombLattice(extent=[L, L], pbc=pbc_flag)
-elif args.lattice == "kagome":
-    lattice = nk.graph.KagomeLattice(extent=[L, L], pbc=pbc_flag)
-else:
-    raise ValueError(f"Unknown lattice geometry: {args.lattice}")
+pbc_x = (bc_x == "PBC")
+pbc_y = (bc_y == "PBC")
+lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[pbc_x, pbc_y], max_neighbor_order=2)
+
 hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
 print(f"hilbert space size = ",hi.size)
 
@@ -240,7 +230,10 @@ final_log_data = helper.merge_log_data(old_log_data, log.data)
 #################################################################################################################
 
 print("Running observables computation...")
-run_observables(helper.MockLog(log.data), folder)
+if final_log_data and "Energy" in final_log_data:
+    run_observables(helper.MockLog(final_log_data), folder)
+else:
+    run_observables(None, folder)
 
 
 sys.stdout.close()

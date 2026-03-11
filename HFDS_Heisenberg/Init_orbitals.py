@@ -1,3 +1,5 @@
+from typing import Any
+
 from jax import numpy as jnp
 import numpy as np
 import netket as nk
@@ -37,7 +39,7 @@ class Orbitals(nn.Module):
   n_hid: int
   MFinit: str
   stop_grad_mf: bool
-  bounds: str
+  bounds: Any
   dtype: type = jnp.float64
   U: float = 8.0
 

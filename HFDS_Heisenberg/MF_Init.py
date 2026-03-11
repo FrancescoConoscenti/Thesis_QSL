@@ -13,36 +13,42 @@ from netket.hilbert.homogeneous import HomogeneousHilbert
 
 
 def init_orbitals_mf(L, bounds, dtype):
-    def ft_local_pbc(x,y,kx,ky):
-      if dtype==jnp.float64:
-        if kx<=L//2 and ky<=L//2:
-            res = jnp.cos(2*jnp.pi*(x)/L*(kx))*jnp.cos(2*jnp.pi*(y)/L*(ky))
-        elif kx>=L//2 and ky<=L//2:
-            res = jnp.sin(2*jnp.pi*(x)/L*(kx))*jnp.cos(2*jnp.pi*(y)/L*(ky)) 
-        elif kx<=L//2 and ky>=L//2:
-            res = jnp.cos(2*jnp.pi*(x)/L*(kx))*jnp.sin(2*jnp.pi*(y)/L*(ky)) 
-        elif kx>=L//2 and ky>=L//2:
-            res = jnp.sin(2*jnp.pi*(x)/L*(kx))*jnp.sin(2*jnp.pi*(y)/L*(ky)) 
-      else:
-        res = jnp.exp(1j*2*jnp.pi*(kx/L*x + ky/L*y))
-      return res
 
-    def ft_local_apc(x, y, kx, ky):
-        if dtype == jnp.float64:
-            raise NotImplementedError("APC is not implemented for real dtype in MF initialization.")
-        else:
-            # kx, ky are integers n_x, n_y
-            res = jnp.exp(1j * jnp.pi / L * ((2 * kx + 1) * x + (2 * ky + 1) * y))
-        return res
-
-    if bounds == "PBC":
-        ft_local = ft_local_pbc
-        energy_fn = lambda k: -np.cos(2 * np.pi * k[0] / L) - np.cos(2 * np.pi * k[1] / L)
-    elif bounds == "APC":
-        ft_local = ft_local_apc
-        energy_fn = lambda k: -np.cos((2 * k[0] + 1) * np.pi / L) - np.cos((2 * k[1] + 1) * np.pi / L)
+    if isinstance(bounds, str):
+        bx = bounds
+        by = bounds
     else:
-        raise ValueError(f"Unknown bounds: {bounds}")
+        bx, by = bounds
+
+    def get_k_val(k_idx, bc):
+        if bc == "PBC":
+            return 2 * k_idx
+        elif bc == "APC":
+            return 2 * k_idx + 1
+        else:
+            raise ValueError(f"Unknown BC: {bc}")
+
+    def ft_local_mixed(x, y, kx, ky):
+        if dtype == jnp.float64:
+             if bx == "PBC" and by == "PBC":
+                if kx<=L//2 and ky<=L//2:
+                    res = jnp.cos(2*jnp.pi*(x)/L*(kx))*jnp.cos(2*jnp.pi*(y)/L*(ky))
+                elif kx>=L//2 and ky<=L//2:
+                    res = jnp.sin(2*jnp.pi*(x)/L*(kx))*jnp.cos(2*jnp.pi*(y)/L*(ky)) 
+                elif kx<=L//2 and ky>=L//2:
+                    res = jnp.cos(2*jnp.pi*(x)/L*(kx))*jnp.sin(2*jnp.pi*(y)/L*(ky)) 
+                elif kx>=L//2 and ky>=L//2:
+                    res = jnp.sin(2*jnp.pi*(x)/L*(kx))*jnp.sin(2*jnp.pi*(y)/L*(ky))
+                return res
+             else:
+                 raise NotImplementedError("Real dtype only implemented for PBC in both directions.")
+        else:
+             val_x = get_k_val(kx, bx)
+             val_y = get_k_val(ky, by)
+             return jnp.exp(1j * jnp.pi / L * (val_x * x + val_y * y))
+
+    ft_local = ft_local_mixed
+    energy_fn = lambda k: -np.cos(get_k_val(k[0], bx) * np.pi / L) - np.cos(get_k_val(k[1], by) * np.pi / L)
 
     def ft(k_arr, max_val):
         matrix = []
