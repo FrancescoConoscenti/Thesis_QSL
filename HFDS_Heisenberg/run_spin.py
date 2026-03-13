@@ -90,19 +90,19 @@ rotation = True
 # 84k params for L=6 n_hid=8 features=64 layers=1
 # 145k params for L=6 n_hid=8 features=128 layers=1
 
-n_hid_ferm       = 8
-features         = 32    #hidden units per layer
+n_hid_ferm       = 4
+features         = 64    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 2048  #total number of samples
+n_samples        = 1024  #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//32  #number of parallel Markov chains
 chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
 
-N_opt            = 2000
+N_opt            = 4000
 
 number_data_points = 20
 save_every       = N_opt//number_data_points

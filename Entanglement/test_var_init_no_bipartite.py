@@ -6,6 +6,7 @@ from jax.nn.initializers import normal
 import sys
 import matplotlib.pyplot as plt
 import os
+import pickle
 sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 from ViT_Heisenberg.ViT_model_ent import ViT_ent
 from HFDS_Heisenberg.entanglement_model.HFDS_model_spin_ent import HiddenFermion_ent
@@ -160,9 +161,24 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
             xavier_results['params'] = [param_count_x] * len(sizes)
             print(f"    ViT Xavier: S2 mean over sizes={np.mean(xavier_results['mean']):.4f}")
 
-        colors = {'RBM': 'blue', 'ViT': 'orange', 'HFDS': 'green'}
-        markers = {1e-3: 'o', 1e-2: 's', 1e-1: 'D', 1: '^'}
-        linestyles = {1e-3: '-', 1e-2: '--', 1e-1: '-.', 1: ':'}
+        # Save plotted data
+        plot_data = {
+            'results': results,
+            'xavier_results': xavier_results,
+            'variances': variances,
+            'L': L,
+            'partition_type': p_type
+        }
+        data_path = get_unique_path(save_dir, f"Entropy_vs_Partition_{p_type}_L{L}_data.pkl")
+        with open(data_path, 'wb') as f:
+            pickle.dump(plot_data, f)
+        print(f"Plot data saved to {data_path}")
+
+        model_cmaps = {
+            'RBM': plt.cm.Blues,
+            'ViT': plt.cm.Oranges,
+            'HFDS': plt.cm.Greens
+        }
         
         def f_lin(x, a, b): return a * x + b
         def f_sqrt(x, a, b): return a * np.sqrt(x) + b
@@ -173,7 +189,17 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
         def plot_subset(subset_names, plot_xavier, filename_suffix, title_suffix):
             plt.figure(figsize=(10, 6))
             for name in subset_names:
-                for var in variances:
+                cmap = model_cmaps.get(name, plt.cm.Greys)
+                present_vars = [v for v in variances if v in results[name]]
+                
+                for i, var in enumerate(present_vars):
+                    # Calculate color intensity based on index (avoiding very light colors)
+                    if len(present_vars) > 1:
+                        intensity = 0.4 + 0.6 * (i / (len(present_vars) - 1))
+                    else:
+                        intensity = 1.0
+                    color = cmap(intensity)
+
                     data = results[name][var]
                     params_val = data['params'][0] if data['params'] else 'N/A'
                     label = f"{name} Var={var} (P={params_val})"
@@ -209,12 +235,12 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
                         label += f" {best_fit} (a={best_popt[0]:.3f})"
 
                     plt.errorbar(partition_size, y_data, yerr=y_err, 
-                                label=label, color=colors[name], 
-                                marker=markers.get(var, 'o'), linestyle='none', capsize=5)
+                                label=label, color=color, 
+                                marker='o', linestyle='none', capsize=5)
                     
                     if best_fit:
                         x_plot = np.linspace(partition_size.min(), partition_size.max(), 100)
-                        plt.plot(x_plot, fit_functions[best_fit](x_plot, *best_popt), color=colors[name], linestyle='-', alpha=0.5)
+                        plt.plot(x_plot, fit_functions[best_fit](x_plot, *best_popt), color=color, linestyle='-', alpha=0.8)
             
             if plot_xavier and xavier_results is not None and len(xavier_results['size']) > 0:
                 size_x = np.array(xavier_results['size'])
@@ -787,7 +813,7 @@ def plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, 
 
 def main():
 
-    plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS"], variances=[1e-3, 1e-2, 1e-1, 1, 10, 100], partition_type="Square")
+    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"], variances=[1e-3, 1e-2, 1e-1, 1, 10, 100], partition_type="Square")
     #plot_entropy_vs_partition_hidden_size(L=10, n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"], var=10, partition_type="Square")
     
     #plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSFermi", "HFDSrandom"], var=10, partition_type="Strip")
