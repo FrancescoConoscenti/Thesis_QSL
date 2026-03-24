@@ -4,7 +4,7 @@ import netket as nk
 import jax
 from flax import linen as nn
 from jax.nn.initializers import normal, zeros
-from typing import Callable
+from typing import Callable, Any
 
 from HFDS_Heisenberg.MF_Init import init_orbitals_mf
 #from HFDS_Heisenberg.Optimized_Gutwiller_MF_Init import optimized_gutzwiller_params
@@ -37,7 +37,7 @@ class Orbitals_ent(nn.Module):
   n_hid: int
   MFinit: str
   stop_grad_mf: bool
-  bounds: str
+  bounds: Any
   dtype: type = jnp.float64
   U: float = 8.0
   kernel_init: Callable = normal(0.1)

@@ -1431,7 +1431,7 @@ def main():
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
     #plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536//2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViT", "HFDS"])
     #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
     
     #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])

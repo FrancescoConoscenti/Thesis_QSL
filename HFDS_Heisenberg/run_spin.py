@@ -8,6 +8,7 @@ import flax
 import helper
 import logging
 import pickle
+import re
 os.environ["JAX_PLATFORM_NAME"] = "gpu"
 
 print("Total devices:", jax.device_count())
@@ -18,6 +19,7 @@ import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
 from netket.driver import VMC_SR
+
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 
 from Elaborate.Statistics.Energy import *
@@ -45,6 +47,7 @@ args = parser.parse_args()
 
 spin = True
 
+
 #Physical param
 L       = args.L
 N_sites = L * L
@@ -70,47 +73,36 @@ parity = True
 rotation = False
 
 
-#Varaitional state param
-# 1k params for L=4 n_hid=1 features=16 layers=1
-# 3.9k params for L=4 n_hid=2 features=64 layers=1
-# 6k params for L=4 n_hid=4 features=64 layers=1
-# 13k params for L=4 n_hid=6 features=128 layers=1
-
-# 6x6
-# 3.8k params for L=6 n_hid=1 features=16 layers=1
-# 6k params for L=6 n_hid=2 features=32 layers=1
-# 15k params for L=6 n_hid=4 features=64 layers=1
-# 40k params for L=6 n_hid=6 features=128 layers=1
-# 53k params for L=6 n_hid=8 features=128 layers=1
-# 8x8
-# 40k params for L=8 n_hid=6 features=64 layers=1
-# 50k params for L=8 n_hid=8 features=64 layers=1
-# 91k params for L=8 n_hid=8 features=128 layers=1
-# ??k params for L=8 n_hid=10 features=64 layers=1
-#10x10
-# 68k params for L=6 n_hid=8 features=64 layers=1
-# 84k params for L=6 n_hid=8 features=64 layers=1
-# 145k params for L=6 n_hid=8 features=128 layers=1
-
-n_hid_ferm       = 4
-features         = 64    #hidden units per layer
+n_hid_ferm       = 6
+features         = 32    #hidden units per layer
 hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 1024 #total number of samples
+n_samples        = 4096 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//32  #number of parallel Markov chains
 chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
+N_iter           = 20 #N_opt on the top of the one of the loaded model, if any
 
-N_opt            = 2000
+#---------------------------Load another model -----------------------------------------
+#load_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd1_feat1_sample1024_bcPBC_PBC_lr0.02_iter10_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift"
+load_path = None #set to None to not load any model and start from scratch
+previous_iter = 0
 
-number_data_points = 20
-save_every       = N_opt//number_data_points
-block_iter       = N_opt//save_every
+if load_path:
+    match = re.search(r"_iter(\d+)_", load_path)
+    if not match:
+        match = re.search(r"_iter(\d+)$", load_path)
+    if match:
+        previous_iter = int(match.group(1))
 
+N_opt = previous_iter + N_iter
+save_every = 1
+block_iter = N_opt // save_every
 
+#-------------------------------- Set up model saving -----------------------------------------
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_newBC_no_k_shift"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
@@ -130,6 +122,7 @@ os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
+
 
 # ------------- define Hilbert space ------------------------
 hi = nk.hilbert.Spin(s=1 / 2, N=L**2, total_sz=0)
@@ -190,18 +183,6 @@ vstate = nk.vqs.MCState(
 total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
-optimizer = nk.optimizer.Sgd(learning_rate=lr)
-
-from netket.experimental.driver import VMC_SRt
-
-vmc = VMC_SRt(
-    hamiltonian=ha,
-    optimizer=optimizer,
-    diag_shift=1e-4,
-    variational_state=vstate,
-    mode = 'complex',
-) 
-
 log = nk.logging.RuntimeLog()
 
 
@@ -210,6 +191,61 @@ log_path = os.path.join(folder, "log.pkl")
 old_log_data = helper.load_log(folder)
 
 start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every, vstate)
+
+if start_block == 0 and load_path:
+    print(f"Attempting to load starting model from {load_path}")
+    load_J_path = os.path.join(load_path, f"J={J2}")
+    if not os.path.exists(load_J_path):
+        load_J_path = os.path.join(load_path, f"J2={J2}")
+
+    load_seed_path = os.path.join(load_J_path, f"seed_{seed}")
+    load_save_model = os.path.join(load_seed_path, "models")
+    
+    if os.path.exists(load_save_model):
+        files = [f for f in os.listdir(load_save_model) if f.endswith(".mpack")]
+        if files:
+            files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
+            last_model = files[-1]
+            last_model_path = os.path.join(load_save_model, last_model)
+            print(f"Loading starting model from {last_model_path}")
+            with open(last_model_path, 'rb') as f:
+                try:
+                    vstate = flax.serialization.from_bytes(vstate, f.read())
+                except Exception:
+                    f.seek(0)
+                    vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
+            
+            start_block = previous_iter // save_every
+            
+            old_log_path_load = os.path.join(load_seed_path, "log.pkl")
+            if os.path.exists(old_log_path_load):
+                print(f"Loading previous log from {old_log_path_load}")
+                try:
+                    with open(old_log_path_load, 'rb') as f:
+                        loaded_log = pickle.load(f)
+                    if not old_log_data: 
+                        old_log_data = loaded_log
+                    else:
+                        old_log_data = helper.merge_log_data(loaded_log, old_log_data)
+                except Exception as e:
+                    print(f"Failed to load old log: {e}")
+        else:
+            print("No .mpack files found in the load path.")
+    else:
+        print(f"Models directory not found in the load path: {load_save_model}")
+
+# Initialize VMC after loading the state so it uses the loaded vstate
+optimizer = nk.optimizer.Sgd(learning_rate=lr)
+
+
+vmc = VMC_SR(
+    hamiltonian=ha,
+    optimizer=optimizer,
+    diag_shift=1e-4,
+    variational_state=vstate,
+    use_ntk=True,
+) 
+vmc._step_count = start_block * save_every
 
 for i in range(start_block, block_iter):
     #Save model

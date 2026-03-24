@@ -24,7 +24,7 @@ class HiddenFermion(nn.Module):
   N_sites: int = None
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
-  bounds: Any = "PBC"
+  bounds: Any = ("PBC", "PBC")
   parity: bool = False
   rotation: bool = False
   dtype: type = jnp.float64
