@@ -5,6 +5,7 @@ from jax.nn.initializers import normal
 import sys
 import matplotlib.pyplot as plt
 import os
+import pickle
 sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 from ViT_Heisenberg.ViT_model_ent import ViT_ent
 from HFDS_Heisenberg.entanglement_model.HFDS_model_spin_ent import HiddenFermion_ent
@@ -609,6 +610,19 @@ def plot_entropy_vs_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             mean_xavier = np.mean(xavier_s2_vals)
             print(f"  ViT Xavier: S2={mean_xavier:.4f}")
 
+        # Save data
+        plot_data = {
+            'results': results,
+            'mean_xavier': mean_xavier,
+            'param_count_xavier': param_count_xavier,
+            'L': L,
+            'variances': variances
+        }
+        data_path = get_unique_path(save_dir, f"Entropy_vs_Variance_Init_L{L}_data.pkl")
+        with open(data_path, 'wb') as f:
+            pickle.dump(plot_data, f)
+        print(f"Plot data saved to {data_path}")
+
         # Plotting Unnormalized
         max_ent = (N // 2) * np.log(2) # Half system partition
         
@@ -643,7 +657,7 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS"]
-    variances = [5e-3, 1e-2, 1, 10, 50]
+    variances = [5e-4, 1e-3, 2.5e-3, 5e-3, 7.5e-3, 1e-2,2.5e-2, 5e-2, 7.5e-2, 1e-1, 1, 10, 100]
     L_values = [4, 6, 8, 10]
     
     results = {} # results[name][var] = {'L': [], 'mean': [], 'err': [], 'params': []}
@@ -726,6 +740,18 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     def f_sqrt(x, a, b): return a * np.sqrt(x) + b
     def f_log(x, a, b): return a * np.log(x) + b
     fit_functions = {'linear': f_lin, 'sqrt': f_sqrt, 'log': f_log}
+
+    # Save data
+    plot_data = {
+        'results': results,
+        'xavier_results': xavier_results,
+        'variances': variances,
+        'L_values': L_values
+    }
+    data_path = get_unique_path(save_dir, "Entropy_vs_L_Scaling_Unnormalized_data.pkl")
+    with open(data_path, 'wb') as f:
+        pickle.dump(plot_data, f)
+    print(f"Plot data saved to {data_path}")
 
     # Plotting Unnormalized
     plt.figure(figsize=(12, 7))
@@ -950,6 +976,18 @@ def plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=4096, models_to_plot=Non
     def f_log(x, a, b): return a * np.log(x) + b
     fit_functions = {'linear': f_lin, 'sqrt': f_sqrt, 'log': f_log}
 
+    # Save data
+    plot_data = {
+        'results': results,
+        'L_values': L_values,
+        'configs': configs,
+        'var': var
+    }
+    data_path = get_unique_path(save_dir, "Entropy_vs_L_HiddenSize_Unnormalized_data.pkl")
+    with open(data_path, 'wb') as f:
+        pickle.dump(plot_data, f)
+    print(f"Plot data saved to {data_path}")
+
     # Define groups to plot
     plot_groups = {
         "All": list(results.keys()),
@@ -1118,6 +1156,18 @@ def plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=4096, models_
                 'variances': variances
             })
             all_grids.append(entropy_grid)
+
+        # Save data
+        plot_data = {
+            'results': results,
+            'all_grids': all_grids,
+            'L': L,
+            'variances': variances
+        }
+        data_path = get_unique_path(save_dir, f"Entanglement_Sweep_Variance_All_L{L}_data.pkl")
+        with open(data_path, 'wb') as f:
+            pickle.dump(plot_data, f)
+        print(f"Plot data saved to {data_path}")
 
         if results:
             vmin = min(np.min(g) for g in all_grids)
@@ -1297,6 +1347,18 @@ def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plo
         })
         all_grids.append(entropy_grid)
         
+    # Save data
+    plot_data = {
+        'results': results,
+        'all_grids': all_grids,
+        'L_values': L_values,
+        'var': var
+    }
+    data_path = get_unique_path(save_dir, "Entanglement_Sweep_L_All_data.pkl")
+    with open(data_path, 'wb') as f:
+        pickle.dump(plot_data, f)
+    print(f"Plot data saved to {data_path}")
+
     if results:
         vmin = min(np.min(g) for g in all_grids)
         vmax = max(np.max(g) for g in all_grids)
@@ -1368,12 +1430,12 @@ def main():
     #test_entanglement_entropy_hfds(n_samples=65536)
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
-    plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
+    #plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
+    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536//2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"])
+    #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
     
-    plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
+    #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
+    #plot_entropy_vs_L_hidden_size_map(n_seeds=20, n_samples=65536*2, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
 
 if __name__ == "__main__":
     main()

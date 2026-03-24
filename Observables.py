@@ -36,6 +36,7 @@ from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_
 from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
 from Elaborate.Sign_complexity import compute_sign_complexity
 from Entanglement.Entanglement import compute_entanglement_scaling, plot_entanglement_scaling, compute_renyi2_entropy
+from Hamiltonian import build_heisenberg_apbc
 
 # Mock class for log if not available
 class MockLog:
@@ -65,15 +66,15 @@ def parse_model_path(model_path):
         match_type = re.search(r"type([a-zA-Z]+)", model_path)
         params['dtype'] = match_type.group(1) if match_type else "complex"
 
-        match_bc = re.search(r"bc([A-Z_]+)", model_path)
+        match_bc = re.search(r"bc([A-Z]+)_([A-Z]+)", model_path)
         if match_bc:
-            bc_parts = match_bc.group(1).split('_')
-            if len(bc_parts) == 2:
-                params['bc_x'] = bc_parts[0]
-                params['bc_y'] = bc_parts[1]
-            elif len(bc_parts) == 1 and bc_parts[0]:
-                params['bc_x'] = bc_parts[0]
-                params['bc_y'] = bc_parts[0]
+            params['bc_x'] = match_bc.group(1)
+            params['bc_y'] = match_bc.group(2)
+        else:
+            match_bc_single = re.search(r"bc([A-Z]+)", model_path)
+            if match_bc_single:
+                params['bc_x'] = match_bc_single.group(1)
+                params['bc_y'] = match_bc_single.group(1)
     else:
         params['model_type'] = 'ViT'
         params['num_layers'] = int(re.search(r"layers(\d+)", model_path).group(1)) if re.search(r"layers(\d+)", model_path) else 2
@@ -94,17 +95,21 @@ def setup_environment(folder):
 
 def setup_system(L, J2, params=None):
     n_dim = 2
-    pbc = True
-    if params is not None and "bc_x" in params and "bc_y" in params:
-        pbc_x = (params["bc_x"] == "PBC")
-        pbc_y = (params["bc_y"] == "PBC")
-        pbc = [pbc_x, pbc_y]
-
-    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=pbc, max_neighbor_order=2)
+    # We must keep the graph periodic to have edges at the boundary
+    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
     hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
-    hamiltonian = nk.operator.Heisenberg(
-        hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]
-    ).to_jax_operator()
+    
+    bc_x = params.get("bc_x", "PBC") if params else "PBC"
+    bc_y = params.get("bc_y", "PBC") if params else "PBC"
+
+    """if bc_x == "PBC" and bc_y == "PBC":
+        hamiltonian = nk.operator.Heisenberg(hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()
+    else:
+        hamiltonian = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()"""
+    
+    print(f"Building Hamiltonian with L={L}, J2={J2}, bc_x={bc_x}, bc_y={bc_y}")
+    hamiltonian = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
+  
     return lattice, hilbert, hamiltonian
 
 def setup_model(params, hilbert, L):
@@ -298,19 +303,7 @@ def compute_qgt(vstate, folder, hilbert):
         if hasattr(jax, 'clear_caches'):
             jax.clear_caches()
             
-        # Move calculation to CPU to avoid OOM
-        print("Moving QGT calculation to CPU...")
-        cpu = jax.devices("cpu")[0]
-        original_vars = vstate.variables
-        
-        # Move variables to CPU and reset samples to force CPU execution
-        vstate.variables = jax.tree_util.tree_map(lambda x: jax.device_put(x, cpu), original_vars)
-        vstate.reset()
-        
         all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12 = calculate_relevant_eigenvalues(vstate, folder, hilbert, threshold_ratio_rest=1e-2)
-        
-        # Restore variables to original device (GPU)
-        vstate.variables = original_vars
         
         Plot_S_matrix_histogram(all_eigenvalues, folder, one_avg = "one")
         plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
@@ -325,8 +318,6 @@ def compute_qgt(vstate, folder, hilbert):
     except Exception as e:
         print(f"⚠️ Skipping QGT calculation due to error (likely OOM): {e}")
         # Attempt to restore variables if they were moved
-        if 'original_vars' in locals():
-            vstate.variables = original_vars
         return {}
 
 def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
@@ -339,7 +330,7 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
     amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sector_amp_err, sector_sign_err = plot_Sector_Overlap_err_vs_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
-    eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
+    #eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
     Plot_Energy_Fidelity(log, fidelity, folder, one_avg="one", L =4, plot_variance=False, fidelity_var=None)
     
     return {

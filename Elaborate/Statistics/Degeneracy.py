@@ -52,17 +52,14 @@ def parse_model_path_local(model_path):
         params['patch_size'] = int(re.search(r"patch(\d+)", model_path).group(1)) if re.search(r"patch(\d+)", model_path) else 2
     return params
 
-def load_vstate_local(folder):
+def load_vstate_local(folder, n_samples=16):
     params = parse_model_path_local(folder)
     L = params.get('L', 4)
     
     # Setup System
     n_dim = 2
-    pbc = True
-    if "bc_x" in params and "bc_y" in params:
-        pbc = [params["bc_x"] == "PBC", params["bc_y"] == "PBC"]
-
-    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=pbc, max_neighbor_order=2)
+    # Keep the graph periodic so the edges exist at the boundaries
+    lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
     hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
     
     # Setup Model
@@ -74,12 +71,13 @@ def load_vstate_local(folder):
         dtype_ = jnp.float64 if params.get('dtype') == "real" else jnp.complex128
         model = HiddenFermion(L=L, network="FFNN", n_hid=params['n_hid'], layers=params['layers'], 
                               features=params['features'], MFinit=params['MFinit'], hilbert=hilbert, 
+                              bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
                               parity=True, rotation=True, dtype=dtype_)
     else:
         return None
 
     sampler = nk.sampler.MetropolisExchange(hilbert=hilbert, graph=lattice, d_max=2, n_chains=16)
-    vstate = nk.vqs.MCState(sampler=sampler, model=model, n_samples=16)
+    vstate = nk.vqs.MCState(sampler=sampler, model=model, n_samples=n_samples)
     
     models_dir = os.path.join(folder, "models")
     if os.path.exists(models_dir):
@@ -95,7 +93,7 @@ def load_vstate_local(folder):
                     vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
             
             # Ensure consistent sample size and chunk size to prevent shape mismatches and OOM
-            vstate.n_samples = 16
+            vstate.n_samples = n_samples
             vstate.chunk_size = vstate.n_samples//4
             return vstate
     return None
@@ -135,10 +133,8 @@ def calculate_overlap_vmap(vstate_psi, vstate_phi):
     return fast_overlap_kernel(log_psi_x, log_phi_x, log_psi_y, log_phi_y)
 
 
-
 def plot_En_degeneracy(models, target_J=0.5):
     plot_data = {} # Key: bc_label, Value: dict with lists for inv_N, means, stds
-    vstates_by_L = {}
 
     for model_path in models:
         # Fix path if running locally vs cluster
@@ -164,7 +160,6 @@ def plot_En_degeneracy(models, target_J=0.5):
         
         # Find specific J folder
         j_folder = None
-        current_vstate = None
 
         if os.path.exists(model_path):
             for d in os.listdir(model_path):
@@ -182,13 +177,6 @@ def plot_En_degeneracy(models, target_J=0.5):
             seeds = sorted([s for s in os.listdir(j_folder) if os.path.isdir(os.path.join(j_folder, s)) and "seed" in s])
             for seed_sub in seeds:
                 full_seed_path = os.path.join(j_folder, seed_sub)
-                
-                # Load vstate from the first valid seed if not already loaded
-                if current_vstate is None:
-                    try:
-                        current_vstate = load_vstate_local(full_seed_path)
-                    except Exception as e:
-                        print(f"Error loading vstate from {full_seed_path}: {e}")
 
                 if os.path.isdir(full_seed_path):
                     E_final = None
@@ -222,6 +210,8 @@ def plot_En_degeneracy(models, target_J=0.5):
                             print(f"Error reading output.txt in {seed_sub}: {e}")
 
                     if E_final is not None:
+                        if L in [6, 8, 10] and bc_label in ["APC, PBC", "APC, APC", "PBC, APC"]:
+                            E_final *= 4.0
                         print(f"Found E={E_final:.6f} in {full_seed_path}")
                         seed_energies.append(E_final)
         
@@ -238,34 +228,13 @@ def plot_En_degeneracy(models, target_J=0.5):
             plot_data[bc_label]['stds'].append(std_E)
             print(f"Model: {os.path.basename(model_path)}, L={L}, BC={bc_label}")
             print(f"  Found {len(seed_energies)} seeds. Mean E: {mean_E:.6f}, Std E: {std_E:.6f}\n")
-            
-            if current_vstate is not None:
-                if L not in vstates_by_L:
-                    vstates_by_L[L] = {}
-                vstates_by_L[L][bc_label] = current_vstate
         else:
             print(f"Warning: No energy data found for model: {model_path}\n")
 
-    # Compute fidelities between all pairs of BCs for each L
-    fidelity_lines = []
-    for L in sorted(vstates_by_L.keys()):
-        bc_map = vstates_by_L[L]
-        bcs = sorted(list(bc_map.keys()))
-        for i in range(len(bcs)):
-            for j in range(i + 1, len(bcs)):
-                bc1 = bcs[i]
-                bc2 = bcs[j]
-                try:
-                    fid = float(calculate_overlap_vmap(bc_map[bc1], bc_map[bc2]))
-                    fidelity_lines.append(f"L={L}: F({bc1}-{bc2})={fid:.4f}")
-                    print(f"Fidelity L={L} {bc1}-{bc2} = {fid}")
-                except Exception as e:
-                    print(f"Failed fidelity calc L={L} {bc1}-{bc2}: {e}")
-
-
+    # --- PLOT 1: Energies ---
     plt.figure(figsize=(10, 6))
     markers = ['o', 's', '^', 'D', 'v', '<', '>']
-    colors = plt.cm.viridis(np.linspace(0, 0.9, len(plot_data)))
+    colors = plt.cm.viridis(np.linspace(0, 0.9, max(len(plot_data), 1)))
     
     for i, (bc_label, data) in enumerate(sorted(plot_data.items())):
         inv_N_vals = data['inv_N']
@@ -288,16 +257,7 @@ def plot_En_degeneracy(models, target_J=0.5):
         # Plot a connecting line
         plt.plot(inv_N_sorted, means_sorted, color=color, linestyle='--', alpha=0.5)
 
-    if fidelity_lines:
-        from matplotlib.patches import Rectangle
-        extra_label = "\n".join(fidelity_lines)
-        extra_handle = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
-        handles, labels = plt.gca().get_legend_handles_labels()
-        handles.append(extra_handle)
-        labels.append(extra_label)
-        plt.legend(handles=handles, labels=labels, loc='best', fontsize='small')
-    else:
-        plt.legend()
+    plt.legend(loc='best')
 
     plt.xlabel("1/L²")
     plt.ylabel("Energy per site")
@@ -306,23 +266,146 @@ def plot_En_degeneracy(models, target_J=0.5):
     
     save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy"
     os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir, "Degeneracy_check.png"))
-    print(f"Plot saved to {os.path.join(save_dir, 'Degeneracy_check.png')}")
+    plt.savefig(os.path.join(save_dir, "Degeneracy_check_Energy.png"))
+    print(f"Plot saved to {os.path.join(save_dir, 'Degeneracy_check_Energy.png')}")
     plt.show()
 
 
-if __name__ == "__main__":
-    
-    models = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcAPC_APC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat32_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat32_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat32_sample4096_bcAPC_APC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat32_sample4096_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"]
+def plot_Fidelity_Degeneracy(models, target_J=0.5, n_samples=16):
+    vstates_by_L = {}
 
+    for model_path in models:
+        # Fix path if running locally vs cluster
+        if not os.path.exists(model_path):
+            model_path = model_path.replace("/cluster/home/fconoscenti", "/scratch/f/F.Conoscenti")
+        
+        if not os.path.exists(model_path):
+            print(f"Warning: Path not found, skipping: {model_path}")
+            continue
+
+        # Extract parameters for grouping
+        params = parse_model_path_local(model_path)
+        L = params.get('L')
+        if L is None:
+            print(f"Warning: Could not determine L for {model_path}, skipping.")
+            continue
+
+        bc_x = params.get('bc_x', 'PBC')
+        bc_y = params.get('bc_y', 'PBC')
+        bc_label = f"{bc_x}, {bc_y}"
+
+        # Find specific J folder
+        j_folder = None
+        current_vstate = None
+
+        if os.path.exists(model_path):
+            for d in os.listdir(model_path):
+                if d.startswith("J=") or d.startswith("J2="):
+                    try:
+                        part = d.split('=')[1]
+                        val_str = part.split('_')[0] if '_' in part else part
+                        if abs(float(val_str) - target_J) < 1e-5:
+                            j_folder = os.path.join(model_path, d)
+                            break
+                    except ValueError:
+                        continue
+        
+        if j_folder and os.path.exists(j_folder):
+            seeds = sorted([s for s in os.listdir(j_folder) if os.path.isdir(os.path.join(j_folder, s)) and "seed" in s])
+            for seed_sub in seeds:
+                full_seed_path = os.path.join(j_folder, seed_sub)
+                
+                # Load vstate from the first valid seed if not already loaded
+                if current_vstate is None:
+                    try:
+                        current_vstate = load_vstate_local(full_seed_path, n_samples=n_samples)
+                    except Exception as e:
+                        print(f"Error loading vstate from {full_seed_path}: {e}")
+            
+            if current_vstate is not None:
+                if L not in vstates_by_L:
+                    vstates_by_L[L] = {}
+                vstates_by_L[L][bc_label] = current_vstate
+                print(f"Loaded vstate for Model: {os.path.basename(model_path)}, L={L}, BC={bc_label}")
+            else:
+                print(f"Warning: No valid vstate found for model: {model_path}\n")
+
+    # Compute fidelities between all pairs of BCs for each L
+    fidelity_plot_data = {}
+    for L in sorted(vstates_by_L.keys()):
+        bc_map = vstates_by_L[L]
+        bcs = sorted(list(bc_map.keys()))
+        for i in range(len(bcs)):
+            for j in range(i + 1, len(bcs)):
+                bc1 = bcs[i]
+                bc2 = bcs[j]
+                pair_label = f"{bc1} vs {bc2}"
+                try:
+                    fid = float(calculate_overlap_vmap(bc_map[bc1], bc_map[bc2]))
+                    if pair_label not in fidelity_plot_data:
+                        fidelity_plot_data[pair_label] = {'inv_N': [], 'fidelity': []}
+                    fidelity_plot_data[pair_label]['inv_N'].append(1.0 / (L * L))
+                    fidelity_plot_data[pair_label]['fidelity'].append(fid)
+                    print(f"Fidelity L={L} {bc1}-{bc2} = {fid}")
+                except Exception as e:
+                    print(f"Failed fidelity calc L={L} {bc1}-{bc2}: {e}")
+
+    # --- PLOT 2: Fidelities ---
+    if fidelity_plot_data:
+        plt.figure(figsize=(10, 6))
+        markers = ['o', 's', '^', 'D', 'v', '<', '>']
+        colors = plt.cm.viridis(np.linspace(0, 0.9, max(len(fidelity_plot_data), 1)))
+        
+        for i, (pair_label, data) in enumerate(sorted(fidelity_plot_data.items())):
+            inv_N_vals = data['inv_N']
+            fidelities = data['fidelity']
+            
+            # Sort by inv_N for clean plotting of lines
+            sort_indices = np.argsort(inv_N_vals)
+            inv_N_sorted = np.array(inv_N_vals)[sort_indices]
+            fid_sorted = np.array(fidelities)[sort_indices]
+
+            color = colors[i % len(colors)]
+            marker = markers[i % len(markers)]
+            
+            plt.plot(inv_N_sorted, fid_sorted, marker=marker, color=color, label=pair_label, markersize=8, linestyle='--')
+            
+        plt.legend(loc='best')
+        plt.xlabel("1/L²")
+        plt.ylabel("Fidelity |<ψ|φ>|²")
+        plt.title(f"Ground State Fidelity between BCs (J={target_J})")
+        plt.grid(True)
+        
+        plt.savefig(os.path.join(save_dir, "Degeneracy_check_Fidelity.png"))
+        print(f"Plot saved to {os.path.join(save_dir, 'Degeneracy_check_Fidelity.png')}")
+        plt.show()
+
+
+if __name__ == "__main__": 
+    
+    models = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+
+
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+
+            
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+
+            
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            
+            ]
     plot_En_degeneracy(models, target_J=0.5)
+    plot_Fidelity_Degeneracy(models, target_J=0.5, n_samples=1024)

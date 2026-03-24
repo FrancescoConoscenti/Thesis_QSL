@@ -87,7 +87,7 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
             for seed in range(n_seeds):
                 # Models
                 rbm = nk.models.RBM(alpha=1, param_dtype=complex, kernel_init=init_fun, hidden_bias_init=init_fun, visible_bias_init=init_fun)
-                vit = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=init_fun)
+                vit = ViT_ent(num_layers=3, d_model=36, n_heads=6, patch_size=2, kernel_init=init_fun)
                 hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=4, layers=1, features=64, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
                 
                 all_models_list = [
@@ -813,7 +813,7 @@ def plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, 
 
 def main():
 
-    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536, models_to_plot=["ViT", "HFDS", "HFDS Random"], variances=[1e-3, 1e-2, 1e-1, 1, 10, 100], partition_type="Square")
+    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536//2, models_to_plot=["ViT", "HFDS", "HFDS Random"], variances=[5e-4, 1e-3, 2.5e-3, 5e-3, 7.5e-3, 1e-2,2.5e-2, 5e-2, 7.5e-2, 1e-1, 1, 10, 100], partition_type="Square")
     #plot_entropy_vs_partition_hidden_size(L=10, n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"], var=10, partition_type="Square")
     
     #plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSFermi", "HFDSrandom"], var=10, partition_type="Strip")

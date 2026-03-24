@@ -32,6 +32,8 @@ from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
 from Observables import run_observables
 
+from Hamiltonian import build_heisenberg_apbc
+
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
@@ -57,7 +59,7 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "complex"
-MFinitialization = "Fermi" #G_MF#random #Fermi
+MFinitialization = "random" #G_MF#random #Fermi
 determinant_type = "hidden"
 
 bc_x = args.bc_x
@@ -65,7 +67,7 @@ bc_y = args.bc_y
 bounds = (bc_x, bc_y)
 
 parity = True
-rotation = True
+rotation = False
 
 
 #Varaitional state param
@@ -96,20 +98,20 @@ hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 1024  #total number of samples
+n_samples        = 1024 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//32  #number of parallel Markov chains
 chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
 
-N_opt            = 4000
+N_opt            = 2000
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_newBC_no_k_shift"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -129,19 +131,21 @@ os.makedirs(model_path+"/plot_avg", exist_ok=True)
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
 
-# Hilbert space of spins on the graph
-pbc_x = (bc_x == "PBC")
-pbc_y = (bc_y == "PBC")
-lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[pbc_x, pbc_y], max_neighbor_order=2)
-
-hi = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0) 
+# ------------- define Hilbert space ------------------------
+hi = nk.hilbert.Spin(s=1 / 2, N=L**2, total_sz=0)
+lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
 print(f"hilbert space size = ",hi.size)
 
 
 # ------------- define Hamiltonian ------------------------
-ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  # No Marshall sign rule"""
+"""if bc_x == "PBC" and bc_y == "PBC":
+    ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  
+else:
+    ha = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
+"""
+ha = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
 
-
+# ------------- define model ------------------------
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
 

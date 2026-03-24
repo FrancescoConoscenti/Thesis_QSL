@@ -54,11 +54,6 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
     relevant_counts_rest_norm_12 = []
     relevant_count_first = 0
 
-    try:
-        cpu = jax.devices("cpu")[0]
-    except:
-        cpu = None
-
     for i, model_idx in enumerate(indices_to_plot):
         model_file = models_dir / f"model_{model_idx}.mpack"
         with open(model_file, "rb") as f:
@@ -67,19 +62,13 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
                 vstate = flax.serialization.from_bytes(vstate, data)
             except KeyError:
                 vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
-        
-        if cpu is not None:
-            vstate.variables = jax.tree_util.tree_map(lambda x: jax.device_put(x, cpu), vstate.variables)
-            vstate.reset()
 
         jax.clear_caches()
         gc.collect()
         
-        S_matrix = compute_S_matrix_single_model(vstate, hi)
-        
-        # Move S_matrix to CPU explicitly to avoid GPU OOM
-        S_matrix = jax.device_get(S_matrix)
-        jax.clear_caches()
+        # Use the LinearOperator to completely avoid materializing the dense matrix
+        # and prevent JAX GPU Out-Of-Memory (OOM) errors.
+        S_matrix = compute_S_matrix_linear_operator(vstate)
         
         # Use eigsh to compute only a subset of eigenvalues (e.g. top 4096) to save memory
         k_eig = min(S_matrix.shape[0] - 1, 8192)

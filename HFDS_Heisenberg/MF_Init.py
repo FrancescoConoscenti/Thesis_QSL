@@ -14,11 +14,7 @@ from netket.hilbert.homogeneous import HomogeneousHilbert
 
 def init_orbitals_mf(L, bounds, dtype):
 
-    if isinstance(bounds, str):
-        bx = bounds
-        by = bounds
-    else:
-        bx, by = bounds
+    bx, by = bounds
 
     def get_k_val(k_idx, bc):
         if bc == "PBC":
@@ -30,7 +26,7 @@ def init_orbitals_mf(L, bounds, dtype):
 
     def ft_local_mixed(x, y, kx, ky):
         if dtype == jnp.float64:
-             if bx == "PBC" and by == "PBC":
+            if bx == "PBC" and by == "PBC":
                 if kx<=L//2 and ky<=L//2:
                     res = jnp.cos(2*jnp.pi*(x)/L*(kx))*jnp.cos(2*jnp.pi*(y)/L*(ky))
                 elif kx>=L//2 and ky<=L//2:
@@ -40,12 +36,12 @@ def init_orbitals_mf(L, bounds, dtype):
                 elif kx>=L//2 and ky>=L//2:
                     res = jnp.sin(2*jnp.pi*(x)/L*(kx))*jnp.sin(2*jnp.pi*(y)/L*(ky))
                 return res
-             else:
+            else:
                  raise NotImplementedError("Real dtype only implemented for PBC in both directions.")
         else:
-             val_x = get_k_val(kx, bx)
-             val_y = get_k_val(ky, by)
-             return jnp.exp(1j * jnp.pi / L * (val_x * x + val_y * y))
+            val_x = get_k_val(kx, bx)
+            val_y = get_k_val(ky, by)
+            return jnp.exp(1j * jnp.pi / L * (val_x * x + val_y * y))
 
     ft_local = ft_local_mixed
     energy_fn = lambda k: -np.cos(get_k_val(k[0], bx) * np.pi / L) - np.cos(get_k_val(k[1], by) * np.pi / L)
