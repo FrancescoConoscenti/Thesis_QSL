@@ -475,11 +475,20 @@ def run_observables(log, folder):
     # 3. Energy Stats
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
     
-    if (L == 6 or L == 4) and E_exact is not None:
-        rel_err_E = Relative_Error(E_vs_final_per_site, E_exact, L)
-        variables['rel_err_E'] = rel_err_E
-        print(f"Relative Error in Energy: {rel_err_E}")
-    
+    if L == 4:
+        E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
+    elif L == 6:
+        E_exact = Exact_gs_en_6x6(J2)
+    elif L == 10:
+        # Dictionary of known exact energies for 10x10
+        gs_10x10 = {0.4: -0.52371, 0.5: -0.4976921, 0.55: -0.485434, 0.6: -0.47604}
+        # Find closest J2
+        for j_val, e_val in gs_10x10.items():
+            if abs(J2 - j_val) < 1e-5:
+                E_exact = e_val
+                break
+    if E_exact is not None:
+        print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
     # 4. Magnetization
     #compute_magnetization(vstate, lattice, hilbert)
 
