@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=HFDS
+#SBATCH --job-name=Sign
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -7,13 +7,14 @@
 #SBATCH --mem-per-cpu=16GB
 
 ##SBATCH --partition=gpupr.4h
-##SBATCH --gres=gpu:nvidia_a100_80gb_pcie:1
+##SBATCH --gres=gpu:nvidia_a100-pcie-40gb:1
 
-#SBATCH --gpus=1
-#SBATCH --gres=gpumem:60g
+##SBATCH --gpus=4   
+##SBATCH --gres=gpumem:40g
+
 
 #SBATCH --time=05-00:00:00
-#SBATCH --array=0-2
+##SBATCH --array=0-2
 
 #nvidia-smi
 
@@ -27,33 +28,35 @@ source ../gpu_netket_venv1/bin/activate
 
 J_VALUES=(0.5)
 SEED_VALUES=(1 2 3)
-OUTPUT_VALUES=(psi exact_sign)
+#BC_COMBINATIONS=("APC PBC" "APC APC" "PBC PBC")
+BC_COMBINATIONS=("PBC PBC")
 
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
-NUM_OUTPUT=${#OUTPUT_VALUES[@]}
+NUM_BC=${#BC_COMBINATIONS[@]}
 
-SEED_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_SEED ))
-J_INDEX=$(( (SLURM_ARRAY_TASK_ID / NUM_SEED) % NUM_J ))
-OUTPUT_INDEX=$(( (SLURM_ARRAY_TASK_ID / (NUM_SEED * NUM_J)) % NUM_OUTPUT ))
+BC_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_BC ))
+J_SEED_INDEX=$(( SLURM_ARRAY_TASK_ID / NUM_BC ))
+SEED_INDEX=$(( J_SEED_INDEX % NUM_SEED ))
+J_INDEX=$(( J_SEED_INDEX / NUM_SEED ))
 
 J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}
-OUTPUT=${OUTPUT_VALUES[$OUTPUT_INDEX]}
+BC_PAIR=(${BC_COMBINATIONS[$BC_INDEX]})
+BC_X=${BC_PAIR[0]}
+BC_Y=${BC_PAIR[1]}
 
 
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 #srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
-sleep 2
-python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
-#python -m ViT_Heisenberg.run_ViT --seed "$SEED" #--J2 "$J" 
-sleep 2
-#srun python -m try_gpus
-
+#sleep 2
+#python -m HFDS_Heisenberg.run_spin --L 10 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y"
+#python -m ViT_Heisenberg.run_ViT --L 10 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y"
+#sleep 2
 
 #srun python -m ED.quspin_MCState
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
-#srun python -m Observables
-#srun python -m Entanglement.test_var_init_no_bipartite
+srun python -m Observables
+#srun python -m Entanglement.test_var_init

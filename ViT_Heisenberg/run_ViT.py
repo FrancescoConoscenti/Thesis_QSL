@@ -59,7 +59,7 @@ n_heads         = 10    # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
-rotation = True
+rotation = False
 
 #n_samples = 8192   n_chains  = 256   chunk_size = 4096
 

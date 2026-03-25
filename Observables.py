@@ -181,11 +181,20 @@ def compute_correlations(vstate, lattice, L, folder, hilbert):
 def compute_exact_energy(L, J2, hamiltonian):
     E_exact = None
     ket_gs = None
-    if L == 6 or L == 4:
-        if L == 4:
-            E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
-        elif L == 6:
-            E_exact = Exact_gs_en_6x6(J2)
+    if L == 4:
+        E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
+    elif L == 6:
+        E_exact = Exact_gs_en_6x6(J2)
+    elif L == 10:
+        # Dictionary of known exact energies for 10x10
+        gs_10x10 = {0.4: -0.52371, 0.5: -0.4976921, 0.55: -0.485434, 0.6: -0.47604}
+        # Find closest J2
+        for j_val, e_val in gs_10x10.items():
+            if abs(J2 - j_val) < 1e-5:
+                E_exact = e_val
+                break
+
+    if E_exact is not None:
         print(f"Exact ground state energy per site: {E_exact}")
     return E_exact, ket_gs
 
@@ -466,34 +475,24 @@ def run_observables(log, folder):
     ################################################################################################à
     
     # 1. Correlations
-    R = compute_correlations(vstate, lattice, L, folder, hilbert)
-    variables['R'] = R
+    """R = compute_correlations(vstate, lattice, L, folder, hilbert)
+    variables['R'] = R"""
 
     # 2. Exact Energy
-    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
+    """E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
 
     # 3. Energy Stats
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
     
-    if L == 4:
-        E_exact, ket_gs = Exact_gs(L, J2, hamiltonian, J1J2=True, spin=True)
-    elif L == 6:
-        E_exact = Exact_gs_en_6x6(J2)
-    elif L == 10:
-        # Dictionary of known exact energies for 10x10
-        gs_10x10 = {0.4: -0.52371, 0.5: -0.4976921, 0.55: -0.485434, 0.6: -0.47604}
-        # Find closest J2
-        for j_val, e_val in gs_10x10.items():
-            if abs(J2 - j_val) < 1e-5:
-                E_exact = e_val
-                break
     if E_exact is not None:
         print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
+    """
+
     # 4. Magnetization
     #compute_magnetization(vstate, lattice, hilbert)
 
     # 5. Param Count
-    count_params = compute_param_count(params, L)
+    """count_params = compute_param_count(params, L)
 
     variables.update({
         'E_vs_final': E_vs_final_per_site,
@@ -502,6 +501,12 @@ def run_observables(log, folder):
         'variance': variance_per_site,
         'count_params': count_params
     })
+
+    if E_exact is not None:
+        variables['E_exact'] = E_exact
+        variables['rel_err_E'] = abs((E_vs_final_per_site - E_exact) / E_exact)
+
+    save_variables(folder, variables)"""
 
     # 6. Entropy
     """n_samples_entropy = 524288//2
@@ -520,13 +525,13 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    """n_samples_sign = 32768*2*2
+    n_samples_sign = 32768*2*2
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
     
     
     # 8. Sign Complexity
@@ -569,14 +574,14 @@ def run_observables(log, folder):
     
     # 10. System specific observables
     
-    if L == 4 and ket_gs is not None:
+    """if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
         save_variables(folder, variables)
     elif L == 6:
         l6_vars = compute_L6_observables(vstate, J2, folder, params)
         variables.update(l6_vars)
-        save_variables(folder, variables)
+        save_variables(folder, variables)"""
 
     # 11. Coupling Matrix Analysis
     """
@@ -596,7 +601,7 @@ def run_observables(log, folder):
 
 if __name__ == "__main__":
 
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
     log = None
 
     if not os.path.exists(model_path):

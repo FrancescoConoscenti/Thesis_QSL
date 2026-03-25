@@ -81,3 +81,4 @@ def Exact_gs_en_6x6(J2):
     else:
         print(f"Exact energy file not found: {file_path}")
         return None
+

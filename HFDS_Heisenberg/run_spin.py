@@ -70,25 +70,25 @@ bc_y = args.bc_y
 bounds = (bc_x, bc_y)
 
 parity = True
-rotation = False
+rotation = True
 
 
-n_hid_ferm       = 6
+n_hid_ferm       = 8
 features         = 32    #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
-n_samples        = 4096 #total number of samples
+lr               = 0.025
+n_samples        = 2048 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
-n_chains         = n_samples//32  #number of parallel Markov chains
-chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
-N_iter           = 20 #N_opt on the top of the one of the loaded model, if any
+n_chains         = n_samples//16  #number of parallel Markov chains
+chunk_size       = n_samples #samples are divided in chunks to compute observables in parallel
+N_iter           = 8000 #N_opt on the top of the one of the loaded model, if any
 
 #---------------------------Load another model -----------------------------------------
-#load_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd1_feat1_sample1024_bcPBC_PBC_lr0.02_iter10_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift"
-load_path = None #set to None to not load any model and start from scratch
+#load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
+#load_path = None #set to None to not load any model and start from scratch
 previous_iter = 0
 
 if load_path:
@@ -99,11 +99,11 @@ if load_path:
         previous_iter = int(match.group(1))
 
 N_opt = previous_iter + N_iter
-save_every = 1
+save_every = 200
 block_iter = N_opt // save_every
 
 #-------------------------------- Set up model saving -----------------------------------------
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_newBC_no_k_shift"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:

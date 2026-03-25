@@ -677,8 +677,8 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             
             # Models
             rbm = nk.models.RBM(alpha=1, param_dtype=complex, kernel_init=init_fun, hidden_bias_init=init_fun, visible_bias_init=init_fun)
-            vit = ViT_ent(num_layers=2, d_model=8, n_heads=4, patch_size=2, kernel_init=init_fun)
-            hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=8, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
+            vit = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=init_fun)
+            hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=64, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
             
             all_models_list = [
                 ("RBM", rbm, hi_free, nk.sampler.MetropolisLocal(hi_free)),
