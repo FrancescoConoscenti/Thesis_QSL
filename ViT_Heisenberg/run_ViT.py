@@ -27,10 +27,11 @@ from Observables import run_observables
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
+parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
 args = parser.parse_args()
 
 M = 10  # Number of spin configurations to initialize the parameters
-L = 10  # Linear size of the lattice
+L       = args.L
 
 
 n_dim = 2

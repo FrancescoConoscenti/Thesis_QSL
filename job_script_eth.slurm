@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Sign
+#SBATCH --job-name=ViT
 #SBATCH --output=slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -9,12 +9,11 @@
 ##SBATCH --partition=gpupr.4h
 ##SBATCH --gres=gpu:nvidia_a100-pcie-40gb:1
 
-##SBATCH --gpus=4   
-##SBATCH --gres=gpumem:40g
-
+#SBATCH --gpus=1   
+#SBATCH --gres=gpumem:40g
 
 #SBATCH --time=05-00:00:00
-##SBATCH --array=0-2
+#SBATCH --array=0-8
 
 #nvidia-smi
 
@@ -26,7 +25,7 @@ source ../gpu_netket_venv1/bin/activate
 
 #export JAX_PLATFORMS=cpu
 
-J_VALUES=(0.5)
+J_VALUES=(0.5 0.55 0.6)
 SEED_VALUES=(1 2 3)
 #BC_COMBINATIONS=("APC PBC" "APC APC" "PBC PBC")
 BC_COMBINATIONS=("PBC PBC")
@@ -50,13 +49,13 @@ BC_Y=${BC_PAIR[1]}
 
 #srun python -m ViT_Heisenberg.run_ViT_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
 #srun python -m HFDS_Heisenberg.run_spin_amp --seed "$SEED" --J2 "$J" --output "$OUTPUT"
-#sleep 2
+sleep 2
 #python -m HFDS_Heisenberg.run_spin --L 10 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y"
-#python -m ViT_Heisenberg.run_ViT --L 10 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y"
-#sleep 2
+python -m ViT_Heisenberg.run_ViT --L 10 --seed "$SEED" --J2 "$J"
+sleep 2
 
 #srun python -m ED.quspin_MCState
 #srun python -m ED.quspin_6x6 --J2 "$J"
 
-srun python -m Observables
+#srun python -m Observables
 #srun python -m Entanglement.test_var_init
