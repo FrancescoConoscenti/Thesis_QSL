@@ -40,6 +40,7 @@ class Orbitals(nn.Module):
   MFinit: str
   stop_grad_mf: bool
   bounds: Any
+  phi: float = 0.0
   dtype: type = jnp.float64
   U: float = 8.0
 
@@ -52,7 +53,7 @@ class Orbitals(nn.Module):
     return mf
       
   def _init_mf(self, key, shape, dtype):
-    mf = init_orbitals_mf(L=self.L, bounds=self.bounds, dtype=dtype)
+    mf = init_orbitals_mf(L=self.L, bounds=self.bounds, phi=self.phi, dtype=dtype)
     return mf
   
   def setup(self):

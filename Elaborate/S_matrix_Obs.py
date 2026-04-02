@@ -35,16 +35,17 @@ def compute_S_matrix(vstate, folder_path, hi):
     return S_matrix  # Return the last S-matrix computed
 
 
-def compute_S_matrix_linear_operator(vstate):
     """
-    Computes the S-matrix as a SciPy LinearOperator to completely avoid OOM errors
-    from materializing the dense N_params x N_params matrix.
-    """
+    def compute_S_matrix_linear_operator(vstate):
+    
+    #Computes the S-matrix as a SciPy LinearOperator to completely avoid OOM errors
+    #from materializing the dense N_params x N_params matrix.
+    
     flat_params, unravel_fn = jax.flatten_util.ravel_pytree(vstate.parameters)
     n_params = len(flat_params)
     
     # Initialize the highly memory-efficient lazy QGT
-    qgt = nk.optimizer.qgt.QGTOnTheFly(vstate, mode='complex')
+    qgt = nk.optimizer.qgt.QGTOnTheFly(vstate, holomorphic=False)
     
     @jax.jit
     def qgt_matvec(v_flat):
@@ -58,7 +59,7 @@ def compute_S_matrix_linear_operator(vstate):
 
     # Because the S-matrix is Hermitian, rmatvec is equivalent to matvec
     return LinearOperator((n_params, n_params), matvec=matvec, rmatvec=matvec, dtype=np.complex128)
-
+    """
 
 def compute_S_matrix_single_model(vstate, hi):
 
@@ -69,7 +70,28 @@ def compute_S_matrix_single_model(vstate, hi):
     except NonHolomorphicQGTOnTheFlyDenseRepresentationError:
         # Safe fallback: works for non-holomorphic ansätze
         logger.info("NonHolomorphicQGTOnTheFlyDenseRepresentationError caught. Using QGTJacobianDense fallback.")
-        qgt = nk.optimizer.qgt.QGTJacobianDense(vstate, mode='complex')
+        qgt = nk.optimizer.qgt.QGTJacobianDense(vstate, holomorphic=False)
         S_matrix = qgt.to_dense()
 
     return S_matrix
+
+def compute_S_matrix_dense(vstate):
+    flat_params, unravel_fn = jax.flatten_util.ravel_pytree(vstate.parameters)
+    n_params = len(flat_params)
+
+    qgt = nk.optimizer.qgt.QGTOnTheFly(vstate, holomorphic=False, diag_shift=0.0)
+
+    def qgt_matvec(v_flat):
+        v_pytree = unravel_fn(v_flat)
+        out_pytree = qgt @ v_pytree
+        out_flat, _ = jax.flatten_util.ravel_pytree(out_pytree)
+        return out_flat
+
+    # Materialize column by column
+    S_dense = np.zeros((n_params, n_params), dtype=np.float64)
+    for j in range(n_params):
+        e_j = np.zeros(n_params, dtype=np.float64)
+        e_j[j] = 1.0
+        S_dense[:, j] = np.array(qgt_matvec(jnp.array(e_j)))
+
+    return S_dense

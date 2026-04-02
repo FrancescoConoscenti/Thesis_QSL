@@ -25,6 +25,7 @@ class HiddenFermion(nn.Module):
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
   bounds: Any = ("PBC", "PBC")
+  phi: float = 0.0
   parity: bool = False
   rotation: bool = False
   dtype: type = jnp.float64
@@ -39,7 +40,7 @@ class HiddenFermion(nn.Module):
 
     self.n_modes = 2 * N_sites
     self.n_elecs = N_sites
-    self.orbitals = Orbitals(self.L, N_sites, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.dtype, self.U)
+    self.orbitals = Orbitals(self.L, N_sites, self.n_elecs, self.n_hid, self.MFinit, self.stop_grad_mf, self.bounds, self.phi, self.dtype, self.U)
     # FFNN architecture
     if self.network=="FFNN":
         self.hidden = [nn.Dense(features=self.features,use_bias=False,param_dtype=self.dtype) for i in range(self.layers)]

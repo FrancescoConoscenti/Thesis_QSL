@@ -19,9 +19,9 @@ def Corr_Struct(lattice, vstate, L, folder, hi):
             # Calculate operator S_i * S_j
             # Note: For spin-1/2, S = 0.5 * sigma. 
             # S*S = 0.25 * (sig_x*sig_x + ...)
-            corr_ij = 0.25 * (sigmaz(hi, i)*sigmaz(hi, j) + 
-                              sigmax(hi, i)*sigmax(hi, j) + 
-                              sigmay(hi, i)*sigmay(hi, j))
+            corr_ij = 0.25 * (sigmaz(hi, i)@sigmaz(hi, j) + 
+                              sigmax(hi, i)@sigmax(hi, j) + 
+                              sigmay(hi, i)@sigmay(hi, j))
             
             exp = vstate.expect(corr_ij)
             corr_r[r0, r1] += exp.mean.real
@@ -89,7 +89,7 @@ def Corr_Struct_Exact(lattice, ket_gs, L, J, folder, hi):
     for i in range(N_tot):
         for j in range(N_tot):
             r = lattice.positions[i] - lattice.positions[j]
-            corr_ij = 0.25 * (sigmaz(hi, i) * sigmaz(hi, j) + sigmax(hi, i) * sigmax(hi, j) + sigmay(hi, i) * sigmay(hi, j))
+            corr_ij = 0.25 * (sigmaz(hi, i) @ sigmaz(hi, j) + sigmax(hi, i) @ sigmax(hi, j) + sigmay(hi, i) @ sigmay(hi, j))
             
             # Convert operator to sparse matrix for exact computation
             op_sparse = corr_ij.to_sparse()

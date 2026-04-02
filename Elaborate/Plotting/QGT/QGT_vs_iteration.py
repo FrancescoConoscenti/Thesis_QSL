@@ -10,6 +10,10 @@ import gc
 import scipy.linalg
 import scipy.sparse.linalg
 
+from Elaborate.S_matrix_Obs import compute_S_matrix_single_model
+from Elaborate.S_matrix_Obs import compute_S_matrix_dense
+
+
 
 def _count_relevant_eigenvalues(sorted_eigenvalues, threshold_ratio=1e3):
     """
@@ -66,14 +70,37 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
         jax.clear_caches()
         gc.collect()
         
-        # Use the LinearOperator to completely avoid materializing the dense matrix
-        # and prevent JAX GPU Out-Of-Memory (OOM) errors.
-        S_matrix = compute_S_matrix_linear_operator(vstate)
+        
+
+        # Compute S-matrix for the current model
+        S_dense = compute_S_matrix_single_model(vstate, hi)
+
+        eigenvalues = scipy.linalg.eigvalsh(S_dense)
+        all_eigenvalues[f'iter_{model_idx}'] = eigenvalues
+        
+
+        #compute eigenvalues using the dense S-matrix (fallback for small models)
+        """
+        S_matrix = compute_S_matrix_dense(vstate)
+
         
         # Use eigsh to compute only a subset of eigenvalues (e.g. top 4096) to save memory
-        k_eig = min(S_matrix.shape[0] - 1, 8192)
-        eigenvalues = scipy.sparse.linalg.eigsh(S_matrix, k=k_eig, which='LM', return_eigenvectors=False)
+        N = S_matrix.shape[0]
+        # scipy's eigsh (ARPACK) requires k < N - 1 for LinearOperators
+        k_eig = min(N - 2, 8192)
+        
+        if k_eig < 1:
+            # Fallback for extremely small models where ARPACK cannot be used
+            dense_S = np.zeros((N, N), dtype=np.complex128)
+            for j in range(N):
+                e_j = np.zeros(N)
+                e_j[j] = 1.0
+                dense_S[:, j] = S_matrix.matvec(e_j)
+            eigenvalues = scipy.linalg.eigvalsh(dense_S)
+        else:
+            eigenvalues = scipy.sparse.linalg.eigsh(S_matrix, k=k_eig, which='LM', return_eigenvectors=False)
         all_eigenvalues[f'iter_{model_idx}'] = eigenvalues
+        """
 
         sorted_eigenval = np.sort(eigenvalues)[::-1]
         
@@ -181,7 +208,8 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_
     plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_rest_norm, num_models)
 
     # --- Save all computed eigenvalues ---
-    save_data_path = Path(folder_path) / "Sign_plot" / "S_matrix_eigenvalues.pkl"
+    os.makedirs(Path(folder_path) / "QGT_plot", exist_ok=True)
+    save_data_path = Path(folder_path) / "QGT_plot" / "S_matrix_eigenvalues.pkl"
     with open(save_data_path, 'wb') as f:
         pickle.dump(all_eigenvalues, f)
     #print(f"S-matrix eigenvalues saved to {save_data_path}")
@@ -226,7 +254,8 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
         save_path = folder_path.parent /"plot_avg"/"S_matrix_spectrum.png"
         plt.savefig(save_path)
     if one_avg == "one":
-        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_spectrum{suffix}.png")
+        os.makedirs(f"{folder_path}/QGT_plot", exist_ok=True)
+        plt.savefig(f"{folder_path}/QGT_plot/S_matrix_spectrum{suffix}.png")
     
 
 
@@ -288,6 +317,7 @@ def Plot_S_matrix_histogram(eigenvalues, folder_path, one_avg, bins=50):
         save_path = folder_path.parent /"plot_avg"/"S_matrix_histogram.png"
         plt.savefig(save_path)
     if one_avg == "one":
-        plt.savefig(f"{folder_path}/Sign_plot/S_matrix_histogram{suffix}.png")
+        os.makedirs(f"{folder_path}/QGT_plot", exist_ok=True)
+        plt.savefig(f"{folder_path}/QGT_plot/S_matrix_histogram{suffix}.png")
 
     plt.show()

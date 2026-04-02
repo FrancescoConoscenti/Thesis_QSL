@@ -34,15 +34,16 @@ from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
 from Observables import run_observables
 
-from Hamiltonian import build_heisenberg_apbc
+from Hamiltonian import build_heisenberg_apbc, build_heisenberg_twisted
 
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
 #parser.add_argument("--lattice", type=str, default="square", choices=["square", "triangular", "honeycomb", "kagome"], help="Lattice geometry")
-parser.add_argument("--bc_x", type=str, default="APC", choices=["PBC", "APC"], help="Boundary condition x")
+parser.add_argument("--bc_x", type=str, default="PBC", choices=["PBC", "APC"], help="Boundary condition x")
 parser.add_argument("--bc_y", type=str, default="PBC", choices=["PBC", "APC"], help="Boundary condition y")
+parser.add_argument("--phi", type=float, default=0.0, help="Twist angle in radians for the twisted BC")
 args = parser.parse_args()
 
 spin = True
@@ -62,33 +63,56 @@ J2 = args.J2
 seed = int(args.seed)
 
 dtype   = "complex"
-MFinitialization = "random" #G_MF#random #Fermi
+MFinitialization = "Fermi" #random #Fermi
 determinant_type = "hidden"
 
 bc_x = args.bc_x
 bc_y = args.bc_y
 bounds = (bc_x, bc_y)
 
+phi = args.phi
+
 parity = True
 rotation = True
 
+#Varaitional state param
+# 1k params for L=4 n_hid=1 features=16 layers=1
+# 3.9k params for L=4 n_hid=2 features=64 layers=1
+# 6k params for L=4 n_hid=4 features=64 layers=1
+# 13k params for L=4 n_hid=6 features=128 layers=1
 
-n_hid_ferm       = 8
+# 6x6
+# 3.8k params for L=6 n_hid=1 features=16 layers=1
+# 6k params for L=6 n_hid=2 features=32 layers=1
+# 15k params for L=6 n_hid=4 features=64 layers=1
+# 40k params for L=6 n_hid=6 features=128 layers=1
+# 53k params for L=6 n_hid=8 features=128 layers=1
+# 8x8
+# 40k params for L=8 n_hid=6 features=64 layers=1
+# 50k params for L=8 n_hid=8 features=64 layers=1
+# 91k params for L=8 n_hid=8 features=128 layers=1
+# ??k params for L=8 n_hid=10 features=64 layers=1
+#10x10
+# 68k params for L=6 n_hid=8 features=64 layers=1
+# 84k params for L=6 n_hid=8 features=64 layers=1
+# 145k params for L=6 n_hid=8 features=128 layers=1
+
+n_hid_ferm       = 4
 features         = 32    #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.025
+lr               = 0.02
 n_samples        = 2048 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//16  #number of parallel Markov chains
 chunk_size       = n_samples #samples are divided in chunks to compute observables in parallel
-N_iter           = 8000 #N_opt on the top of the one of the loaded model, if any
+N_iter           = 2000 #N_opt on the top of the one of the loaded model, if any
 
 #---------------------------Load another model -----------------------------------------
 #load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
-#load_path = None #set to None to not load any model and start from scratch
+load_path = None #set to None to not load any model and start from scratch
 previous_iter = 0
 
 if load_path:
@@ -99,11 +123,11 @@ if load_path:
         previous_iter = int(match.group(1))
 
 N_opt = previous_iter + N_iter
-save_every = 200
+save_every = 100
 block_iter = N_opt // save_every
 
 #-------------------------------- Set up model saving -----------------------------------------
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_bc{bc_x}_{bc_y}_phi{phi}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_phi"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -120,7 +144,7 @@ os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+sys.stdout = open(f"{folder}/output.txt", "a") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
 
 
@@ -131,13 +155,8 @@ print(f"hilbert space size = ",hi.size)
 
 
 # ------------- define Hamiltonian ------------------------
-"""if bc_x == "PBC" and bc_y == "PBC":
-    ha = nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()  
-else:
-    ha = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
-"""
-ha = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
-
+#ha = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
+ha = build_heisenberg_twisted(L, L, J1=1.0, J2=J2, phi = phi,   apbc_y = False).to_jax_operator()
 # ------------- define model ------------------------
 if dtype=="real": dtype_ = jnp.float64
 else: dtype_ = jnp.complex128
@@ -155,6 +174,7 @@ model = HiddenFermion(
                    stop_grad_mf=False,
                    stop_grad_lower_block=False,
                    bounds=bounds,
+                   phi=phi,
                    parity=parity,
                    rotation=rotation,
                    dtype=dtype_
@@ -255,9 +275,8 @@ for i in range(start_block, block_iter):
     vmc.run(n_iter=save_every, out=log)
     
     # Save log incrementally
-    current_log_data = helper.merge_log_data(old_log_data, log.data)
     with open(log_path, 'wb') as f:
-        pickle.dump(current_log_data, f)
+        pickle.dump(log.data, f)
 
 
 # Save the final model state after the last optimization step
@@ -265,7 +284,7 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
     bytes_out = flax.serialization.to_bytes(vstate)
     f.write(bytes_out)
 
-final_log_data = helper.merge_log_data(old_log_data, log.data)
+final_log_data = log.data
 
 #################################################################################################################
 

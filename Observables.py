@@ -30,13 +30,15 @@ from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact
 from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Old.Sign_vs_iteration import *
-from Elaborate.Plotting.QGT.QGT_vs_iteration import plot_S_matrix_eigenvalues, calculate_relevant_eigenvalues, Plot_S_matrix_histogram
+from Elaborate.Plotting.QGT.QGT_vs_iteration import plot_S_matrix_eigenvalues, calculate_relevant_eigenvalues, Plot_S_matrix_histogram, Plot_S_matrix_eigenvalues, plot_S_matrix_spectrum
 from Elaborate.Sign_Obs_MCMC import MarshallSignObs
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_Iterations
 from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
 from Elaborate.Sign_complexity import compute_sign_complexity
 from Entanglement.Entanglement import compute_entanglement_scaling, plot_entanglement_scaling, compute_renyi2_entropy
-from Hamiltonian import build_heisenberg_apbc
+from Entanglement.Entanglement_spectrum import plot_spectrum, compute_entanglement_spectrum_2d
+
+from Hamiltonian import build_heisenberg_apbc, build_heisenberg_twisted
 
 # Mock class for log if not available
 class MockLog:
@@ -225,10 +227,6 @@ def compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamilto
     
     return E_vs_final_per_site, variance_per_site, vscore
 
-def compute_magnetization(vstate, lattice, hilbert):
-    tot_magn = Magnetization(vstate, lattice, hilbert)
-    print("Magnetization = ", tot_magn)
-    return tot_magn
 
 def compute_param_count(params, L):
     if params['model_type'] == 'ViT':
@@ -251,60 +249,6 @@ def compute_sign(vstate, hilbert, n_samples=32768):
     return sign_MCMC.mean, sign_MCMC.variance
 
 
-def compute_entanglement_history(folder, vstate, n_samples_entropy=4096):
-    s2_history = []
-    s2_error_history = []
-    
-    models_dir = os.path.join(folder, "models")
-    if os.path.exists(models_dir):
-        files = [f for f in os.listdir(models_dir) if f.endswith(".mpack")]
-        if files:
-            files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
-            print("Computing Renyi entropy for all saved models...")
-            for model_file in files:
-                with open(os.path.join(models_dir, model_file), 'rb') as f:
-                    data = f.read()
-                    try:
-                        vstate = flax.serialization.from_bytes(vstate, data)
-                    except KeyError:
-                        vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
-                
-                s2_val, s2_err = compute_renyi2_entropy(vstate, n_samples=n_samples_entropy)
-                s2_history.append(s2_val)
-                s2_error_history.append(s2_err)
-        else:
-            print("No model files found in models directory.")
-            
-    return s2_history, s2_error_history
-
-def compute_sign_history(folder, vstate, hilbert, n_samples_sign=32768):
-    sign_MCMC_history = []
-    sign_MCMC_variance_history = []
-    
-    models_dir = os.path.join(folder, "models")
-    if os.path.exists(models_dir):
-        files = [f for f in os.listdir(models_dir) if f.endswith(".mpack")]
-        if files:
-            files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
-            print("Computing Marshall Sign history...")
-            for model_file in files:
-                with open(os.path.join(models_dir, model_file), 'rb') as f:
-                    data = f.read()
-                    try:
-                        vstate = flax.serialization.from_bytes(vstate, data)
-                    except KeyError:
-                        vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
-                
-                vstate.n_samples = n_samples_sign
-                sign_op = MarshallSignObs(hilbert)
-                sign_MCMC = vstate.expect(sign_op)
-                sign_MCMC_history.append(sign_MCMC.mean)
-                sign_MCMC_variance_history.append(sign_MCMC.variance)
-        else:
-            print("No model files found in models directory.")
-            
-    return sign_MCMC_history, sign_MCMC_variance_history
-
 def compute_qgt(vstate, folder, hilbert):
     try:
         # Attempt to free memory before heavy dense matrix allocation
@@ -315,7 +259,11 @@ def compute_qgt(vstate, folder, hilbert):
         all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12 = calculate_relevant_eigenvalues(vstate, folder, hilbert, threshold_ratio_rest=1e-2)
         
         Plot_S_matrix_histogram(all_eigenvalues, folder, one_avg = "one")
-        plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
+        
+        if all_eigenvalues:
+            indices_to_plot = sorted([int(k.split('_')[1]) for k in all_eigenvalues.keys()])
+            plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder, mean_rest_norm, len(indices_to_plot))
+            
         print(f"QGT relevant eigenvalues - first: {relevant_count_first}, mean rest ratio: {mean_rest_ratio}, mean rest norm: {mean_rest_norm}")
         return {
             'eigenvalues_S': all_eigenvalues,
@@ -339,8 +287,9 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
     amp_overlap, sign_vstate, sign_exact, sign_overlap = plot_Sign_Err_vs_Amplitude_Err_with_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sector_amp_err, sector_sign_err = plot_Sector_Overlap_err_vs_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
-    #eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
-    Plot_Energy_Fidelity(log, fidelity, folder, one_avg="one", L =4, plot_variance=False, fidelity_var=None)
+    eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
+    spectrum, total_error, sector_errors = plot_spectrum(ket_gs, vstate, L, save_dir=folder+"/physical_obs/spectrum")
+    #Plot_Energy_Fidelity(log, fidelity, folder, one_avg="one", L =4, plot_variance=False, fidelity_var=None)
     
     return {
         'sign_vstate': sign_vstate,
@@ -356,6 +305,9 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
         'sector_sign_err': sector_sign_err,
         'eigenvalues_S': eigenvalues,
         'rank_S': rel_1,
+        'spectrum': spectrum,
+        'total_error_spectrum': total_error,
+        'sector_errors_spectrum': sector_errors,
         'params': count_params
     }
 
@@ -373,70 +325,6 @@ def compute_L6_observables(vstate, J2, folder, params):
         'Overlap_amp_NQS_DMRG': results['Overlap_amp_NQS_DMRG'],
     }
 
-def analyze_coupling_matrix(vstate, folder, save_name="coupling_spectrum.png"):
-    # 1. Access the parameters (vstate.parameters is a FrozenDict)
-    params = vstate.parameters
-    
-    # Try to find the coupling matrix
-    # For HFDS, we look for 'orbitals_hf' which couples physical sites to hidden fermions
-    # Or 'hidden_0'/'kernel' which couples inputs to the first hidden layer
-    matrix = None
-    matrix_name = "Unknown"
-    
-    if 'orbitals' in params and 'orbitals_hf' in params['orbitals']:
-        matrix = params['orbitals']['orbitals_hf']
-        matrix_name = "orbitals_hf"
-    elif 'hidden_0' in params and 'kernel' in params['hidden_0']:
-        matrix = params['hidden_0']['kernel']
-        matrix_name = "hidden_0_kernel"
-    elif 'Dense_0' in params and 'kernel' in params['Dense_0']:
-        matrix = params['Dense_0']['kernel']
-        matrix_name = "Dense_0_kernel"
-
-    if matrix is None:
-        print(f"analyze_coupling_matrix: Could not find a suitable matrix. Keys: {params.keys()}")
-        return None, None
-
-    # Convert to numpy array
-    matrix = np.array(matrix)
-    
-    # Ensure 2D
-    if matrix.ndim > 2:
-        matrix = matrix.reshape(-1, matrix.shape[-1])
-
-    # 2. Compute Singular Value Decomposition (SVD)
-    try:
-        s = np.linalg.svd(matrix, compute_uv=False)
-    except Exception as e:
-        print(f"analyze_coupling_matrix: SVD failed: {e}")
-        return None, None
-    
-    # 3. Calculate Effective Rank (Shannon entropy based)
-    s_sum = np.sum(s)
-    if s_sum > 1e-12:
-        p = s / s_sum
-        entropy = -np.sum(p * np.log(p + 1e-12))
-        eff_rank = np.exp(entropy)
-    else:
-        eff_rank = 0.0
-    
-    # 4. Visualization
-    plt.figure(figsize=(8, 5))
-    plt.plot(s, 'o-', markersize=4, label=f"Eff. Rank: {eff_rank:.2f}")
-    plt.yscale('log')
-    plt.title(f"Singular Value Spectrum of {matrix_name}")
-    plt.xlabel("Index")
-    plt.ylabel("Singular Value (log scale)")
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.legend()
-    
-    save_path = os.path.join(folder, "physical_obs", save_name)
-    plt.savefig(save_path)
-    plt.close()
-    print(f"Coupling matrix analysis ({matrix_name}) saved to {save_path}")
-    print(f"Effective Rank: {eff_rank}")
-
-    return s, eff_rank
 
 def save_variables(folder, variables):
     with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
@@ -475,40 +363,41 @@ def run_observables(log, folder):
     ################################################################################################à
     
     # 1. Correlations
-    """R = compute_correlations(vstate, lattice, L, folder, hilbert)
-    variables['R'] = R"""
+    R = compute_correlations(vstate, lattice, L, folder, hilbert)
+    variables['R'] = R
 
     # 2. Exact Energy
-    """E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
-
-    # 3. Energy Stats
-    E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
-    
+    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
     if E_exact is not None:
         print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
-    """
+    
+    # 3. Energy Stats
+    E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
+    print(f"Final Energy per site: {E_vs_final_per_site}")
+    print(f"Variance per site: {variance_per_site}")
+    print(f"Vscore: {vscore}")
 
-    # 4. Magnetization
-    #compute_magnetization(vstate, lattice, hilbert)
+    if E_exact is not None:
+        variables['E_exact'] = E_exact
+        variables['rel_err_E'] = abs((E_vs_final_per_site - E_exact) / E_exact)
+
 
     # 5. Param Count
-    """count_params = compute_param_count(params, L)
+    count_params = compute_param_count(params, L)
 
     variables.update({
         'E_vs_final': E_vs_final_per_site,
         'params': count_params,
         'vscore': vscore,
         'variance': variance_per_site,
-        'count_params': count_params
+        'R': R,
+        'E_exact': E_exact,
+        'rel_err_E': abs((E_vs_final_per_site - E_exact) / E_exact) if E_exact is not None else None
     })
 
-    if E_exact is not None:
-        variables['E_exact'] = E_exact
-        variables['rel_err_E'] = abs((E_vs_final_per_site - E_exact) / E_exact)
+    save_variables(folder, variables)
 
-    save_variables(folder, variables)"""
-
-    # 6. Entropy
+    # 6. Entanglement Entropy
     """n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
@@ -525,83 +414,43 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    n_samples_sign = 32768*2*2
+    n_samples_sign = 32768
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
+    
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)
     
-    
-    # 8. Sign Complexity
-    """
-    mean_sensitivity, std_sensitivity= compute_sign_complexity(vstate, n_samples=65536, batch_size=256)
-    variables.update({
-        'sign_complexity_mean_sensitivity': mean_sensitivity,
-        'sign_complexity_std_sensitivity': std_sensitivity
-        })
-    save_variables(folder, variables)
-    """
-    
-    
-    """
-    # 8. entanglement History
-    n_samples_entropy_history = 65536
-    s2_hist, s2_err_hist = compute_entanglement_history(folder, vstate, n_samples_entropy=n_samples_entropy_history)
-    variables.update({
-        's2_history': s2_hist,
-        's2_error_history': s2_err_hist
-    })
-    save_variables(folder, variables)
 
-    """
-    """
-    # 9. Sign History
-    sign_hist, sign_var_hist = compute_sign_history(folder, vstate, hilbert, n_samples_sign=8192)
-    variables.update({
-        'sign_MCMC_history': sign_hist,
-        'sign_MCMC_variance_history': sign_var_hist
-    })
-    save_variables(folder, variables)
-    
-    """
-    
-    # 9. QGT
-    """qgt_vars = compute_qgt(vstate, folder, hilbert)
-    variables.update(qgt_vars)
-    save_variables(folder, variables)"""
     
     # 10. System specific observables
     
-    """if L == 4 and ket_gs is not None:
+    if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
         save_variables(folder, variables)
     elif L == 6:
         l6_vars = compute_L6_observables(vstate, J2, folder, params)
         variables.update(l6_vars)
-        save_variables(folder, variables)"""
-
-    # 11. Coupling Matrix Analysis
-    """
-    if params['model_type'] == 'HFDS':
-        s, eff_rank = analyze_coupling_matrix(vstate, folder)
-
-        variables.update({
-            'coupling_spectrum': s,
-            'coupling_effective_rank': eff_rank
-        })
         save_variables(folder, variables)
-    """
     
+
+    # 9. QGT
+    qgt_vars = compute_qgt(vstate, folder, hilbert)
+    variables.update(qgt_vars)
+    save_variables(folder, variables)
 
     sys.stdout.close()
 
 
 if __name__ == "__main__":
 
-    model_path = "HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
+    #model_path = ""
     log = None
 
     if not os.path.exists(model_path):

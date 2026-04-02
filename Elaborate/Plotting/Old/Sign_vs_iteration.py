@@ -350,7 +350,7 @@ def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate,
         label_color = line_colors[i % len(line_colors)]
         fig.text(txt_x, txt_y, f"Config {i+1}", va='center', ha='left', color=label_color, fontsize=10)
 
-    plt.tight_layout(rect=[0, 0, 0.80, 1])  # leave room on the right for our insets
+    plt.subplots_adjust(left=0.1, right=0.8, top=0.9, bottom=0.1)
 
 
 

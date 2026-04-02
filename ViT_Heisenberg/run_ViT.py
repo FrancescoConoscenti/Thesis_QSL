@@ -55,25 +55,25 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 60   # dimensionality of the embedding space
-n_heads         = 10    # number of heads
+d_model         = 8   # dimensionality of the embedding space
+n_heads         = 4    # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
-rotation = False
+rotation = True
 
 #n_samples = 8192   n_chains  = 256   chunk_size = 4096
 
-N_samples       = 4096   # number of MC samples
-n_chains        = 256     # number of Markov chains
-chunk_size      = 4096      # chunk size for the MC samples
-N_opt           = 4000
+N_samples       = 1024   # number of MC samples
+n_chains        = N_samples//16     # number of Markov chains
+chunk_size      = N_samples      # chunk size for the MC samples
+N_opt           = 10000
 
 number_data_points = 20
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
-model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_latest_model"
+model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_QGT"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 model_path = f'ViT_Heisenberg/plot/{L}x{L}/{model_name}/{J_value}'
@@ -88,7 +88,7 @@ os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 os.makedirs(folder_energy, exist_ok=True)
 
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+sys.stdout = open(f"{folder}/output.txt", "a") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph
@@ -158,14 +158,16 @@ print("Number of parameters = ", N_params, flush=True)
 
 
 from netket.experimental.driver import VMC_SRt
+from netket.driver import VMC_SR
 
-vmc = VMC_SRt(
+vmc = VMC_SR(
     hamiltonian=hamiltonian,
     optimizer=optimizer,
     diag_shift=1e-4,
     variational_state=vstate,
-    jacobian_mode="complex",
+    mode="complex",
 )
+#netket.optimizer.qgt.QGTOnTheFly(vstate, *, chunk_size=None, holomorphic=None, **kwargs)
 
 # Optimization
 log = nk.logging.RuntimeLog()

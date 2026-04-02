@@ -93,7 +93,7 @@ os.makedirs(folder+"/Sign_plot", exist_ok=True)
 os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
 logger.info(f"Output will be saved to: {folder}")
-sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
+sys.stdout = open(f"{folder}/output.txt", "a") #redirect print output to a file inside the folder
 print(f"ViT, J={J2}, L={L}, layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}")
 
 # Hilbert space of spins on the graph

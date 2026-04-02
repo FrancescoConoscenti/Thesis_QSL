@@ -96,6 +96,114 @@ def build_heisenberg_apbc(
 
     return 4*H
 
+def build_heisenberg_twisted(
+    Lx: int,
+    Ly: int,
+    J1: float = 1.0,
+    J2: float = 0.0,
+    phi: float = 0.0,       # twist angle in units of pi; phi=1 reproduces APBC
+    apbc_y: bool = False,
+) -> nk.operator.LocalOperator:
+    """
+    Build the J1-J2 Heisenberg Hamiltonian on an Lx×Ly square lattice
+    with a U(1) twist φ at the x-boundary and (anti-)periodic BC in y.
+
+    The twist is implemented via the Peierls substitution on the spin-flip
+    operators at the boundary bond (x = Lx-1) → (x = 0):
+
+        S+_i S-_j  →  e^{+iφ} S+_i S-_j
+        S-_i S+_j  →  e^{-iφ} S-_i S+_j
+
+    Special cases:
+        φ = 0   → PBC  (no twist)
+        φ = 1   → APBC (π-flux, equivalent to apbc_x=True)
+
+    The ZZ term is unaffected by the boundary twist.
+    NNN bonds that cross the x-boundary pick up the same phase factor.
+    NNN bonds crossing both x and y boundaries accumulate both phases.
+
+    Args:
+        Lx, Ly   : lattice dimensions
+        J1       : nearest-neighbour exchange (>0 = AFM)
+        J2       : next-nearest-neighbour exchange
+        phi      : boundary twist angle in x-direction (radians)
+        apbc_y   : anti-periodic (π-twist) in y-direction
+
+    Returns:
+        nk.operator.LocalOperator
+    """
+    N = Lx * Ly
+    hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
+
+    def site(x, y):
+        return (x % Lx) + (y % Ly) * Lx
+
+    Sp = np.array([[0, 1], [0, 0]], dtype=complex)
+    Sm = np.array([[0, 0], [1, 0]], dtype=complex)
+    Sz = np.array([[0.5, 0], [0, -0.5]], dtype=complex)
+
+    def heisenberg_bond(i, j, phase: complex = 1.0):
+        """
+        phase = e^{iφ} for the S+_i S-_j term.
+        The S-_i S+_j term gets the conjugate phase e^{-iφ}.
+        ZZ term is always real and phase-independent.
+
+        For PBC:   phase = +1
+        For APBC:  phase = e^{iπ} = -1
+        For twist: phase = e^{iφ}
+        """
+        op_list = []
+        op_list.append((np.kron(Sz, Sz),                           [i, j]))
+        op_list.append((0.5 * phase      * np.kron(Sp, Sm),        [i, j]))
+        op_list.append((0.5 * np.conj(phase) * np.kron(Sm, Sp),   [i, j]))
+        return op_list
+
+    H = nk.operator.LocalOperator(hi, dtype=complex)
+
+    phi_y = np.pi if apbc_y else 0.0   # y-boundary phase (0 or π)
+
+    # ------------------------------------------------------------------ #
+    # Nearest-neighbour bonds
+    # ------------------------------------------------------------------ #
+    for x, y in product(range(Lx), range(Ly)):
+        i = site(x, y)
+
+        # --- x-bond: (x,y) → (x+1, y) ---
+        crosses_x = (x == Lx - 1)
+        phase_x = np.exp(1j * phi * np.pi) if crosses_x else 1.0
+        j = site(x + 1, y)
+        for op, sites in heisenberg_bond(i, j, phase=phase_x):
+            H += J1 * nk.operator.LocalOperator(hi, [op], [sites])
+
+        # --- y-bond: (x,y) → (x, y+1) ---
+        crosses_y = (y == Ly - 1)
+        phase_y = np.exp(1j * phi_y) if crosses_y else 1.0
+        j = site(x, y + 1)
+        for op, sites in heisenberg_bond(i, j, phase=phase_y):
+            H += J1 * nk.operator.LocalOperator(hi, [op], [sites])
+
+    # ------------------------------------------------------------------ #
+    # Next-nearest-neighbour bonds
+    # ------------------------------------------------------------------ #
+    if J2 != 0.0:
+        for x, y in product(range(Lx), range(Ly)):
+            i = site(x, y)
+            for dx, dy in [(1, 1), (1, -1)]:
+                x2, y2 = x + dx, y + dy
+
+                # Accumulate phases from each boundary crossed
+                phase = 1.0 + 0j
+                if x2 < 0 or x2 >= Lx:        # crosses x-boundary
+                    phase *= np.exp(1j * phi * np.pi)
+                if y2 < 0 or y2 >= Ly:        # crosses y-boundary
+                    phase *= np.exp(1j * phi_y)
+
+                j = site(x2, y2)
+                for op, sites in heisenberg_bond(i, j, phase=phase):
+                    H += J2 * nk.operator.LocalOperator(hi, [op], [sites])
+
+    return 4 * H
+
 
 # ------------------------------------------------------------------ #
 # Usage example: 4×4, J1=1, J2=0.5 (frustrated), APBC in x

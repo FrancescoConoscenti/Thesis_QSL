@@ -202,6 +202,122 @@ def load_trained_model(path, L, J2, hi_constrained, hi_full):
             
     return model, variables, model_type
 
+def plot_spectrum(ket_gs, vstate, L, save_dir=None):
+    """
+    Plots the entanglement spectrum of a given vstate alongside the exact ground state,
+    and computes the total Euclidean error and the relative error in three sectors.
+    
+    Args:
+        ket_gs: Exact ground state wavefunction.
+        vstate: NetKet variational state.
+        L (int): Linear size of the lattice.
+        J2 (float): Next-nearest neighbor coupling.
+        indices_A (list): Indices of the subsystem A.
+        save_dir (str, optional): Directory to save the plot.
+        
+    Returns:
+        total_error (float): Total Euclidean distance between the spectra.
+        sector_errors (list): Mean relative errors in the High, Mid, and Low sectors.
+    """
+    print(f"--- Plotting Entanglement Spectrum (L={L}) ---")
+    N = L * L
+    lattice = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
+    hi_full = nk.hilbert.Spin(s=1/2, N=N)
+    hi_constrained = nk.hilbert.Spin(s=1/2, N=N, total_sz=0)
+
+    # Subsystem A indices
+    indices_A = []
+    for y in range(L):
+        for x in range(L // 2): 
+            flat_index = y * L + x
+            indices_A.append(flat_index)
+
+    # 1. Exact Ground State
+    ket_gs = ket_gs.flatten()
+    
+    psi_exact = np.zeros(hi_full.n_states, dtype=ket_gs.dtype)
+    full_indices_constrained = hi_full.states_to_numbers(hi_constrained.all_states())
+    psi_exact[full_indices_constrained] = ket_gs
+    psi_exact /= np.linalg.norm(psi_exact)
+
+    # 2. Vstate Wavefunction
+    print("Computing Vstate Wavefunction...")
+    if vstate.hilbert.size != N:
+        raise ValueError("Hilbert space size mismatch")
+    
+    psi_c = vstate.to_array()
+    if vstate.hilbert.n_states == hi_constrained.n_states:
+        psi_vstate = np.zeros(hi_full.n_states, dtype=psi_c.dtype)
+        psi_vstate[full_indices_constrained] = psi_c
+    elif vstate.hilbert.n_states == hi_full.n_states:
+        psi_vstate = psi_c
+    else:
+        raise ValueError("Unsupported Hilbert space")
+    
+    psi_vstate /= np.linalg.norm(psi_vstate)
+
+    # 3. Compute Spectra
+    print("Computing Entanglement Spectra...")
+    _, evals_exact = compute_entanglement_spectrum_2d(N, indices_A, psi_exact)
+    _, evals_vstate = compute_entanglement_spectrum_2d(N, indices_A, psi_vstate)
+
+    # 4. Calculate Errors
+    min_len = min(len(evals_exact), len(evals_vstate))
+    if min_len == 0:
+        print("Warning: Spectrum is empty.")
+        return np.nan, [np.nan, np.nan, np.nan]
+        
+    diff = np.abs(evals_exact[:min_len] - evals_vstate[:min_len])
+    total_error = np.linalg.norm(diff)
+    
+    # Sector errors (relative difference)
+    denominator = evals_exact[:min_len]
+    valid_indices = denominator > 1e-12
+    relative_diff = np.full_like(diff, np.nan)
+    relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
+    
+    s1 = min_len // 3
+    s2 = 2 * (min_len // 3)
+    sectors = [(0, s1), (s1, s2), (s2, min_len)]
+    
+    sector_errors = []
+    for start, end in sectors:
+        seg_mean = np.nanmean(relative_diff[start:end]) if start < end else np.nan
+        sector_errors.append(seg_mean)
+
+    # 5. Plotting
+    plt.figure(figsize=(10, 7))
+    plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=4, alpha=0.8, color='red', zorder=10)
+    plt.semilogy(evals_vstate, 's--', label='Variational State', markersize=4, alpha=0.8, color='blue')
+    
+    # Annotate errors
+    stats_text = (
+        f"Total Euclidean Error: {total_error:.3e}\n"
+        f"High Sector Rel. Error: {sector_errors[0]:.3e}\n"
+        f"Mid Sector Rel. Error: {sector_errors[1]:.3e}\n"
+        f"Low Sector Rel. Error: {sector_errors[2]:.3e}"
+    )
+    props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+    plt.gca().text(0.05, 0.05, stats_text, transform=plt.gca().transAxes, fontsize=10, verticalalignment='bottom', bbox=props)
+
+    plt.xlabel('Index')
+    plt.ylabel(r'Eigenvalues $\lambda_i$')
+    plt.title(f'Entanglement Eigenvalues (L={L}, J2={J2})')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    if save_dir:
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Vstate_L{L}.png")
+        plt.savefig(save_path, dpi=300)
+        print(f"Plot saved to {save_path}")
+    else:
+        plt.show()
+        
+    plt.close()
+
+    return evals_vstate, total_error, sector_errors
+
 def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
     print(f"--- Running Entanglement Spectrum Comparison (L={L}, J2={J2}) ---")
 

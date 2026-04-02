@@ -657,7 +657,7 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS"]
-    variances = [5e-4, 1e-3, 2.5e-3, 5e-3, 7.5e-3, 1e-2,2.5e-2, 5e-2, 7.5e-2, 1e-1, 1, 10, 100]
+    variances = [2.5e-4, 5e-4, 7.5e-4, 1e-3, 2.5e-3, 5e-3, 7.5e-3, 1e-2,2.5e-2, 5e-2, 7.5e-2]
     L_values = [4, 6, 8, 10]
     
     results = {} # results[name][var] = {'L': [], 'mean': [], 'err': [], 'params': []}
@@ -677,8 +677,8 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             
             # Models
             rbm = nk.models.RBM(alpha=1, param_dtype=complex, kernel_init=init_fun, hidden_bias_init=init_fun, visible_bias_init=init_fun)
-            vit = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=init_fun)
-            hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=64, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
+            vit = ViT_ent(num_layers=1, d_model=12, n_heads=4, patch_size=2, kernel_init=init_fun)
+            hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=16, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
             
             all_models_list = [
                 ("RBM", rbm, hi_free, nk.sampler.MetropolisLocal(hi_free)),
@@ -732,9 +732,11 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             xavier_results['params'].append(param_count_x)
             print(f"  ViT Xavier L={L}: S2={np.mean(s2_vals_x):.4f}")
 
-    colors = {'RBM': 'blue', 'ViT': 'orange', 'HFDS': 'green'}
-    markers = {1e-3: 'o', 1e-2: 's', 1e-1: 'D', 1: '^'}
-    linestyles = {1e-3: '-', 1e-2: '--', 1e-1: '-.', 1: ':'}
+    model_cmaps = {
+        'RBM': plt.cm.Blues,
+        'ViT': plt.cm.Oranges,
+        'HFDS': plt.cm.Greens
+    }
     
     def f_lin(x, a, b): return a * x + b
     def f_sqrt(x, a, b): return a * np.sqrt(x) + b
@@ -756,7 +758,15 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     # Plotting Unnormalized
     plt.figure(figsize=(12, 7))
     for name in results:
-        for var in variances:
+        cmap = model_cmaps.get(name, plt.cm.Greys)
+        present_vars = [v for v in variances if v in results[name]]
+        for i, var in enumerate(present_vars):
+            if len(present_vars) > 1:
+                intensity = 0.4 + 0.6 * (i / (len(present_vars) - 1))
+            else:
+                intensity = 1.0
+            color = cmap(intensity)
+
             data = results[name][var]
             params_str = ",".join(map(str, data['params']))
             base_label = f"{name} Var={var} (P={params_str})"
@@ -785,13 +795,13 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             
             fit_label_ext = f" ({best_fit_name} fit)" if best_fit_name else ""
             plt.errorbar(N_arr, y_data, yerr=y_err, 
-                         label=base_label + fit_label_ext, color=colors[name], 
-                         marker=markers.get(var, 'o'), linestyle='none', capsize=5)
+                         label=base_label + fit_label_ext, color=color, 
+                         marker='o', linestyle='none', capsize=5)
 
             if best_popt is not None:
                 x_plot = np.linspace(min(N_arr), max(N_arr), 200)
                 plt.plot(x_plot, fit_functions[best_fit_name](x_plot, *best_popt), 
-                         color=colors[name], linestyle=linestyles.get(var, '-'))
+                         color=color, linestyle='-')
 
     if xavier_results is not None and len(xavier_results['L']) > 0:
         L_x = np.array(xavier_results['L'])
