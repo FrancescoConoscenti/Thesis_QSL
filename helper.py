@@ -8,8 +8,31 @@ class MockLog:
     def __init__(self, data):
         self.data = data
 
-def load_log(folder):
-    log_path = os.path.join(folder, "log.pkl")
+class DictAttr(dict):
+    def __getattr__(self, item):
+        if item in self:
+            return self[item]
+        raise AttributeError(f"Attribute {item} not found")
+    
+    def __setattr__(self, key, value):
+        self[key] = value
+
+def convert_to_dictattr(data):
+    if hasattr(data, 'to_dict') and callable(data.to_dict):
+        return convert_to_dictattr(data.to_dict())
+    elif hasattr(data, 'items') and callable(data.items):
+        return DictAttr({k: convert_to_dictattr(v) for k, v in data.items()})
+    elif str(type(data).__name__) in ['History', 'MVHistory', 'RuntimeLog']:
+        # Fallback if to_dict is somehow missing
+        d = {k: getattr(data, k) for k in dir(data) if not k.startswith('_') and not callable(getattr(data, k))}
+        return convert_to_dictattr(d)
+    elif isinstance(data, (list, tuple)):
+        return type(data)(convert_to_dictattr(v) for v in data)
+    else:
+        return data
+
+def load_log(folder, filename="log.pkl"):
+    log_path = os.path.join(folder, filename)
     old_log_data = {}
     if os.path.exists(log_path):
         try:
@@ -20,13 +43,15 @@ def load_log(folder):
     return old_log_data
 
 def merge_log_data(old_data, new_data):
-    if not old_data:
-        return new_data
-    if not new_data:
-        return old_data
+    # Strip NetKet wrapper classes to prevent unpickling RecursionError
+    new_data_conv = convert_to_dictattr(new_data)
+    old_data_conv = convert_to_dictattr(old_data)
     
-    merged = old_data.copy()
-    for key, val in new_data.items():
+    if not old_data_conv:
+        return new_data_conv
+    
+    merged = DictAttr(old_data_conv)
+    for key, val in new_data_conv.items():
         if key in merged:
             if isinstance(val, dict):
                 merged[key] = merge_log_data(merged[key], val)

@@ -55,8 +55,8 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 8   # dimensionality of the embedding space
-n_heads         = 4    # number of heads
+d_model         = 24   # dimensionality of the embedding space
+n_heads         = 6    # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
@@ -64,19 +64,19 @@ rotation = True
 
 #n_samples = 8192   n_chains  = 256   chunk_size = 4096
 
-N_samples       = 1024   # number of MC samples
+N_samples       = 2048   # number of MC samples
 n_chains        = N_samples//16     # number of Markov chains
 chunk_size      = N_samples      # chunk size for the MC samples
-N_opt           = 10000
+N_opt           = 8000
 
-number_data_points = 20
+number_data_points = 10
 save_every       = N_opt//number_data_points
 block_iter = N_opt//save_every
 
 model_name = f"layers{num_layers}_d{d_model}_heads{n_heads}_patch{patch_size}_sample{N_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_QGT"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-model_path = f'ViT_Heisenberg/plot/{L}x{L}/{model_name}/{J_value}'
+model_path = f'ViT_Heisenberg/plot/{L}x{L}/QGT/{model_name}/{J_value}'
 folder = f'{model_path}/{seed_str}'
 folder_energy = f'{folder}/Energy_plot'
 save_model = f"{model_path}/{seed_str}/models"

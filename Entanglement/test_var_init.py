@@ -657,7 +657,7 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
     os.makedirs(save_dir, exist_ok=True)
     if models_to_plot is None:
         models_to_plot = ["RBM", "ViT", "HFDS"]
-    variances = [2.5e-4, 5e-4, 7.5e-4, 1e-3, 2.5e-3, 5e-3, 7.5e-3, 1e-2,2.5e-2, 5e-2, 7.5e-2]
+    variances = [2.5e-4, 5e-4, 7.5e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1,  5e-1, 1.0, 5.0, 10, 50, 100]
     L_values = [4, 6, 8, 10]
     
     results = {} # results[name][var] = {'L': [], 'mean': [], 'err': [], 'params': []}
@@ -677,12 +677,12 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
             
             # Models
             rbm = nk.models.RBM(alpha=1, param_dtype=complex, kernel_init=init_fun, hidden_bias_init=init_fun, visible_bias_init=init_fun)
-            vit = ViT_ent(num_layers=1, d_model=12, n_heads=4, patch_size=2, kernel_init=init_fun)
+            vit = ViT_ent(num_layers=1, d_model=20, n_heads=4, patch_size=2, kernel_init=init_fun)
             hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=16, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
             
             all_models_list = [
                 ("RBM", rbm, hi_free, nk.sampler.MetropolisLocal(hi_free)),
-                ("ViT", vit, hi_free, nk.sampler.MetropolisLocal(hi_free)),
+                ("ViT", vit, hi_constrained, nk.sampler.MetropolisLocal(hi_constrained)),
                 ("HFDS", hfds, hi_constrained, nk.sampler.MetropolisExchange(hi_constrained, graph=g))
             ]
             
@@ -750,7 +750,7 @@ def plot_entropy_vs_L_variance(n_seeds=10, n_samples=4096, models_to_plot=None):
         'variances': variances,
         'L_values': L_values
     }
-    data_path = get_unique_path(save_dir, "Entropy_vs_L_Scaling_Unnormalized_data.pkl")
+    data_path = get_unique_path(save_dir, "Entropy_vs_L_Scaling_Unnormalized_data_unconstrained.pkl")
     with open(data_path, 'wb') as f:
         pickle.dump(plot_data, f)
     print(f"Plot data saved to {data_path}")
@@ -1441,7 +1441,7 @@ def main():
     #test_entanglement_entropy_vit_xavier(n_samples=65536)
 
     #plot_entropy_vs_variance(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])
-    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViT", "HFDS"])
+    plot_entropy_vs_L_variance(n_seeds=10, n_samples=65536//2, models_to_plot=[ "ViT", "HFDS"])
     #plot_entropy_vs_L_hidden_size(n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSrandom", "HFDSFermi"], var=0.01)
     
     #plot_entropy_vs_variance_hidden_size_map(n_seeds=10, n_samples=65536*2, models_to_plot=[ "ViTrandom", "HFDSrandom", "HFDSFermi"])

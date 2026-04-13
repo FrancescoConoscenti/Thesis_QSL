@@ -51,6 +51,10 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
         return {}, 0, 0, 0, 0
 
     indices_to_plot = sorted(list(set(range(num_models))))
+    # Only evaluate and plot the first and last model iterations
+    if len(indices_to_plot) > 1:
+        indices_to_plot = [indices_to_plot[0], indices_to_plot[-1]]
+
     all_eigenvalues = {}
     relevant_eigenvalues_counts = []
     relevant_counts_rest_ratio = []

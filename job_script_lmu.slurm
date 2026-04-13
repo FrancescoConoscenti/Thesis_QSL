@@ -1,37 +1,37 @@
 #!/bin/bash
-#SBATCH --job-name=PHIHF10x10
+#SBATCH --job-name=HFDS10
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.6x6.out
 #SBATCH --ntasks=1
 
 ##SBATCH -p inter
 ##SBATCH --gres=gpu:h100nvl:1
 
-##SBATCH -p inter
-##SBATCH --gres=gpu:v100:1
+#SBATCH -p inter
+#SBATCH --gres=gpu:v100:1
 
 ##SBATCH -p cip
 ##SBATCH --gres=gpu:a40:1
 
-#SBATCH --gres=gpu:1
+##SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 
 #SBATCH --mem=64G
 #SBATCH --time=2-00:00:00
 
-#SBATCH --array=0-11
+#SBATCH --array=0-5
 
 #SBATCH --export=ALL,XLA_PYTHON_CLIENT_PREALLOCATE=false,XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 
 source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
 #export JAX_PLATFORMS=cpu
-export XLA_PYTHON_CLIENT_PREALLOCATE=false
-export XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
+#export XLA_PYTHON_CLIENT_PREALLOCATE=false
+#export XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 
-nvidia-smi
+#nvidia-smi
 
-J_VALUES=(0.5)
-SEED_VALUES=(1 2 3)
+J_VALUES=(0.5 0.55 0.6)
+SEED_VALUES=(1 2)
 #BC_COMBINATIONS=("APC PBC" "APC APC" "PBC APC" "PBC PBC" )
 BC_COMBINATIONS=("PBC PBC" )
 PHI_VALUES=(0.0 0.25 0.5 0.75)
@@ -60,8 +60,8 @@ PHI=${PHI_VALUES[$PHI_INDEX]}
 
 
 sleep 10
-#srun python -m ViT_Heisenberg.run_ViT --L 4 --seed "$SEED" --J2 "$J"
-srun python -m HFDS_Heisenberg.run_spin --L 10 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y" --phi "$PHI"
+#srun python -m ViT_Heisenberg.run_ViT --L 10 --seed "$SEED" --J2 "$J"
+srun python -m HFDS_Heisenberg.run_spin --L 10 --seed "$SEED" --J2 "$J" #--bc_x "$BC_X" --bc_y "$BC_Y" --phi "$PHI"
 sleep 10
 
 #srun python -m Entanglement.test_var_init

@@ -81,3 +81,32 @@ def Vscore(L, variance_per_site, E_vs):
     # So, the correct formula should be variance_per_site / (E_vs**2).
     v_score = variance_per_site / (E_vs**2)
     return v_score
+
+def Rhat(log, folder=None):
+    rhat_history = log.data["Energy"].R_hat
+    rhat_final = rhat_history[-1].real
+    
+    if folder is not None:
+        plt.figure()
+        plt.plot(rhat_history.real)
+        plt.title("Rhat vs Iterations")
+        plt.xlabel("Iterations")
+        plt.ylabel("Rhat")
+        plt.savefig(f'{folder}/Rhat.png')
+        plt.close()
+
+    return rhat_final
+
+def Autocorrelation_time(log, folder=None):
+    tau_history = log.data["Energy"].TauCorr
+    tau_final = tau_history[-1].real    
+    if folder is not None:
+        plt.figure()
+        plt.plot(tau_history.real)
+        plt.title("Autocorrelation Time vs Iterations")
+        plt.xlabel("Iterations")
+        plt.ylabel("Autocorrelation Time")
+        plt.savefig(f'{folder}/Autocorrelation_time.png')
+        plt.close()
+
+    return tau_final

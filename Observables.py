@@ -27,7 +27,7 @@ from ViT_Heisenberg.ViT_model import ViT_sym
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 from Elaborate.Statistics.Energy import Energy, Exact_gs_en_6x6, plot_energy
 from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact
-from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs
+from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs, Autocorrelation_time, Rhat
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Old.Sign_vs_iteration import *
 from Elaborate.Plotting.QGT.QGT_vs_iteration import plot_S_matrix_eigenvalues, calculate_relevant_eigenvalues, Plot_S_matrix_histogram, Plot_S_matrix_eigenvalues, plot_S_matrix_spectrum
@@ -55,6 +55,12 @@ def parse_model_path(model_path):
     
     match_J = re.search(r"J=([\d\.]+)", model_path)
     params['J2'] = float(match_J.group(1)) if match_J else 0.5
+    
+    match_phi = re.search(r"_phi([\d\.]+)_", model_path)
+    if match_phi:
+        params['phi'] = float(match_phi.group(1))
+    else:
+        params['phi'] = 0.0
     
     if "hidd" in model_path:
         params['model_type'] = 'HFDS'
@@ -103,14 +109,15 @@ def setup_system(L, J2, params=None):
     
     bc_x = params.get("bc_x", "PBC") if params else "PBC"
     bc_y = params.get("bc_y", "PBC") if params else "PBC"
+    phi = params.get("phi", 0.0) if params else 0.0
 
     """if bc_x == "PBC" and bc_y == "PBC":
         hamiltonian = nk.operator.Heisenberg(hilbert=hilbert, graph=lattice, J=[1.0, J2], sign_rule=[False, False]).to_jax_operator()
     else:
         hamiltonian = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()"""
     
-    print(f"Building Hamiltonian with L={L}, J2={J2}, bc_x={bc_x}, bc_y={bc_y}")
-    hamiltonian = build_heisenberg_apbc(L, L, J1=1.0, J2=J2, apbc_x=(bc_x == "APC"), apbc_y=(bc_y == "APC")).to_jax_operator()
+    print(f"Building Hamiltonian with L={L}, J2={J2}, bc_x={bc_x}, bc_y={bc_y}, phi={phi}")
+    hamiltonian = build_heisenberg_twisted(L, L, J1=1.0, J2=J2, phi=phi, apbc_y=(bc_y == "APC")).to_jax_operator()
   
     return lattice, hilbert, hamiltonian
 
@@ -215,6 +222,8 @@ def compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamilto
             plot_energy(folder, energy_per_iterations, E_last=E_vs_final_per_site)
         variance_per_site = Variance(log, L, folder_energy)
         vscore = Vscore(L, variance_per_site, E_vs_final_per_site)
+        tau_final = Autocorrelation_time(log, folder_energy)
+        rhat_final = Rhat(log, folder_energy)
     else:
         E_vs = vstate.expect(hamiltonian)
         E_vs_final_per_site = E_vs.mean.real / (N_SITES * ENERGY_NORMALIZATION_FACTOR)
@@ -330,6 +339,8 @@ def save_variables(folder, variables):
     with open(os.path.join(folder, "variables.pkl"), 'wb') as f:
         pickle.dump(variables, f)
 
+
+
 def run_observables(log, folder):
     folder_energy = setup_environment(folder)
     params = parse_model_path(folder)
@@ -363,8 +374,10 @@ def run_observables(log, folder):
     ################################################################################################à
     
     # 1. Correlations
-    R = compute_correlations(vstate, lattice, L, folder, hilbert)
+    """R = compute_correlations(vstate, lattice, L, folder, hilbert)
     variables['R'] = R
+    save_variables(folder, variables)
+    """
 
     # 2. Exact Energy
     E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
@@ -381,7 +394,8 @@ def run_observables(log, folder):
         variables['E_exact'] = E_exact
         variables['rel_err_E'] = abs((E_vs_final_per_site - E_exact) / E_exact)
 
-
+    
+    
     # 5. Param Count
     count_params = compute_param_count(params, L)
 
@@ -390,13 +404,12 @@ def run_observables(log, folder):
         'params': count_params,
         'vscore': vscore,
         'variance': variance_per_site,
-        'R': R,
         'E_exact': E_exact,
         'rel_err_E': abs((E_vs_final_per_site - E_exact) / E_exact) if E_exact is not None else None
     })
 
     save_variables(folder, variables)
-
+    
     # 6. Entanglement Entropy
     """n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
@@ -414,7 +427,7 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    n_samples_sign = 32768
+    """n_samples_sign = 32768
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     
     variables.update({
@@ -423,11 +436,11 @@ def run_observables(log, folder):
     })
     save_variables(folder, variables)
     
-
+    """
     
     # 10. System specific observables
     
-    if L == 4 and ket_gs is not None:
+    """if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
         variables.update(l4_vars)
         save_variables(folder, variables)
@@ -435,22 +448,26 @@ def run_observables(log, folder):
         l6_vars = compute_L6_observables(vstate, J2, folder, params)
         variables.update(l6_vars)
         save_variables(folder, variables)
-    
+    """
 
     # 9. QGT
-    qgt_vars = compute_qgt(vstate, folder, hilbert)
+    """qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
+
+    print("\n\n#######################################################################################################\n\n")
 
     sys.stdout.close()
 
 
 if __name__ == "__main__":
 
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd4_feat32_sample4096_bcPBC_PBC_lr0.02_iter400_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/QGT/layers2_d24_heads6_patch2_sample8192_lr0.0075_iter200_parityTrue_rotTrue_QGT"
+    model_path="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
-    #model_path = ""
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
     log = None
 
     if not os.path.exists(model_path):
@@ -458,8 +475,11 @@ if __name__ == "__main__":
 
     if os.path.exists(model_path):
         if os.path.exists(os.path.join(model_path, "log.pkl")):
-            with open(os.path.join(model_path, "log.pkl"), "rb") as f:
-                log = pickle.load(f)
+            try:
+                with open(os.path.join(model_path, "log.pkl"), "rb") as f:
+                    log = pickle.load(f)
+            except Exception as e:
+                print(f"Could not load existing log: {e}")
 
         # Check if the path is already a specific J folder
         if os.path.basename(os.path.normpath(model_path)).startswith("J=") or os.path.basename(os.path.normpath(model_path)).startswith("J2="):
