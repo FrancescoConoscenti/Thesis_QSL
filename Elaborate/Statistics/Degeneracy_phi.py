@@ -235,6 +235,135 @@ def plot_adiabatic_energy_vs_phi(base_directory, target_J):
     print(f"\n✅ Plot saved successfully to {base_directory}/adiabatic_energy_vs_phi_J{target_J}.png")
     plt.show()  
 
+def plot_adiabatic_energy_vs_L(directories, target_J):
+    data_by_phi = {}
+
+    print(f"Scanning directories for models with varying phi to plot vs 1/L...")
+
+    for base_dir in directories:
+        base_path = Path(base_dir)
+        if not base_path.exists():
+            print(f"Warning: Directory {base_dir} does not exist.")
+            continue
+        
+        # Extract L from path (e.g. "4x4", "6x6")
+        match_L = re.search(r'(\d+)x\d+', str(base_path))
+        if not match_L:
+            print(f"Warning: Could not determine L from path {base_dir}")
+            continue
+        L = int(match_L.group(1))
+
+        for model_dir in base_path.iterdir():
+            if not model_dir.is_dir():
+                continue
+            
+            # Extract phi value from folder name
+            match = re.search(r'phi([\d\.]+)', model_dir.name)
+            if match:
+                phi = float(match.group(1))
+            else:
+                continue
+
+            # Find the specific J folder
+            target_j_folder = None
+            for d in model_dir.iterdir():
+                if d.is_dir() and (d.name.startswith("J=") or d.name.startswith("J2=")):
+                    try:
+                        part = d.name.split('=')[1]
+                        val_str = part.split('_')[0] if '_' in part else part
+                        if abs(float(val_str) - target_J) < 1e-5:
+                            target_j_folder = d
+                            break
+                    except ValueError:
+                        continue
+            
+            if not target_j_folder:
+                continue
+
+            # Read energies from seeds
+            seed_energies = []
+            for seed_dir in target_j_folder.iterdir():
+                if seed_dir.is_dir() and "seed" in seed_dir.name:
+                    E_final = None
+                    var_path = seed_dir / "variables.pkl"
+                    
+                    if var_path.exists():
+                        try:
+                            with open(var_path, "rb") as f:
+                                data = pickle.load(f)
+                                if 'E_vs_final' in data:
+                                    E_final = float(np.real(data['E_vs_final']))
+                        except Exception as e:
+                            pass
+                    
+                    out_path = seed_dir / "output.txt"
+                    if E_final is None and out_path.exists():
+                        try:
+                            with open(out_path, "r") as f:
+                                content = f.read()
+                            matches = re.findall(r"Final Energy from VMC:\s*([-\d\.e]+)", content)
+                            if not matches:
+                                matches = re.findall(r"Final Energy per site:\s*([-\d\.e]+)", content)
+                            if matches:
+                                E_final = float(matches[-1])
+                        except Exception as e:
+                            pass
+                    
+                    if E_final is not None:
+                        seed_energies.append(E_final)
+
+            if seed_energies:
+                mean_e = np.mean(seed_energies)
+                std_e = np.std(seed_energies) / np.sqrt(len(seed_energies)) if len(seed_energies) > 1 else 0.0
+                
+                if phi not in data_by_phi:
+                    data_by_phi[phi] = {'L': [], 'E': [], 'err': []}
+                
+                data_by_phi[phi]['L'].append(L)
+                data_by_phi[phi]['E'].append(mean_e)
+                data_by_phi[phi]['err'].append(std_e)
+                print(f"Found L = {L}, phi = {phi}, E = {mean_e:.6f} ± {std_e:.6f} ({len(seed_energies)} seeds)")
+
+    if not data_by_phi:
+        print("No data found to plot.")
+        return
+
+    plt.figure(figsize=(10, 6))
+    
+    phis_sorted = sorted(data_by_phi.keys())
+    colors = plt.cm.viridis(np.linspace(0, 0.9, max(len(phis_sorted), 1)))
+
+    for i, phi in enumerate(phis_sorted):
+        L_vals = np.array(data_by_phi[phi]['L'])
+        inv_L = 1.0 / L_vals
+        
+        E_vals = np.array(data_by_phi[phi]['E'])
+        err_vals = np.array(data_by_phi[phi]['err'])
+
+        # Sort by 1/L for clean continuous lines
+        sort_idx = np.argsort(inv_L)
+        inv_L = inv_L[sort_idx]
+        E_vals = E_vals[sort_idx]
+        err_vals = err_vals[sort_idx]
+
+        plt.errorbar(inv_L, E_vals, yerr=err_vals, fmt='-o', color=colors[i],
+                     capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label=f"$\phi$ = {phi}")
+
+    plt.xlabel('1/L', fontsize=14)
+    plt.ylabel('Final Adiabatic Energy per site', fontsize=14)
+    plt.title(f'Adiabatic Energy vs 1/L for varying $\phi$ (J={target_J})', fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(title=r'Twist Angle $\phi$', fontsize=12, bbox_to_anchor=(1.05, 1), loc='upper left')
+    
+    # Save the plot
+    save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_dir / f"Adiabatic_Energy_vs_invL_J={target_J}.png"
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    print(f"\n✅ Plot saved successfully to {save_path}")
+    plt.show()
 
 @jax.jit
 def fast_overlap_kernel(log_psi_x, log_phi_x, log_psi_y, log_phi_y):
@@ -470,5 +599,12 @@ if __name__ == "__main__":
     #phi
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi"
     plot_adiabatic_energy_vs_phi(base_directory, target_J)
-    plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
+    #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
+    # Plot against 1/L for multiple sizes:
+    l_directories = [
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi"
+    ]
+    plot_adiabatic_energy_vs_L(l_directories, target_J)

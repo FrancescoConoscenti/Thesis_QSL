@@ -24,7 +24,7 @@ sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 
 # Imports
 from ViT_Heisenberg.ViT_model import ViT_sym
-from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
+from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion, HiddenFermion_phi
 from Elaborate.Statistics.Energy import Energy, Exact_gs_en_6x6, plot_energy
 from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact
 from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs, Autocorrelation_time, Rhat
@@ -59,8 +59,10 @@ def parse_model_path(model_path):
     match_phi = re.search(r"_phi([\d\.]+)_", model_path)
     if match_phi:
         params['phi'] = float(match_phi.group(1))
+        params['is_phi_model'] = True
     else:
         params['phi'] = 0.0
+        params['is_phi_model'] = "_phi" in model_path
     
     if "hidd" in model_path:
         params['model_type'] = 'HFDS'
@@ -135,21 +137,39 @@ def setup_model(params, hilbert, L):
         )
     elif params['model_type'] == 'HFDS':
         dtype_ = jnp.float64 if params['dtype'] == "real" else jnp.complex128
-        model = HiddenFermion(
-            L=L,
-            network="FFNN",
-            n_hid=params['n_hid'],
-            layers=params['layers'],
-            features=params['features'],
-            MFinit=params['MFinit'],
-            hilbert=hilbert,
-            stop_grad_mf=False,
-            stop_grad_lower_block=False,
-            bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
-            parity=True,
-            rotation=True,
-            dtype=dtype_
-        )
+        if params.get('is_phi_model', False):
+            model = HiddenFermion_phi(
+                L=L,
+                network="FFNN",
+                n_hid=params['n_hid'],
+                layers=params['layers'],
+                features=params['features'],
+                MFinit=params['MFinit'],
+                hilbert=hilbert,
+                stop_grad_mf=False,
+                stop_grad_lower_block=False,
+                bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
+                phi=params.get('phi', 0.0),
+                parity=True,
+                rotation=True,
+                dtype=dtype_
+            )
+        else:
+            model = HiddenFermion(
+                L=L,
+                network="FFNN",
+                n_hid=params['n_hid'],
+                layers=params['layers'],
+                features=params['features'],
+                MFinit=params['MFinit'],
+                hilbert=hilbert,
+                stop_grad_mf=False,
+                stop_grad_lower_block=False,
+                bounds="PBC",
+                parity=True,
+                rotation=True,
+                dtype=dtype_
+            )
     return model
 
 def load_vstate(folder, sampler, model):
@@ -427,7 +447,8 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    """n_samples_sign = 32768
+    """
+    n_samples_sign = 32768
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     
     variables.update({
@@ -435,8 +456,9 @@ def run_observables(log, folder):
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)
-    
     """
+    
+    
     
     # 10. System specific observables
     
@@ -451,9 +473,9 @@ def run_observables(log, folder):
     """
 
     # 9. QGT
-    """qgt_vars = compute_qgt(vstate, folder, hilbert)
+    qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
 
     print("\n\n#######################################################################################################\n\n")
 

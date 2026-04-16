@@ -592,14 +592,20 @@ if __name__ == "__main__":
 
 
     """
-    #6x6
+    """#6x6
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd4_feat64_sample4096_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model"
 
+    ]"""
+
+    #8x8
+    models = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi"
     ]
-    
-    #plot_qgt_rank_vs_js(models)
+
+
+    plot_qgt_rank_vs_js(models)
 
     plot_qgt_condition_number_vs_js(models)
 

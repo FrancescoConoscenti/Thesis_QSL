@@ -14,7 +14,7 @@ sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 
 try:
     from ViT_Heisenberg.ViT_model import ViT_sym
-    from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
+    from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion, HiddenFermion_phi
 except ImportError:
     print("Warning: Could not import project models. Ensure path is correct.")
 
@@ -27,6 +27,14 @@ def parse_model_path_local(model_path):
     
     match_J = re.search(r"J=([\d\.]+)", model_path)
     params['J2'] = float(match_J.group(1)) if match_J else 0.5
+    
+    match_phi = re.search(r"_phi([\d\.]+)_", model_path)
+    if match_phi:
+        params['phi'] = float(match_phi.group(1))
+        params['is_phi_model'] = True
+    else:
+        params['phi'] = 0.0
+        params['is_phi_model'] = "_phi" in model_path
     
     if "hidd" in model_path:
         params['model_type'] = 'HFDS'
@@ -69,10 +77,17 @@ def load_vstate_local(folder, n_samples=16):
                         transl_invariant=True, parity=True, rotation=True)
     elif params['model_type'] == 'HFDS':
         dtype_ = jnp.float64 if params.get('dtype') == "real" else jnp.complex128
-        model = HiddenFermion(L=L, network="FFNN", n_hid=params['n_hid'], layers=params['layers'], 
-                              features=params['features'], MFinit=params['MFinit'], hilbert=hilbert, 
-                              bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
-                              parity=True, rotation=True, dtype=dtype_)
+        if params.get('is_phi_model', False):
+            model = HiddenFermion_phi(L=L, network="FFNN", n_hid=params['n_hid'], layers=params['layers'], 
+                                      features=params['features'], MFinit=params['MFinit'], hilbert=hilbert, 
+                                      bounds=(params.get('bc_x', 'PBC'), params.get('bc_y', 'PBC')),
+                                      phi=params.get('phi', 0.0),
+                                      parity=True, rotation=True, dtype=dtype_)
+        else:
+            model = HiddenFermion(L=L, network="FFNN", n_hid=params['n_hid'], layers=params['layers'], 
+                                  features=params['features'], MFinit=params['MFinit'], hilbert=hilbert, 
+                                  bounds=params.get('bc_x', 'PBC'),
+                                  parity=True, rotation=True, dtype=dtype_)
     else:
         return None
 
