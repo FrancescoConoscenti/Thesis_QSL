@@ -202,7 +202,7 @@ def load_trained_model(path, L, J2, hi_constrained, hi_full):
             
     return model, variables, model_type
 
-def plot_spectrum(ket_gs, vstate, L, save_dir=None):
+def plot_spectrum(ket_gs, vstate, L, J2, save_dir=None):
     """
     Plots the entanglement spectrum of a given vstate alongside the exact ground state,
     and computes the total Euclidean error and the relative error in three sectors.
@@ -212,7 +212,6 @@ def plot_spectrum(ket_gs, vstate, L, save_dir=None):
         vstate: NetKet variational state.
         L (int): Linear size of the lattice.
         J2 (float): Next-nearest neighbor coupling.
-        indices_A (list): Indices of the subsystem A.
         save_dir (str, optional): Directory to save the plot.
         
     Returns:

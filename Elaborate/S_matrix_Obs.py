@@ -29,6 +29,7 @@ def compute_S_matrix(vstate, folder_path, hi):
             vstate = flax.serialization.from_bytes(vstate, data)
         except KeyError:
             vstate.variables = flax.serialization.from_bytes(vstate.variables, data)
+    print(f"✅ Loaded model {last_model_index} for S-matrix computation.")
 
     S_matrix = compute_S_matrix_single_model(vstate, hi)
 
@@ -66,10 +67,8 @@ def compute_S_matrix_single_model(vstate, hi):
     try:
         qgt = vstate.quantum_geometric_tensor()   # returns a QGT object (lazy or jacobian-based)
         S_matrix = qgt.to_dense()
-        logger.info("S-matrix computed using default vstate.quantum_geometric_tensor().to_dense()")
     except NonHolomorphicQGTOnTheFlyDenseRepresentationError:
         # Safe fallback: works for non-holomorphic ansätze
-        logger.info("NonHolomorphicQGTOnTheFlyDenseRepresentationError caught. Using QGTJacobianDense fallback.")
         qgt = nk.optimizer.qgt.QGTJacobianDense(vstate, holomorphic=False)
         S_matrix = qgt.to_dense()
 

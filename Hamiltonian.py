@@ -8,7 +8,7 @@ def build_heisenberg_apbc(
     J1: float = 1.0,
     J2: float = 0.0,
     apbc_x: bool = True,
-    apbc_y: bool = False,
+    apbc_y: bool = True,
 ) -> nk.operator.LocalOperator:
     """
     Build the J1-J2 Heisenberg Hamiltonian on an Lx×Ly square lattice
@@ -132,6 +132,12 @@ def build_heisenberg_twisted(
     Returns:
         nk.operator.LocalOperator
     """
+    if phi == 0.0 and not apbc_y:
+        N = Lx * Ly
+        hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
+        lattice = nk.graph.Hypercube(length=Lx, n_dim=2, pbc=[True, True], max_neighbor_order=2)
+        return nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[J1, J2], sign_rule=[False, False])
+
     N = Lx * Ly
     hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
 

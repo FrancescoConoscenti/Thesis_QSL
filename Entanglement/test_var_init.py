@@ -1317,6 +1317,8 @@ def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plo
     results = []
     all_grids = []
 
+    data_path = get_unique_path(save_dir, "Entanglement_Sweep_L_All_data.pkl")
+
     for model_name, config in models_defs.items():
         if models_to_plot is not None and model_name not in models_to_plot:
             continue
@@ -1339,6 +1341,27 @@ def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plo
                 entropy_grid[i, j] = s2_acc / n_seeds
                 print(f"  {model_name} h={h} L={L} -> S2={entropy_grid[i, j]:.4f}")
                 clean_up()
+                temp_results = list(results)
+                temp_grid = np.copy(entropy_grid)
+                for jj, temp_L in enumerate(L_values):
+                    temp_grid[:, jj] *= ((temp_L*temp_L // 2) * np.log(2))
+                extent = [0, len(L_values), 0, len(h_vals)]
+                temp_results.append({
+                    'name': model_name,
+                    'grid': temp_grid,
+                    'extent': extent,
+                    'ylabel': f'Hidden Size ({config["param_name"]})',
+                    'h_vals': h_vals,
+                    'L_values': L_values
+                })
+                plot_data = {
+                    'results': temp_results,
+                    'all_grids': all_grids + [temp_grid],
+                    'L_values': L_values,
+                    'var': var
+                }
+                with open(data_path, 'wb') as f:
+                    pickle.dump(plot_data, f)
         
         # Un-normalize
         for j, L in enumerate(L_values):
@@ -1357,17 +1380,6 @@ def plot_entropy_vs_L_hidden_size_map(n_seeds=10, n_samples=65536, models_to_plo
         })
         all_grids.append(entropy_grid)
         
-    # Save data
-    plot_data = {
-        'results': results,
-        'all_grids': all_grids,
-        'L_values': L_values,
-        'var': var
-    }
-    data_path = get_unique_path(save_dir, "Entanglement_Sweep_L_All_data.pkl")
-    with open(data_path, 'wb') as f:
-        pickle.dump(plot_data, f)
-    print(f"Plot data saved to {data_path}")
 
     if results:
         vmin = min(np.min(g) for g in all_grids)

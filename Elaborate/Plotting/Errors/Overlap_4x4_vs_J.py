@@ -77,6 +77,7 @@ def get_overlaps_from_seeds(model_folder, j_val):
                             else:
                                 amp_overlaps.append(float(np.real(val_amp)))
                         
+                        
                         # Sign Overlap
                         val_sign = None
                         if 'sign_overlap' in data:
@@ -88,6 +89,8 @@ def get_overlaps_from_seeds(model_folder, j_val):
                             else:
                                 sign_overlaps.append(float(np.real(val_sign)))
 
+                        print(f"Loaded overlaps from {pkl_path}: Amp={amp_overlaps[-1] if amp_overlaps else 'N/A'}, Sign={sign_overlaps[-1] if sign_overlaps else 'N/A'}")
+                        print(f"Keys in {pkl_path}: {data.keys()}")
                 except Exception as e:
                     print(f"Error reading {pkl_path}: {e}")
     
@@ -330,6 +333,12 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
             ]
+    models = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd8_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"]
     
     plot_overlap_vs_js(models)
     plot_sector_overlap_scatter(models)

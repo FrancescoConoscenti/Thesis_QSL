@@ -16,7 +16,6 @@ print("Total devices:", jax.device_count())
 print("Local devices:", jax.local_device_count())
 print("Devices:", jax.devices())
 
-import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
 from netket.driver import VMC_SR
@@ -34,161 +33,114 @@ from Elaborate.Plotting.QGT.QGT_vs_iteration import *
 from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
 from Observables import run_observables
+from Hamiltonian import build_heisenberg_twisted
 
-from Hamiltonian import build_heisenberg_apbc, build_heisenberg_twisted
-
-parser = argparse.ArgumentParser(description="Example script with parameters")
-parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
-parser.add_argument("--seed", type=float, default=1, help="seed")
-parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
-parser.add_argument("--bc_x", type=str, default="PBC", choices=["PBC", "APC"], help="Boundary condition x")
-parser.add_argument("--bc_y", type=str, default="PBC", choices=["PBC", "APC"], help="Boundary condition y")
-parser.add_argument("--phi_list", type=float, nargs='+', default=[0.0], help="List of twist angles in radians for the twisted BC")
-parser.add_argument("--N_iter_conv", type=int, default=0, help="Number of iterations for the first phi (no symmetries)")
-parser.add_argument("--N_iter_symm", type=int, default=1000, help="Number of iterations with symmetries (first phi only)")
-parser.add_argument("--N_iter_adiabatic", type=int, default=200, help="Number of iterations for subsequent phis")
-parser.add_argument("--load_path", type=str, default=None, help="Path to load model and resume training")
-parser.add_argument("--load_path_phi", type=str, default=None, help="Path to load model to start optimizing for new phi values")
+parser = argparse.ArgumentParser(description="HFDS phi sweep")
+parser.add_argument("--J2",               type=float, default=0.5,  help="Coupling parameter J2")
+parser.add_argument("--seed",             type=float, default=1,     help="Random seed")
+parser.add_argument("--L",                type=int,   default=4,     help="Linear size of the lattice")
+parser.add_argument("--bc_x",            type=str,   default="PBC", choices=["PBC", "APC"], help="Boundary condition x")
+parser.add_argument("--bc_y",            type=str,   default="PBC", choices=["PBC", "APC"], help="Boundary condition y")
+parser.add_argument("--parity",          type=lambda x: x.lower() == "true", default=True,  help="Use parity symmetry")
+parser.add_argument("--rotation",        type=lambda x: x.lower() == "true", default=True,  help="Use rotation symmetry")
+parser.add_argument("--phi_list",        type=float, nargs='+',
+                    default=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0],
+                    help="List of twist angles in radians")
+parser.add_argument("--model_path",      type=str,   default="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi/layers1_hidd2_feat32_sample4096_bcPBC_PBC_phi0.0_lr0.02_iter1100_InitFermi_typecomplex_phi",  help="Path to initial model (e.g., phi=0.0) to warm-start from")
+parser.add_argument("--N_iter_first",    type=int,   default=100,    help="Number of iterations for the first phi")
+parser.add_argument("--N_iter_adiabatic",type=int,   default=100,     help="Number of iterations for subsequent phis")
 args = parser.parse_args()
 
-spin = True
-
-#Physical param
+# ── Physical parameters ────────────────────────────────────────────────────────
+spin    = True
 L       = args.L
 N_sites = L * L
-
 n_elecs = N_sites
-N_up    = (n_elecs+1)//2
-N_dn    = n_elecs//2
-n_dim = 2
+N_up    = (n_elecs + 1) // 2
+N_dn    = n_elecs // 2
+n_dim   = 2
 
-J1J2 = True
-J2 = args.J2
-seed = int(args.seed)
-
-dtype   = "complex"
+J2              = args.J2
+seed            = int(args.seed)
+dtype           = "complex"
 MFinitialization = "Fermi"
-determinant_type = "hidden"
+bc_x            = args.bc_x
+bc_y            = args.bc_y
+bounds          = (bc_x, bc_y)
+parity          = args.parity
+rotation        = args.rotation
 
-bc_x = args.bc_x
-bc_y = args.bc_y
-bounds = (bc_x, bc_y)
+# ── Network / sampler parameters ──────────────────────────────────────────────
+n_hid_ferm  = 2
+features    = 32
+hid_layers  = 1
+lr          = 0.02
+n_samples   = 4096
+n_chains    = n_samples
+chunk_size  = n_samples // 16
 
-#Variational state param
-n_hid_ferm       = 2
-features         = 32
-hid_layers       = 1
-
-#Network param
-lr               = 0.02
-n_samples        = 1024
-n_chains         = n_samples
-chunk_size       = n_samples
-
-#---------------------------Load another model -----------------------------------------
-load_path = args.load_path
-load_path_phi = args.load_path_phi
-previous_iter = 0 # This will track iterations across a full phi sweep.
-
-original_stdout = sys.stdout
+# ── State carried across phis ─────────────────────────────────────────────────
+original_stdout    = sys.stdout
 previous_variables = None
 
 for idx, phi in enumerate(args.phi_list):
 
-    # -----------------------------------------------------------------------
-    # Compute the canonical total iteration count and phase list for this phi.
-    # For phi[0]: two phases (no-symm conv + symm), total = N_iter_conv + N_iter_symm.
-    # For phi[1+]: one phase (symm, adiabatic), total = N_iter_adiabatic.
-    # The folder name is fixed for the whole phi run and does NOT change between phases.
-    # -----------------------------------------------------------------------
-    if idx == 0:
-        N_total_phi = args.N_iter_conv + args.N_iter_symm
-        phases = [
-            {"N_iter": args.N_iter_conv, "parity": False, "rotation": False},
-            {"N_iter": args.N_iter_symm, "parity": True,  "rotation": True},
-        ]
-    else:
-        N_total_phi = args.N_iter_adiabatic
-        phases = [
-            {"N_iter": args.N_iter_adiabatic, "parity": True, "rotation": True},
-        ]
+    print(f"\n=== Starting phi = {phi} ===")
 
-    folder_iter = N_total_phi # The folder name always reflects the budget for this phi.
-    # Build a single canonical model name for this phi value.
-        # folder_iter encodes the full training budget for this phi.
+    N_iter = args.N_iter_first if idx == 0 else args.N_iter_adiabatic
+
+    # ── Build folder / file paths ──────────────────────────────────────────────
     model_name = (
         f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}"
         f"_sample{n_samples}_bc{bc_x}_{bc_y}"
         f"_phi{phi}"
-        f"_lr{lr}_iter{folder_iter}"
-        f"_Init{MFinitialization}_type{dtype}_phi" 
+        f"_lr{lr}_iter{N_iter}"
+        f"_Init{MFinitialization}_type{dtype}_phi"
     )
-    seed_str  = f"seed_{seed}"
-    J_value   = f"J={J2}"
-
+    seed_str   = f"seed_{seed}"
+    J_value    = f"J={J2}"
     model_path = f"HFDS_Heisenberg/plot/{L}x{L}/phi/{model_name}/{J_value}"
     folder     = f"{model_path}/{seed_str}"
     save_model = f"{folder}/models"
 
-    os.makedirs(save_model, exist_ok=True)
-    os.makedirs(folder, exist_ok=True)
-    os.makedirs(folder + "/physical_obs", exist_ok=True)
-    os.makedirs(folder + "/Sign_plot", exist_ok=True)
-    # -----------------------------------------------------------------------
-    # Phase loop: both phases share the same folder / save_model path.
-    # We track a per-phi iteration offset so checkpoint numbering is contiguous.
-    # -----------------------------------------------------------------------
-    phase_iter_offset = previous_iter   # absolute iteration count before this phi starts
+    os.makedirs(save_model,                      exist_ok=True)
+    os.makedirs(folder,                          exist_ok=True)
+    os.makedirs(folder + "/physical_obs",        exist_ok=True)
+    os.makedirs(folder + "/Sign_plot",           exist_ok=True)
 
-    for phase in phases:
-        N_iter   = phase["N_iter"]
-        parity   = phase["parity"]
-        rotation = phase["rotation"]
+    save_every = max(1, N_iter // 10)
 
-        if N_iter <= 0:
-            continue
+    # Discover existing checkpoints
+    existing_models = []
+    if os.path.exists(save_model):
+        for fname in os.listdir(save_model):
+            m = re.search(r"model_(\d+)\.mpack", fname)
+            if m:
+                existing_models.append(int(m.group(1)))
 
-        # Save exactly 10 models per phase independently
-        save_every = max(1, N_iter // 10)
+    next_block  = max(existing_models) + 1 if existing_models else 0
+    block_iter  = next_block + (N_iter // save_every)   # exclusive end block index
 
-        N_opt = phase_iter_offset + N_iter
-
-        # Discover existing checkpoints to ensure continuous block numbers
-        existing_models = []
-        if os.path.exists(save_model):
-            for f in os.listdir(save_model):
-                m = re.search(r"model_(\d+)\.mpack", f)
-                if m:
-                    existing_models.append(int(m.group(1)))
-        
-        next_block = max(existing_models) + 1 if existing_models else 0
-        
-        if existing_models:
-            target_block_iter = next_block + (N_iter // save_every)
-        else:
-            target_block_iter = (phase_iter_offset // save_every) + (N_iter // save_every)
-
-        phase_name = "symm" if (parity or rotation) else "run"
-
-        sys.stdout = open(f"{folder}/output.txt", "a")
+    sys.stdout = open(f"{folder}/output.txt", "a")
+    try:
         print(
             f"HFDS_spin, J={J2}, L={L}, "
             f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}"
-            f"_sample{n_samples}_lr{lr}_iter{N_opt}_phi{phi} "
+            f"_sample{n_samples}_lr{lr}_iter{N_iter}_phi{phi} "
             f"(parity={parity}, rotation={rotation})"
         )
 
-        # ------------- define Hilbert space ------------------------
+        # ── Hilbert space & graph ──────────────────────────────────────────────────
         hi      = nk.hilbert.Spin(s=1/2, N=L**2, total_sz=0)
         lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
-        print(f"hilbert space size = ", hi.size)
+        print("Hilbert space size =", hi.size)
 
-        # ------------- define Hamiltonian ------------------------
+        # ── Hamiltonian ────────────────────────────────────────────────────────────
         ha = build_heisenberg_twisted(
             L, L, J1=1.0, J2=J2, phi=phi, apbc_y=False
         ).to_jax_operator()
 
-        # ------------- define model ------------------------
+        # ── Model ──────────────────────────────────────────────────────────────────
         dtype_ = jnp.float64 if dtype == "real" else jnp.complex128
 
         model = HiddenFermion_phi(
@@ -209,7 +161,7 @@ for idx, phi in enumerate(args.phi_list):
             dtype=dtype_,
         )
 
-        # ---------- define sampler ------------------------
+        # ── Sampler & variational state ────────────────────────────────────────────
         sampler = nk.sampler.MetropolisExchange(
             hilbert=hi,
             graph=lattice,
@@ -232,71 +184,60 @@ for idx, phi in enumerate(args.phi_list):
         total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
         print(f"Total number of parameters: {total_params}")
 
-        log = nk.logging.RuntimeLog()
-        log_path = os.path.join(folder, f"log_{phase_name}.pkl")
-        old_log_data = helper.load_log(folder, f"log_{phase_name}.pkl")
+        # ── Load checkpoint or warm-start from previous phi ────────────────────────
+        log_path     = os.path.join(folder, "log.pkl")
+        old_log_data = helper.load_log(folder, "log.pkl")
 
-        start_block, vstate = helper.load_checkpoint(save_model, target_block_iter, save_every, vstate)
+        start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every, vstate)
 
         if start_block == 0:
             if previous_variables is not None:
-                print("Initializing with parameters from previous phase/phi run...")
+                print("Warm-starting from previous phi parameters...")
                 vstate.variables = previous_variables
-                start_block = next_block
-            elif load_path or load_path_phi:
-                active_load_path = load_path if load_path else load_path_phi
-                print(f"Attempting to load starting model from {active_load_path}")
-                load_J_path = os.path.join(active_load_path, f"J={J2}")
+            elif args.model_path:
+                print(f"Attempting to warm-start from {args.model_path}")
+                load_J_path = os.path.join(args.model_path, f"J={J2}")
                 if not os.path.exists(load_J_path):
-                    load_J_path = os.path.join(active_load_path, f"J2={J2}")
-
-                load_seed_path  = os.path.join(load_J_path, f"seed_{seed}")
+                    load_J_path = os.path.join(args.model_path, f"J2={J2}")
+            
+                load_seed_path = os.path.join(load_J_path, f"seed_{seed}")
                 load_save_model = os.path.join(load_seed_path, "models")
-
+                
                 if os.path.exists(load_save_model):
                     files = [f for f in os.listdir(load_save_model) if f.endswith(".mpack")]
                     if files:
                         files.sort(key=lambda x: int(re.search(r"model_(\d+)", x).group(1)))
-                        last_model_path = os.path.join(load_save_model, files[-1])
+                        last_model = files[-1]
+                        last_model_path = os.path.join(load_save_model, last_model)
                         print(f"Loading starting model from {last_model_path}")
-                        with open(last_model_path, "rb") as f:
+                        with open(last_model_path, 'rb') as f:
                             try:
                                 vstate = flax.serialization.from_bytes(vstate, f.read())
                             except Exception:
                                 f.seek(0)
                                 vstate.variables = flax.serialization.from_bytes(vstate.variables, f.read())
-
-                        if load_path or load_path_phi:
-                            # After loading, we will start the new run from block 0 in the new folder.
-                            start_block = next_block 
                     else:
-                        print("No .mpack files found in the load path.")
+                        print(f"No .mpack files found in {load_save_model}.")
                 else:
-                    print(f"Models directory not found in the load path: {load_save_model}")
+                    print(f"Models directory not found at {load_save_model}.")
 
-        # Ensure start_block doesn't step backward (e.g. if load_checkpoint fails)
-        start_block = max(start_block, next_block if previous_variables is not None else 0)
-        block_iter = start_block + (N_iter // save_every)
+        # Guard: never step backward
+        start_block = max(start_block, next_block)
 
-        # Initialize VMC
+        # ── Optimizer & VMC driver ────────────────────────────────────────────────
         optimizer = nk.optimizer.Sgd(learning_rate=lr)
         vmc = VMC_SR(
             hamiltonian=ha,
             optimizer=optimizer,
-            diag_shift=1e-5,
+            diag_shift=1e-6,
             variational_state=vstate,
             use_ntk=True,
             momentum=0.8,
         )
 
-        # Determine actual steps already done in this phase for accurate log/step count
-        if existing_models and start_block >= next_block:
-            blocks_done_in_phase = start_block - next_block
-        else:
-            blocks_done_in_phase = max(0, start_block - (phase_iter_offset // save_every))
-            
-        vmc._step_count = phase_iter_offset + (blocks_done_in_phase * save_every)
+        log = nk.logging.RuntimeLog()
 
+        # ── Training loop ─────────────────────────────────────────────────────────
         for i in range(start_block, block_iter):
             with open(save_model + f"/model_{i}.mpack", "wb") as file:
                 file.write(flax.serialization.to_bytes(vstate))
@@ -313,35 +254,23 @@ for idx, phi in enumerate(args.phi_list):
 
         final_log_data = helper.merge_log_data(old_log_data, log.data)
 
+        # ── Observables ───────────────────────────────────────────────────────────
         print("Running observables computation...")
         if final_log_data and "Energy" in final_log_data:
             run_observables(helper.MockLog(final_log_data), folder)
         else:
             run_observables(None, folder)
 
-        # Move generated plots/data to phase-specific subfolders
-        for sub_name in ["Energy_plot", "physical_obs", "Sign_plot", "QGT_plot"]:
-            sub_dir = os.path.join(folder, sub_name)
-            if os.path.exists(sub_dir):
-                phase_sub_dir = os.path.join(sub_dir, phase_name)
-                os.makedirs(phase_sub_dir, exist_ok=True)
-                for filename in os.listdir(sub_dir):
-                    file_path = os.path.join(sub_dir, filename)
-                    if os.path.isfile(file_path):
-                        shutil.move(file_path, os.path.join(phase_sub_dir, filename))
-
-        # Copy variables.pkl so it's available uniquely per phase
-        var_path = os.path.join(folder, "variables.pkl")
-        if os.path.exists(var_path):
-            if phase_name == "run":
-                shutil.copy2(var_path, os.path.join(folder, "variables_run.pkl"))
-
-        # Hand off parameters to the next phase (or next phi)
+        # ── Carry parameters forward ──────────────────────────────────────────────
         previous_variables = vstate.variables
-        phase_iter_offset  = N_opt   # advance offset for the next phase within this phi
-
+        
+    except Exception as e:
         sys.stdout.close()
         sys.stdout = original_stdout
+        raise
+    finally:
+        if sys.stdout != original_stdout:
+            sys.stdout.close()
+            sys.stdout = original_stdout
 
-    # After all phases for this phi are done, advance the global iteration counter
-    previous_iter += N_total_phi
+    print("Finished phi =", phi)

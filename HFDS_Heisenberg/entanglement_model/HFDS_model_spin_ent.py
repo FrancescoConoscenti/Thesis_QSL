@@ -23,7 +23,7 @@ class HiddenFermion_ent(nn.Module):
   hilbert: HomogeneousHilbert
   stop_grad_mf: bool = False
   stop_grad_lower_block: bool = False
-  bounds: Any = ("PBC", "PBC")
+  bounds: str = "PBC"
   phi: float = 0.0
   parity: bool = False
   rotation: bool = False

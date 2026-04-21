@@ -55,8 +55,8 @@ seed = int(args.seed)
 # 53k params for L=6 num_layers=3 d_model=40 n_heads=8 patch_size=2
 
 num_layers      = 2     # number of Tranformer layers
-d_model         = 24   # dimensionality of the embedding space
-n_heads         = 6    # number of heads
+d_model         = 40   # dimensionality of the embedding space
+n_heads         = 8    # number of heads
 patch_size      = 2     # lenght of the input sequence
 lr              = 0.0075
 parity = True
@@ -64,10 +64,10 @@ rotation = True
 
 #n_samples = 8192   n_chains  = 256   chunk_size = 4096
 
-N_samples       = 2048   # number of MC samples
+N_samples       = 4096   # number of MC samples
 n_chains        = N_samples//16     # number of Markov chains
 chunk_size      = N_samples      # chunk size for the MC samples
-N_opt           = 8000
+N_opt           = 3000
 
 number_data_points = 10
 save_every       = N_opt//number_data_points

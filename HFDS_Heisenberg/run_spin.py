@@ -40,7 +40,6 @@ parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
-#parser.add_argument("--lattice", type=str, default="square", choices=["square", "triangular", "honeycomb", "kagome"], help="Lattice geometry")
 args = parser.parse_args()
 
 spin = True
@@ -63,38 +62,29 @@ dtype   = "complex"
 MFinitialization = "Fermi" #G_MF#random #Fermi
 determinant_type = "hidden"
 
-
-
 parity = True
 rotation = True
 
 
-n_hid_ferm       = 1
-features         = 1    #hidden units per layer
+n_hid_ferm       = 4
+features         = 32   #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
-n_samples        = 16 #total number of samples
+lr               = 0.01
+n_samples        = 4096 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = n_samples//16  #number of parallel Markov chains
-chunk_size       = n_samples #samples are divided in chunks to compute observables in parallel
-N_iter           = 10 #N_opt on the top of the one of the loaded model, if any
+chunk_size       = n_samples//16  #samples are divided in chunks to compute observables in parallel
+N_iter           = 2000 #N_opt on the top of the one of the loaded model, if any
 
 #---------------------------Load another model -----------------------------------------
 #load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
 load_path = None #set to None to not load any model and start from scratch
 previous_iter = 0
 
-if load_path:
-    match = re.search(r"_iter(\d+)_", load_path)
-    if not match:
-        match = re.search(r"_iter(\d+)$", load_path)
-    if match:
-        previous_iter = int(match.group(1))
-
-N_opt = previous_iter + N_iter
+N_opt = N_iter
 save_every = N_opt // 10
 block_iter = N_opt // save_every
 
@@ -114,7 +104,6 @@ os.makedirs(save_model, exist_ok=True)
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
 os.makedirs(folder+"/physical_obs", exist_ok=True)
 os.makedirs(folder+"/Sign_plot", exist_ok=True)
-os.makedirs(model_path+"/plot_avg", exist_ok=True)
 
 sys.stdout = open(f"{folder}/output.txt", "w") #redirect print output to a file inside the folder
 print(f"HFDS_spin, J={J2}, L={L}, layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_try")
@@ -174,11 +163,7 @@ total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
 print(f'Total number of parameters: {total_params}')
 
 log = nk.logging.RuntimeLog()
-
-
-# Load existing log if available to append to it
 log_path = os.path.join(folder, "log.pkl")
-old_log_data = helper.load_log(folder)
 
 start_block, vstate = helper.load_checkpoint(save_model, block_iter, save_every, vstate)
 
@@ -208,17 +193,6 @@ if start_block == 0 and load_path:
             start_block = previous_iter // save_every
             
             old_log_path_load = os.path.join(load_seed_path, "log.pkl")
-            if os.path.exists(old_log_path_load):
-                print(f"Loading previous log from {old_log_path_load}")
-                try:
-                    with open(old_log_path_load, 'rb') as f:
-                        loaded_log = pickle.load(f)
-                    if not old_log_data: 
-                        old_log_data = loaded_log
-                    else:
-                        old_log_data = helper.merge_log_data(loaded_log, old_log_data)
-                except Exception as e:
-                    print(f"Failed to load old log: {e}")
         else:
             print("No .mpack files found in the load path.")
     else:
@@ -231,10 +205,10 @@ optimizer = nk.optimizer.Sgd(learning_rate=lr)
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-5,
+    diag_shift=1e-6,
     variational_state=vstate,
     use_ntk=True,
-    momentum=0.8
+    momentum=0.9
 ) 
 vmc._step_count = start_block * save_every
 
@@ -246,7 +220,7 @@ for i in range(start_block, block_iter):
     vmc.run(n_iter=save_every, out=log)
     
     # Save log incrementally
-    current_log_data = helper.merge_log_data(old_log_data, log.data)
+    current_log_data =  log.data
     with open(log_path, 'wb') as f:
         pickle.dump(current_log_data, f)
 
@@ -256,7 +230,7 @@ with open(save_model +f"/model_{block_iter}.mpack", "wb") as f:
     bytes_out = flax.serialization.to_bytes(vstate)
     f.write(bytes_out)
 
-final_log_data = helper.merge_log_data(old_log_data, log.data)
+final_log_data = log.data
 
 #################################################################################################################
 

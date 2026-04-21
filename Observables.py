@@ -12,7 +12,9 @@ import gc
 from Elaborate.Statistics import count_params
 import jax
 import netket as nk
+from scipy.optimize import curve_fit
 import gzip
+import scipy.sparse.linalg
 import jax.numpy as jnp
 import flax
 from flax import linen as nn
@@ -26,7 +28,7 @@ sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 from ViT_Heisenberg.ViT_model import ViT_sym
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion, HiddenFermion_phi
 from Elaborate.Statistics.Energy import Energy, Exact_gs_en_6x6, plot_energy
-from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact
+from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact, Corr_r, Corr_ij, compute_correlation_length
 from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs, Autocorrelation_time, Rhat
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Old.Sign_vs_iteration import *
@@ -201,11 +203,6 @@ def load_vstate(folder, sampler, model):
     print(f"Models directory not found or empty at {models_dir}")
     return None
 
-def compute_correlations(vstate, lattice, L, folder, hilbert):
-    vstate.n_samples = 1024
-    R = Corr_Struct(lattice, vstate, L, folder, hilbert)
-    print(f"Correlation Ratio R = {R}")
-    return R
 
 def compute_exact_energy(L, J2, hamiltonian):
     E_exact = None
@@ -306,7 +303,7 @@ def compute_qgt(vstate, folder, hilbert):
         # Attempt to restore variables if they were moved
         return {}
 
-def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
+def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params, J2):
     fidelity = Fidelity(vstate, ket_gs)
     print(f"Fidelity <vstate|exact> = {fidelity}")
 
@@ -317,7 +314,7 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
     sector_amp_err, sector_sign_err = plot_Sector_Overlap_err_vs_iteration(ket_gs, vstate, hilbert, folder, one_avg = "one")
     sorted_weights, sorted_amp_overlap, sorted_sign_overlap = plot_Overlap_vs_Weight(ket_gs, vstate, hilbert, folder, "one")
     eigenvalues, rel_1, rel_2, rel_3, rel_4 = plot_S_matrix_eigenvalues(vstate, folder, hilbert, one_avg = "one")
-    spectrum, total_error, sector_errors = plot_spectrum(ket_gs, vstate, L, save_dir=folder+"/physical_obs/spectrum")
+    spectrum, total_error, sector_errors = plot_spectrum(ket_gs, vstate, L, J2, save_dir=folder+"/physical_obs/spectrum")
     #Plot_Energy_Fidelity(log, fidelity, folder, one_avg="one", L =4, plot_variance=False, fidelity_var=None)
     
     return {
@@ -338,20 +335,6 @@ def compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params):
         'total_error_spectrum': total_error,
         'sector_errors_spectrum': sector_errors,
         'params': count_params
-    }
-
-def compute_L6_observables(vstate, J2, folder, params):
-    print("6x6")
-    results = Observable_Importance_sampling(J2, NQS_path=None, vstate=vstate)
-    Fidelity_vs_Iterations(folder, vstate, params)
-    return {
-        'final_energy_DMRG': results['final_energy_DMRG'],
-        'sign_DMRG_Imp': results['sign_DMRG_Imp'],
-        'fidelity_sampled_NQS_DMRG': results['fidelity_sampled_NQS_DMRG'],
-        'sign_NQS_MCMC': results['sign_NQS_MCMC'],
-        'sign_NQS_Imp': results['sign_NQS_Imp'],
-        'Overlap_sign_NQS_DMRG': results['Overlap_sign_NQS_DMRG'],
-        'Overlap_amp_NQS_DMRG': results['Overlap_amp_NQS_DMRG'],
     }
 
 
@@ -431,13 +414,13 @@ def run_observables(log, folder):
     save_variables(folder, variables)
     
     # 6. Entanglement Entropy
-    """n_samples_entropy = 524288//2
+    n_samples_entropy = 8192
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -447,8 +430,7 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    """
-    n_samples_sign = 32768
+    n_samples_sign = 8192
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     
     variables.update({
@@ -456,26 +438,28 @@ def run_observables(log, folder):
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)
-    """
-    
+
+    #8. Correlation length
+    Corr_length = compute_correlation_length(vstate, lattice, hilbert, L, folder)
+    print(f"Correlation length: {Corr_length}")
+    variables['correlation_length'] = Corr_length
+    save_variables(folder, variables)
     
     
     # 10. System specific observables
-    
     """if L == 4 and ket_gs is not None:
-        l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params)
+        l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params, J2)
         variables.update(l4_vars)
-        save_variables(folder, variables)
-    elif L == 6:
-        l6_vars = compute_L6_observables(vstate, J2, folder, params)
-        variables.update(l6_vars)
-        save_variables(folder, variables)
+        save_variables(folder, variables)"""
+        
     """
-
     # 9. QGT
     qgt_vars = compute_qgt(vstate, folder, hilbert)
     variables.update(qgt_vars)
     save_variables(folder, variables)
+    """
+
+    
 
     print("\n\n#######################################################################################################\n\n")
 
@@ -486,10 +470,12 @@ if __name__ == "__main__":
 
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd4_feat32_sample4096_bcPBC_PBC_lr0.02_iter400_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/QGT/layers2_d24_heads6_patch2_sample8192_lr0.0075_iter200_parityTrue_rotTrue_QGT"
-    model_path="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi"
+    #model_path="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd8_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.01_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi1.0_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex_phi"
     log = None
 
     if not os.path.exists(model_path):

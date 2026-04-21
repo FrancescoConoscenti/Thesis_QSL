@@ -2,6 +2,166 @@ import netket as nk
 import numpy as np
 import matplotlib.pyplot as plt
 from netket.operator.spin import sigmax, sigmay, sigmaz
+from scipy.optimize import curve_fit
+
+def Corr_ij(vstate, hi, i, j):
+
+    # Calculate operator S_i * S_j
+    # Note: For spin-1/2, S = 0.5 * sigma. 
+    # S*S = 0.25 * (sig_x*sig_x + ...)
+    corr_ij = 0.25 * (sigmaz(hi, i)@sigmaz(hi, j) + sigmax(hi, i)@sigmax(hi, j) + sigmay(hi, i)@sigmay(hi, j))
+            
+    exp = vstate.expect(corr_ij)
+
+    return exp
+
+
+def Corr_r(vstate, lattice, L, hi):
+    """
+    Computes the spatially averaged correlation C(r) as a function of
+    Euclidean distance r = |r_i - r_j|, without any PBC wrapping.
+
+    Returns:
+        corr_by_dist: dict {distance: mean_correlation}
+    """
+    N_tot = lattice.n_nodes
+    pairs = [(i, j) for i in range(N_tot) for j in range(N_tot) if i != j]
+
+    corr_vals = {(i, j): Corr_ij(vstate, hi, i, j).mean.real for i, j in pairs}
+
+    # Group correlations by Euclidean distance
+    corr_by_dist = {}
+    counts_by_dist = {}
+
+    for i in range(N_tot):
+        for j in range(N_tot):
+            if i == j:
+                continue
+            r_vec = lattice.positions[i] - lattice.positions[j]
+            dist = float(np.round(np.linalg.norm(r_vec), decimals=6))
+
+            val = corr_vals[(i, j)]
+
+            if dist not in corr_by_dist:
+                corr_by_dist[dist] = 0.0
+                counts_by_dist[dist] = 0
+
+            corr_by_dist[dist] += val
+            counts_by_dist[dist] += 1
+
+    # Average over all pairs at each distance
+    for dist in corr_by_dist:
+        corr_by_dist[dist] /= counts_by_dist[dist]
+
+    return corr_by_dist
+
+
+def compute_correlations(vstate, lattice, L, hilbert, folder):
+    """
+    Returns the isotropic C(r) averaged over all pairs at each
+    Euclidean distance, sorted by distance.
+    No boundary condition assumption is made.
+    """
+    vstate.n_samples = 1024
+    corr_by_dist = Corr_r(vstate, lattice, L, hilbert)
+
+    # Sort by distance
+    corr_r = dict(sorted(corr_by_dist.items()))
+
+    for dist, val in corr_r.items():
+        print(f"C({dist:.4f}) = {val:.6f}")
+
+    plot_corr_r(list(corr_r.keys()), list(corr_r.values()), (1.0, 1.0), folder)
+    return corr_r
+
+
+def compute_correlation_length(vstate, lattice, hilbert, L, folder):
+    """
+    Fits C(r) to extract the correlation length xi.
+    Works for any boundary condition since distances are Euclidean.
+
+    Fit hierarchy:
+        1. Staggered exponential: A * (-1)^round(r) * exp(-r / xi)  [Neel phase]
+        2. Plain exponential on |C(r)|                               [QSL / weak order]
+        3. Log-linear fallback                                        [last resort]
+    """
+    corr_r = compute_correlations(vstate, lattice, L, hilbert, folder)
+
+    r_vals = np.array(list(corr_r.keys()), dtype=float)
+    c_vals = np.array(list(corr_r.values()), dtype=float)  # signed
+
+    # Exclude negligible signal; no L/2 cutoff since we have no PBC
+    mask = np.abs(c_vals) > 1e-10
+    r_fit = r_vals[mask]
+    c_fit = c_vals[mask]  # signed
+
+    if len(r_fit) < 2:
+        print("Not enough points to fit correlation length.")
+        return None, None, None, r_fit, c_fit
+
+    def staggered_exp_decay(r, A, xi):
+        # (-1)^round(r) generalises the staggering to non-integer distances
+        # (e.g. diagonal neighbours on a square lattice at r=sqrt(2))
+        return A * ((-1.0) ** np.round(r)) * np.exp(-r / xi)
+
+    def plain_exp_decay(r, A, xi):
+        return A * np.exp(-r / xi)
+
+    p0 = [np.abs(c_fit[0]), np.max(r_fit) / 4.0]
+    bounds = ([0, 0.1], [np.inf, np.max(r_fit)])
+
+    # --- Primary: staggered exponential on signed C(r) ---
+    try:
+        popt, pcov = curve_fit(
+            staggered_exp_decay, r_fit, c_fit,
+            p0=p0, bounds=bounds, maxfev=10000
+        )
+        A_fit, xi_fit = popt
+        xi_err = np.sqrt(np.abs(pcov[1, 1]))
+        print(f"[Staggered fit] A = {A_fit:.4f}, xi = {xi_fit:.4f} ± {xi_err:.4f}")
+        return xi_fit, xi_err, popt, r_fit, c_fit
+
+    except RuntimeError:
+        print("Staggered fit failed, falling back to plain exponential on |C(r)|.")
+
+    # --- Fallback: plain exponential on |C(r)| ---
+    c_fit_abs = np.abs(c_fit)
+    try:
+        popt, pcov = curve_fit(
+            plain_exp_decay, r_fit, c_fit_abs,
+            p0=p0, bounds=bounds, maxfev=10000
+        )
+        A_fit, xi_fit = popt
+        xi_err = np.sqrt(np.abs(pcov[1, 1]))
+        print(f"[Envelope fit]   A = {A_fit:.4f}, xi = {xi_fit:.4f} ± {xi_err:.4f}")
+        return xi_fit, xi_err, popt, r_fit, c_fit
+
+    except RuntimeError:
+        print("Envelope fit failed, falling back to log-linear fit.")
+
+    # --- Last resort: log-linear fit ---
+    log_c = np.log(np.abs(c_fit))
+    coeffs = np.polyfit(r_fit, log_c, 1)
+    xi_fit = -1.0 / coeffs[0]
+    A_fit = np.exp(coeffs[1])
+    print(f"[Log-linear fit] A = {A_fit:.4f}, xi = {xi_fit:.4f} (no error estimate)")
+    return xi_fit, None, (A_fit, xi_fit), r_fit, c_fit
+
+def plot_corr_r(r_fit, c_fit, popt, folder):
+    A_fit, xi_fit = popt
+    r_plot = np.arange(0, max(r_fit)+1)
+    c_plot = A_fit * ((-1)**r_plot) * np.exp(-r_plot / xi_fit)
+
+    plt.figure(figsize=(6,4))
+    plt.scatter(r_fit, c_fit, label='Data', color='blue')
+    plt.plot(r_plot, c_plot, label=f'Fit: A={A_fit:.2f}, xi={xi_fit:.2f}', color='red')
+    plt.xlabel('Distance r')
+    plt.ylabel('C(r)')
+    plt.title('Spin-Spin Correlation Function C(r)')
+    plt.legend()
+    plt.grid()
+    plt.savefig(f'{folder}/physical_obs/Corr_decay.png')
+    plt.close()
 
 
 def Corr_Struct(lattice, vstate, L, folder, hi):
@@ -16,15 +176,9 @@ def Corr_Struct(lattice, vstate, L, folder, hi):
             # Assumes lattice constant = 1.0
             r0, r1 = int(np.round(r[0])) % L , int(np.round(r[1])) % L 
             
-            # Calculate operator S_i * S_j
-            # Note: For spin-1/2, S = 0.5 * sigma. 
-            # S*S = 0.25 * (sig_x*sig_x + ...)
-            corr_ij = 0.25 * (sigmaz(hi, i)@sigmaz(hi, j) + 
-                              sigmax(hi, i)@sigmax(hi, j) + 
-                              sigmay(hi, i)@sigmay(hi, j))
-            
-            exp = vstate.expect(corr_ij)
-            corr_r[r0, r1] += exp.mean.real
+            corr = Corr_ij(vstate, hi, i, j)
+
+            corr_r[r0, r1] += corr.mean.real
             counts[r0, r1] += 1
             
     corr_r /= counts 
