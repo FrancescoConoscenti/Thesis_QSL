@@ -34,8 +34,7 @@ from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_pa
 from Elaborate.Plotting.Old.Sign_vs_iteration import *
 from Elaborate.Plotting.QGT.QGT_vs_iteration import plot_S_matrix_eigenvalues, calculate_relevant_eigenvalues, Plot_S_matrix_histogram, Plot_S_matrix_eigenvalues, plot_S_matrix_spectrum
 from Elaborate.Sign_Obs_MCMC import MarshallSignObs
-from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling, Fidelity_vs_Iterations
-from DMRG.Fidelities import Fidelity_sampled, Sign_Overlap_sampled, Amplitude_Overlap_sampled
+from Elaborate.Statistics.Corr_Struct import compute_correlations
 from Elaborate.Sign_complexity import compute_sign_complexity
 from Entanglement.Entanglement import compute_entanglement_scaling, plot_entanglement_scaling, compute_renyi2_entropy
 from Entanglement.Entanglement_spectrum import plot_spectrum, compute_entanglement_spectrum_2d
@@ -379,11 +378,11 @@ def run_observables(log, folder):
     # 1. Correlations
     """R = compute_correlations(vstate, lattice, L, folder, hilbert)
     variables['R'] = R
-    save_variables(folder, variables)
-    """
+    save_variables(folder, variables)"""
+    
 
     # 2. Exact Energy
-    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
+    """E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
     if E_exact is not None:
         print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
     
@@ -411,16 +410,16 @@ def run_observables(log, folder):
         'rel_err_E': abs((E_vs_final_per_site - E_exact) / E_exact) if E_exact is not None else None
     })
 
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     # 6. Entanglement Entropy
-    n_samples_entropy = 8192
+    """n_samples_entropy = 8192
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -430,14 +429,15 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    n_samples_sign = 8192
+    """n_samples_sign = 4096
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
-    
+    print(f"Marshall Sign (MCMC): {sign_mean} ± {sign_var} (n_samples={n_samples_sign})")
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
+
 
     #8. Correlation length
     Corr_length = compute_correlation_length(vstate, lattice, hilbert, L, folder)
@@ -475,7 +475,12 @@ if __name__ == "__main__":
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.01_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi1.0_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex_phi"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi1.0_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex_phi"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter8000_parityTrue_rotTrue_QGT"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model"
     log = None
 
     if not os.path.exists(model_path):

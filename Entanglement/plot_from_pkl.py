@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from matplotlib.lines import Line2D
 import os
 
 def f_lin(x, a, b): return a * x + b
@@ -30,14 +31,17 @@ def plot_entropy_scaling_from_pkl(pkl_path, save_path=None, vit_variances=None, 
     p_type = plot_data.get('partition_type', 'Square')
     
     model_cmaps = {
-        'RBM': plt.cm.Blues,
-        'ViT': plt.cm.Oranges,
+        'RBM': plt.cm.Greys,
+        'ViT': plt.cm.Reds,
         'HFDS': plt.cm.Greens
     }
     
     plt.figure(figsize=(12, 7))
     
     # Plot the main results
+    legend_data = {name: [] for name in results}
+    model_params = {}
+    
     for name in results:
         cmap = model_cmaps.get(name, plt.cm.Greys)
         present_vars = [v for v in variances if v in results[name]]
@@ -55,8 +59,9 @@ def plot_entropy_scaling_from_pkl(pkl_path, save_path=None, vit_variances=None, 
             color = cmap(intensity)
 
             data = results[name][var]
-            params_str = ",".join(map(str, data['params']))
-            base_label = f"{name} Var={var} (P={params_str})"
+            params_val = data['params'][0] if data['params'] else "N/A"
+            if name not in model_params:
+                model_params[name] = params_val
             
             if is_partition_plot:
                 size_arr = np.array(data['size'])
@@ -88,24 +93,57 @@ def plot_entropy_scaling_from_pkl(pkl_path, save_path=None, vit_variances=None, 
                             continue
             
             fit_label_ext = f" ({best_fit_name} fit)" if best_fit_name else ""
-            plt.errorbar(N_arr, y_data, yerr=y_err, 
-                         label=base_label + fit_label_ext, color=color, 
+            label_str = f"Var={var}{fit_label_ext}"
+            eb = plt.errorbar(N_arr, y_data, yerr=y_err, 
+                         color=color, 
                          marker='o', linestyle='none', capsize=5)
 
             if best_popt is not None:
                 x_plot = np.linspace(min(N_arr), max(N_arr), 200)
-                plt.plot(x_plot, fit_functions[best_fit_name](x_plot, *best_popt), 
+                line, = plt.plot(x_plot, fit_functions[best_fit_name](x_plot, *best_popt), 
                          color=color, linestyle='-')
+                legend_data[name].append(((eb, line), label_str))
+            else:
+                legend_data[name].append((eb, label_str))
 
     if is_partition_plot:
         plt.xlabel(f'Partition Area ({p_type})')
         plt.title(f'Entanglement Entropy vs Partition Area (L={global_L})')
     else:
-        plt.xlabel('Number of Spins N (L^2)')
-        plt.title('Entanglement Entropy vs L (Loaded from Pickle)')
+        plt.xlabel('Number of Spins N')
+        plt.title('Entanglement Entropy vs N')
         
-    plt.ylabel('Renyi-2 Entropy (Unnormalized)')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.ylabel('Renyi-2 Entropy')
+    
+    # --- Legend Construction ---
+    final_handles = []
+    final_labels = []
+    empty_handle = Line2D([], [], color='none')
+    
+    # Determine order of columns (ViT first, then HFDS, then any others)
+    ordered_names = [n for n in ['ViT', 'HFDS'] if n in results]
+    for name in results.keys():
+        if name not in ordered_names:
+            ordered_names.append(name)
+        
+    max_rows = max([len(legend_data[n]) for n in ordered_names] + [0])
+    
+    for name in ordered_names:
+        # Add header for this model's column
+        final_handles.append(empty_handle)
+        params_val = model_params.get(name, "N/A")
+        final_labels.append(f"{name} (P={params_val})")
+        
+        # Add data entries for this model's column
+        for row in range(max_rows):
+            if row < len(legend_data[name]):
+                final_handles.append(legend_data[name][row][0])
+                final_labels.append(legend_data[name][row][1])
+            else:
+                final_handles.append(empty_handle)
+                final_labels.append("")
+                
+    plt.legend(final_handles, final_labels, loc='best', ncol=len(ordered_names))
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
 
@@ -117,13 +155,13 @@ def plot_entropy_scaling_from_pkl(pkl_path, save_path=None, vit_variances=None, 
 
 if __name__ == "__main__":
     # Input file to load the data from
+    #pkl_file_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots/Entropy_vs_L_Scaling_Unnormalized_data_unconstrained_1.pkl"
     pkl_file_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots5/Entropy_vs_Partition_Square_L10_data.pkl"
-    
     # Where to save the generated plot
-    save_image_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots/Entropy_vs_Partition_Square_L10_Replot1.png"
+    save_image_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots/Entropy_vs_Partition_Square_L10_Replot4.png"
     
     # Ensure the output directory exists
     os.makedirs(os.path.dirname(save_image_path), exist_ok=True)
     
     # Generate and save the plot
-    plot_entropy_scaling_from_pkl(pkl_file_path, save_image_path, vit_variances=None, hfds_variances=None)
+    plot_entropy_scaling_from_pkl(pkl_file_path, save_image_path, vit_variances=[0.001, 0.01, 0.1, 1,10,100], hfds_variances=[0.001, 0.01, 0.1, 1,10,100])

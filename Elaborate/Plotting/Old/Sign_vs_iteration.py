@@ -103,12 +103,12 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
     ax1.plot(x_axis, sign_vstate_full, marker='o', label='Full Hilbert sampled sign',markersize=8, linewidth=2, color='tab:blue')
-    ax1.set_xlabel("Iterations", fontsize=12)
+    ax1.set_xlabel("Iterations", fontsize=16)
     if one_avg == "avg" and plot_variance and sign_vstate_full_var is not None:
         std_dev = np.sqrt(sign_vstate_full_var)
         ax1.errorbar(x_axis, sign_vstate_full, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
-    ax1.set_ylabel("Sign", color='tab:blue', fontsize=12)
+    ax1.set_ylabel("Sign", color='tab:blue', fontsize=16)
     ax1.tick_params(axis='y', labelcolor='tab:blue')
     ax1.axhline(y=sign_exact, color='tab:blue', linestyle='--', linewidth=1.5, alpha=0.7, label='Exact Sign gs')
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -121,10 +121,10 @@ def Plot_Sign_Fidelity(sign_vstate_full, sign_exact, fidelity, folder_path, one_
         std_dev = np.sqrt(fidelity_var)
         ax2.errorbar(x_axis, fidelity, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
-    ax2.set_ylabel("Fidelity", color='tab:red', fontsize=12)
+    ax2.set_ylabel("Fidelity", color='tab:red', fontsize=16)
     ax2.tick_params(axis='y', labelcolor='tab:red')
 
-    fig.suptitle("Sign & Fidelity", fontsize=14)
+    fig.suptitle("Sign & Fidelity", fontsize=16)
     ax1.grid(True, alpha=0.3)
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
@@ -185,15 +185,15 @@ def Plot_Sign_single_config(configs, sign_vstate_config,sign_vstate_tot, sign_ex
         # Plot symbols
         for j, x in enumerate(x_axis):
             sym = '+' if sign_vstate_config[i][j] > 0 else '−'
-            ax.text(x, offsets[i], sym, ha='center', va='center', fontsize=14, color=colors[i % len(colors)])
+            ax.text(x, offsets[i], sym, ha='center', va='center', fontsize=16, color=colors[i % len(colors)])
         # Add legend entry
         legend_elements.append(Line2D([0], [0], color=colors[i % len(colors)], lw=0, marker='o',
                                       markersize=10, label=f'Sign vstate Config {i+1} with weight = {weight_vstate[i,-1]:.2}'))
 
     # --- Styling ---
-    ax.set_xlabel("Iterations", fontsize=12)
-    ax.set_ylabel("Sign", fontsize=12)
-    ax.set_title("Marshall Sign: Total and Most Probable Configurations", fontsize=14)
+    ax.set_xlabel("Iterations", fontsize=16)
+    ax.set_ylabel("Sign", fontsize=16)
+    ax.set_title("Marshall Sign: Total and Most Probable Configurations", fontsize=16)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.grid(True, alpha=0.3)
 
@@ -292,8 +292,8 @@ def Plot_Weight_single(configs, sign_vstate_config, weight_exact, weight_vstate,
                     linewidth=1, label=f'Exact weight config {i+1}={weight_exact[i]:.4f}')
 
     # Axis labels + title
-    ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("Weight", fontsize=12)
+    ax1.set_xlabel("Iterations", fontsize=16)
+    ax1.set_ylabel("Weight", fontsize=16)
     ax1.set_title("Weight most probable configuration", fontsize=14)
     ax1.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
     ax1.grid(True, alpha=0.3)
@@ -393,8 +393,8 @@ def Plot_Amp_overlap_configs(error, folder_path, one_avg, plot_variance=False, e
         std_dev = np.sqrt(error_var)
         ax1.errorbar(x_axis, error, yerr=std_dev, fmt='none', ecolor='pink', capsize=5, alpha=0.5)
     
-    ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("Amplitude Overlap configs", fontsize=12)
+    ax1.set_xlabel("Iterations", fontsize=16)
+    ax1.set_ylabel("Amplitude Overlap configs", fontsize=16)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     fig.suptitle("Amplitude Overlap full Hiblert space", fontsize=14)
@@ -453,8 +453,8 @@ def Plot_Sign_Err_Amplitude_Err_Fidelity(amp_overlap, fidelity, sign_err, folder
         std_dev = np.sqrt(sign_err_var)
         ax1.errorbar(x_axis, 1-sign_err, yerr=std_dev, fmt='none', ecolor='tab:blue', capsize=5, alpha=0.5)
 
-    ax1.set_xlabel("Iterations", fontsize=12)
-    ax1.set_ylabel("1 - (Amplitude Overlap / Sign Overlap/ Fidelity)", fontsize=12)
+    ax1.set_xlabel("Iterations", fontsize=16)
+    ax1.set_ylabel("1 - (Amplitude Overlap / Sign Overlap/ Fidelity)", fontsize=16)
     ax1.set_yscale('log')
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.grid(True, alpha=0.3)
@@ -508,8 +508,8 @@ def Plot_Sign_Err_vs_Amplitude_Err_with_iteration(amplitude_overlap, sign_overla
     else:
         ax.scatter(1-amplitude_overlap, 1-sign_overlap, marker='o', color='purple', alpha=0.7, label='Models')
 
-    ax.set_xlabel("1 - Amplitude Overlap", fontsize=12)
-    ax.set_ylabel("1 - Sign Overlap", fontsize=12)
+    ax.set_xlabel("1 - Amplitude Overlap", fontsize=16)
+    ax.set_ylabel("1 - Sign Overlap", fontsize=16)
     ax.set_title("1 - Sign Overlap vs 1 - Amplitude Overlap", fontsize=14)
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -573,8 +573,8 @@ def Plot_Overlap_vs_iteration(amplitude_overlap, sign_overlap, folder_path, one_
         std_dev_sign = np.sqrt(sign_overlap_var)
         ax.errorbar(x_axis, sign_overlap, yerr=std_dev_sign, fmt='none', ecolor='tab:green', capsize=5, alpha=0.5)
 
-    ax.set_xlabel("Iterations", fontsize=12)
-    ax.set_ylabel("Overlap Value", fontsize=12)
+    ax.set_xlabel("Iterations", fontsize=16)
+    ax.set_ylabel("Overlap Value", fontsize=16)
     ax.set_title("Amplitude and Sign Overlap vs. Iterations", fontsize=14)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.grid(True, alpha=0.3)
@@ -679,8 +679,8 @@ def Plot_Overlap_vs_Weight(weights, amp_overlap, sign_overlap, folder_path, one_
     # Plot Sign Overlap
     ax.bar(x + width/2, np.abs(sign_overlap), width, label='Sign Overlap', color='tab:green', alpha=0.9)
 
-    ax.set_xlabel("Binned Exact Weight |<s|ψ_exact>|²", fontsize=12)
-    ax.set_ylabel("Overlap Value", fontsize=12)
+    ax.set_xlabel("Binned Exact Weight |<s|ψ_exact>|²", fontsize=16)
+    ax.set_ylabel("Overlap Value", fontsize=16)
     ax.set_title("Per-Configuration Overlap vs. Exact Weight", fontsize=14)
     
     # Use bin indices for ticks and label them with the corresponding average weight
@@ -797,8 +797,8 @@ def Plot_Sector_Overlap_err_vs_iteration(sector_amp_err, sector_sign_err, folder
             ax.plot(sector_amp_err[valid, s_idx], sector_sign_err[valid, s_idx], 
                     color=colors[s_idx], alpha=0.3)
 
-    ax.set_xlabel("Mean (1 - Amplitude Overlap)", fontsize=12)
-    ax.set_ylabel("Mean (1 - Sign Overlap)", fontsize=12)
+    ax.set_xlabel("Mean (1 - Amplitude Overlap)", fontsize=16)
+    ax.set_ylabel("Mean (1 - Sign Overlap)", fontsize=16)
     ax.set_title("Sector-wise Error Evolution", fontsize=14)
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -847,8 +847,8 @@ def Plot_Energy_Fidelity(log, fidelity, folder_path, one_avg, L, plot_variance=F
         x_energy = np.linspace(0, total_iterations, len(energy_iter))
         # Energy
         ax1.plot(x_energy, energy_iter, label='Energy', color='tab:blue', linewidth=2)
-        ax1.set_xlabel("Iterations", fontsize=12)
-        ax1.set_ylabel("Energy", color='tab:blue', fontsize=12)
+        ax1.set_xlabel("Iterations", fontsize=16)
+        ax1.set_ylabel("Energy", color='tab:blue', fontsize=16)
         ax1.tick_params(axis='y', labelcolor='tab:blue')
         ax1.grid(True, alpha=0.3)
 
@@ -860,7 +860,7 @@ def Plot_Energy_Fidelity(log, fidelity, folder_path, one_avg, L, plot_variance=F
             std_dev = np.sqrt(fidelity_var)
             ax2.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
-        ax2.set_ylabel("1 - Fidelity", color='tab:red', fontsize=12)
+        ax2.set_ylabel("1 - Fidelity", color='tab:red', fontsize=16)
         ax2.tick_params(axis='y', labelcolor='tab:red')
         ax2.set_yscale('log')
 
@@ -877,8 +877,8 @@ def Plot_Energy_Fidelity(log, fidelity, folder_path, one_avg, L, plot_variance=F
             std_dev = np.sqrt(fidelity_var)
             ax1.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
-        ax1.set_xlabel("Iterations", fontsize=12)
-        ax1.set_ylabel("1 - Fidelity", color='tab:red', fontsize=12)
+        ax1.set_xlabel("Iterations", fontsize=16)
+        ax1.set_ylabel("1 - Fidelity", color='tab:red', fontsize=16)
         ax1.tick_params(axis='y', labelcolor='tab:red')
         ax1.set_yscale('log')
         ax1.grid(True, alpha=0.3)
@@ -927,8 +927,8 @@ def Plot_Fidelity(fidelity, folder_path, one_avg, plot_variance=False, fidelity_
         std_dev = np.sqrt(fidelity_var)
         plt.errorbar(x_fidelity, one_minus_fid, yerr=std_dev, fmt='none', ecolor='tab:red', capsize=5, alpha=0.5)
 
-    plt.xlabel("Iterations", fontsize=12)
-    plt.ylabel("1 - Fidelity", fontsize=12)
+    plt.xlabel("Iterations", fontsize=16)
+    plt.ylabel("1 - Fidelity", fontsize=16)
     plt.yscale('log')
     plt.grid(True, alpha=0.3, which="both", linestyle='--')
     plt.legend(loc='best')

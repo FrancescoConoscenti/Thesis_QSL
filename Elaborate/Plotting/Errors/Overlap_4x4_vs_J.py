@@ -247,8 +247,8 @@ def plot_overlap_vs_js(model_paths, save_name="Overlap_vs_J2.png"):
             plt.errorbar(valid_js, mean_sign_overlaps, yerr=std_sign_overlaps, label=f"{label} (1-Sign)", 
                          marker=markers[i % len(markers)], color=color, capsize=5, linestyle='--', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("1 - Overlap", fontsize=12)
+    plt.xlabel("$J_2$", fontsize=16)
+    plt.ylabel("1 - Overlap", fontsize=16)
     plt.title("1 - Amplitude & Sign Overlap vs $J_2$", fontsize=14)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
@@ -333,6 +333,8 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
             ]
+    
+    
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",

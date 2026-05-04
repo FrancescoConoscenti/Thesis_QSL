@@ -55,6 +55,7 @@ def get_marshall_signs_from_seeds(model_folder, j_val):
 
     for seed_dir in target_j_folder.iterdir():
         if seed_dir.is_dir() and seed_dir.name.startswith("seed_"):
+            sign_found = False
             pkl_path = seed_dir / "variables.pkl"
             if not pkl_path.exists():
                 pkl_path = seed_dir / "variables"
@@ -67,32 +68,58 @@ def get_marshall_signs_from_seeds(model_folder, j_val):
                         if 'sign_vstate_MCMC' in data:
                             val = data['sign_vstate_MCMC']
                             signs.append(np.real(val))
+                            sign_found = True
                         elif 'sign_vstate' in data:
                              val = data['sign_vstate']
                              if isinstance(val, (list, np.ndarray)):
                                  signs.append(np.real(val[-1]))
                              else:
                                  signs.append(np.real(val))
+                             sign_found = True
                 except Exception as e:
                     print(f"Error reading {pkl_path}: {e}")
+            
+            if not sign_found:
+                output_path = seed_dir / "output.txt"
+                if output_path.exists():
+                    found_in_txt = False
+                    try:
+                        with open(output_path, "r") as f:
+                            for line in f:
+                                match = re.search(r"Marshall\s*Sign(?:.*MCMC.*)?:\s*([+-]?[\d.]+)", line, re.IGNORECASE)
+                                if match:
+                                    val = float(match.group(1))
+                                    signs.append(val)
+                                    found_in_txt = True
+                                    break
+                    except Exception as e:
+                        print(f"Error reading or parsing {output_path}: {e}")
+                    
+                    if not found_in_txt:
+                        print(f"  -> [Info] {seed_dir.name}: 'Marshall Sign' not found in output.txt. (Did the job finish?)")
     return signs
 
 #main
 if __name__ == "__main__":
 
-    models_HFDS = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+    models_HFDS = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
                 ]
     models_ViT = [
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d60_heads10_patch2_sample4096_lr0.0075_iter4000_parityTrue_rotFalse_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
         ]
 
     # --- Plot setup ---
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig1, ax1 = plt.subplots(figsize=(8, 5))
+    fig2, ax2 = plt.subplots(figsize=(8, 5))
 
     # --- Style setup ---
     lattice_markers = {"4x4": "o", "6x6": "s", "8x8": "D", "10x10": "^"}
@@ -133,7 +160,9 @@ if __name__ == "__main__":
                     means.append(np.mean(np.abs(signs)))
             
             if js:
-                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+                ax1.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+                one_minus_means = [1.0 - m for m in means]
+                ax2.plot(js, one_minus_means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
     # --- Plot ViT models ---
     for i, model_path in enumerate(models_ViT):
@@ -171,22 +200,38 @@ if __name__ == "__main__":
                     means.append(np.mean(np.abs(signs)))
             
             if js:
-                ax.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+                ax1.plot(js, means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
+                one_minus_means = [1.0 - m for m in means]
+                ax2.plot(js, one_minus_means, color=color, marker=marker, markersize=8, alpha=0.7, label=label_name)
 
     # --- Labels, title, legend ---
-    ax.set_xlabel("$J_2$", fontsize=12)
-    ax.set_ylabel("Marshall Sign", fontsize=12)
-    ax.set_title("Marshall Sign vs $J_2$")
-    ax.grid(True, linestyle="--", alpha=0.4)
-    ax.legend(loc='best', fontsize=10)
+    ax1.set_xlabel("$J_2$", fontsize=16)
+    ax1.set_ylabel("Marshall Sign", fontsize=16)
+    ax1.set_title("Marshall Sign vs $J_2$")
+    ax1.grid(True, linestyle="--", alpha=0.4)
+    ax1.legend(loc='best', fontsize=12)
 
-    fig.tight_layout()
-    save_path = "Elaborate/plot/Sign/MarshallSign_vs_J2_ViT_HFDS.png"
-    if not os.path.exists(os.path.dirname(save_path)):
-        save_path = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path)
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    ax2.set_xlabel("$J_2$", fontsize=16)
+    ax2.set_ylabel("$1 -$ Marshall Sign", fontsize=16)
+    ax2.set_yscale('log')
+    ax2.set_title("$1 -$ Marshall Sign vs $J_2$ (Log Y Scale)")
+    ax2.grid(True, linestyle="--", alpha=0.4)
+    ax2.legend(loc='best', fontsize=12)
 
-    plt.savefig(save_path, dpi=300, bbox_inches="tight")
-    print(f"Plot saved to {save_path}")
+    fig1.tight_layout()
+    fig2.tight_layout()
+    
+    save_path_linear = "Elaborate/plot/Sign/MarshallSign_vs_J2_ViT_HFDS_linear.png"
+    save_path_log = "Elaborate/plot/Sign/MarshallSign_vs_J2_ViT_HFDS_1_minus_log.png"
+    if not os.path.exists(os.path.dirname(save_path_linear)):
+        save_path_linear = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path_linear)
+        save_path_log = os.path.join("/scratch/f/F.Conoscenti/Thesis_QSL", save_path_log)
+        os.makedirs(os.path.dirname(save_path_linear), exist_ok=True)
+
+    fig1.savefig(save_path_linear, dpi=300, bbox_inches="tight")
+    print(f"Linear plot saved to {save_path_linear}")
+    
+    fig2.savefig(save_path_log, dpi=300, bbox_inches="tight")
+    print(f"1-Sign Log plot saved to {save_path_log}")
     plt.show()
     

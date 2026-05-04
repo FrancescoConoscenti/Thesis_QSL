@@ -1,8 +1,9 @@
 import netket as nk
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 from netket.operator.spin import sigmax, sigmay, sigmaz
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit 
 
 def Corr_ij(vstate, hi, i, j):
 
@@ -19,7 +20,7 @@ def Corr_ij(vstate, hi, i, j):
 def Corr_r(vstate, lattice, L, hi):
     """
     Computes the spatially averaged correlation C(r) as a function of
-    Euclidean distance r = |r_i - r_j|, without any PBC wrapping.
+    Euclidean distance r = |r_i - r_j|, considering PBC wrapping.
 
     Returns:
         corr_by_dist: dict {distance: mean_correlation}
@@ -38,7 +39,12 @@ def Corr_r(vstate, lattice, L, hi):
             if i == j:
                 continue
             r_vec = lattice.positions[i] - lattice.positions[j]
-            dist = float(np.round(np.linalg.norm(r_vec), decimals=6))
+            # Wrap distance for PBC
+            dx = np.abs(r_vec[0])
+            dy = np.abs(r_vec[1])
+            if dx > L / 2.0: dx = L - dx
+            if dy > L / 2.0: dy = L - dy
+            dist = float(np.round(np.linalg.norm([dx, dy]), decimals=6))
 
             val = corr_vals[(i, j)]
 
@@ -60,7 +66,6 @@ def compute_correlations(vstate, lattice, L, hilbert, folder):
     """
     Returns the isotropic C(r) averaged over all pairs at each
     Euclidean distance, sorted by distance.
-    No boundary condition assumption is made.
     """
     vstate.n_samples = 1024
     corr_by_dist = Corr_r(vstate, lattice, L, hilbert)
@@ -71,27 +76,21 @@ def compute_correlations(vstate, lattice, L, hilbert, folder):
     for dist, val in corr_r.items():
         print(f"C({dist:.4f}) = {val:.6f}")
 
-    plot_corr_r(list(corr_r.keys()), list(corr_r.values()), (1.0, 1.0), folder)
     return corr_r
 
 
 def compute_correlation_length(vstate, lattice, hilbert, L, folder):
     """
     Fits C(r) to extract the correlation length xi.
-    Works for any boundary condition since distances are Euclidean.
-
-    Fit hierarchy:
-        1. Staggered exponential: A * (-1)^round(r) * exp(-r / xi)  [Neel phase]
-        2. Plain exponential on |C(r)|                               [QSL / weak order]
-        3. Log-linear fallback                                        [last resort]
     """
     corr_r = compute_correlations(vstate, lattice, L, hilbert, folder)
 
     r_vals = np.array(list(corr_r.keys()), dtype=float)
     c_vals = np.array(list(corr_r.values()), dtype=float)  # signed
 
-    # Exclude negligible signal; no L/2 cutoff since we have no PBC
-    mask = np.abs(c_vals) > 1e-10
+    # Exclude negligible signal and limit r to L/2 * sqrt(2)
+    max_r = (L / 2.0) * np.sqrt(2)
+    mask = (np.abs(c_vals) > 1e-10) & (r_vals <= max_r)
     r_fit = r_vals[mask]
     c_fit = c_vals[mask]  # signed
 
@@ -99,68 +98,72 @@ def compute_correlation_length(vstate, lattice, hilbert, L, folder):
         print("Not enough points to fit correlation length.")
         return None, None, None, r_fit, c_fit
 
-    def staggered_exp_decay(r, A, xi):
-        # (-1)^round(r) generalises the staggering to non-integer distances
-        # (e.g. diagonal neighbours on a square lattice at r=sqrt(2))
-        return A * ((-1.0) ** np.round(r)) * np.exp(-r / xi)
-
     def plain_exp_decay(r, A, xi):
         return A * np.exp(-r / xi)
 
-    p0 = [np.abs(c_fit[0]), np.max(r_fit) / 4.0]
-    bounds = ([0, 0.1], [np.inf, np.max(r_fit)])
+    def power_law_decay(r, a, n, b):
+        return a * r**n + b
 
-    # --- Primary: staggered exponential on signed C(r) ---
-    try:
-        popt, pcov = curve_fit(
-            staggered_exp_decay, r_fit, c_fit,
-            p0=p0, bounds=bounds, maxfev=10000
-        )
-        A_fit, xi_fit = popt
-        xi_err = np.sqrt(np.abs(pcov[1, 1]))
-        print(f"[Staggered fit] A = {A_fit:.4f}, xi = {xi_fit:.4f} ± {xi_err:.4f}")
-        return xi_fit, xi_err, popt, r_fit, c_fit
-
-    except RuntimeError:
-        print("Staggered fit failed, falling back to plain exponential on |C(r)|.")
-
-    # --- Fallback: plain exponential on |C(r)| ---
     c_fit_abs = np.abs(c_fit)
+
+    p0_exp = [c_fit_abs[0], np.max(r_fit) / 4.0]
+    
+    popt_exp = None
+    pcov_exp = None
     try:
-        popt, pcov = curve_fit(
-            plain_exp_decay, r_fit, c_fit_abs,
-            p0=p0, bounds=bounds, maxfev=10000
-        )
-        A_fit, xi_fit = popt
-        xi_err = np.sqrt(np.abs(pcov[1, 1]))
-        print(f"[Envelope fit]   A = {A_fit:.4f}, xi = {xi_fit:.4f} ± {xi_err:.4f}")
-        return xi_fit, xi_err, popt, r_fit, c_fit
-
+        popt_exp, pcov_exp = curve_fit(plain_exp_decay, r_fit, c_fit_abs, p0=p0_exp, maxfev=10000)
+        A_exp, xi_exp = popt_exp
+        xi_err = np.sqrt(np.abs(pcov_exp[1, 1]))
+        print(f"[Exponential fit] A = {A_exp:.4f}, xi = {xi_exp:.4f} ± {xi_err:.4f}")
     except RuntimeError:
-        print("Envelope fit failed, falling back to log-linear fit.")
+        print("Exponential fit failed.")
+        xi_exp = None
+        xi_err = None
 
-    # --- Last resort: log-linear fit ---
-    log_c = np.log(np.abs(c_fit))
-    coeffs = np.polyfit(r_fit, log_c, 1)
-    xi_fit = -1.0 / coeffs[0]
-    A_fit = np.exp(coeffs[1])
-    print(f"[Log-linear fit] A = {A_fit:.4f}, xi = {xi_fit:.4f} (no error estimate)")
-    return xi_fit, None, (A_fit, xi_fit), r_fit, c_fit
+    p0_pow = [c_fit_abs[0], -1.0, 0.0]
+    popt_pow = None
+    try:
+        popt_pow, _ = curve_fit(power_law_decay, r_fit, c_fit_abs, p0=p0_pow, maxfev=10000)
+        a_pow, n_pow, b_pow = popt_pow
+        print(f"[Power-law fit] a = {a_pow:.4f}, n = {n_pow:.4f}, b = {b_pow:.4f}")
+    except RuntimeError:
+        print("Power-law fit failed.")
 
-def plot_corr_r(r_fit, c_fit, popt, folder):
-    A_fit, xi_fit = popt
-    r_plot = np.arange(0, max(r_fit)+1)
-    c_plot = A_fit * ((-1)**r_plot) * np.exp(-r_plot / xi_fit)
+    plot_corr_r(r_fit, c_fit, popt_exp, popt_pow, folder)
+    
+    if popt_exp is not None:
+        return xi_exp, xi_err, popt_exp, r_fit, c_fit
+    else:
+        return None, None, None, r_fit, c_fit
+
+def plot_corr_r(r_fit, c_fit, popt_exp, popt_pow, folder):
+    if len(r_fit) > 0:
+        r_plot = np.linspace(np.min(r_fit), np.max(r_fit), 100)
+    else:
+        r_plot = np.linspace(0.1, 1, 100)
 
     plt.figure(figsize=(6,4))
-    plt.scatter(r_fit, c_fit, label='Data', color='blue')
-    plt.plot(r_plot, c_plot, label=f'Fit: A={A_fit:.2f}, xi={xi_fit:.2f}', color='red')
-    plt.xlabel('Distance r')
-    plt.ylabel('C(r)')
-    plt.title('Spin-Spin Correlation Function C(r)')
+    plt.scatter(r_fit, np.abs(c_fit), label='Data $|C(r)|$', color='blue')
+    
+    if popt_exp is not None:
+        A_fit, xi_fit = popt_exp
+        c_plot_exp = A_fit * np.exp(-r_plot / xi_fit)
+        plt.plot(r_plot, c_plot_exp, label=f'Exp Fit: A={A_fit:.2f}, $\\xi$={xi_fit:.2f}', color='red')
+        
+    if popt_pow is not None:
+        a_pow, n_pow, b_pow = popt_pow
+        c_plot_pow = a_pow * r_plot**n_pow + b_pow
+        plt.plot(r_plot, c_plot_pow, label=f'Poly Fit: a={a_pow:.2f}, n={n_pow:.2f}, b={b_pow:.2f}', color='green', linestyle='--')
+        
+    #plt.figure(figsize=(8, 6), dpi=80)
+    plt.xlabel('Distance $r$')
+    plt.ylabel('$|C(r)|$')
+    plt.title('Absolute Spin-Spin Correlation Function $|C(r)|$')
     plt.legend()
     plt.grid()
-    plt.savefig(f'{folder}/physical_obs/Corr_decay.png')
+    os.makedirs(f'{folder}/physical_obs', exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(f'{folder}/physical_obs/Corr_decay.png', bbox_inches='tight')
     plt.close()
 
 

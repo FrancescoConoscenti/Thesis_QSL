@@ -392,8 +392,8 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
     # --- PLOT 1: Random Init vs Exact ---
     plt.figure(figsize=(10, 7))
     plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=4, alpha=0.8, color='red', zorder=10)
-    plt.semilogy(evals_vit, 's--', label='ViT (Random)', markersize=4, alpha=0.6)
-    plt.semilogy(evals_hfds, '^--', label='HFDS (Random)', markersize=4, alpha=0.6)
+    plt.semilogy(evals_vit, 's--', label='ViT (Random)', markersize=4, alpha=0.6, color='orange')
+    plt.semilogy(evals_hfds, '^--', label='HFDS (Random)', markersize=4, alpha=0.6, color='blue')
 
     plt.xlabel('Index')
     plt.ylabel(r'Eigenvalues $\lambda_i$')
@@ -458,12 +458,10 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
 
     # Plot trained models
     if trained_results:
-        # Use the 'plasma' colormap and offset the range to avoid the darkest colors,
-        # ensuring better contrast with the black 'Exact GS' line.
-        colors = plt.cm.plasma(np.linspace(0.1, 0.9, len(trained_results)))
         for i, result in enumerate(trained_results):
+            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
             label = f'{result["type"]} ({result["n_params"]:,} params)'
-            plt.semilogy(result['evals'], '*-', label=label, markersize=5, alpha=0.8, color=colors[i])
+            plt.semilogy(result['evals'], '*-', label=label, markersize=5, alpha=0.8, color=color)
 
     # Calculate fidelity between trained models if exactly 2
     fidelity_between_models = None
@@ -505,8 +503,9 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
                 diff = np.abs(evals_exact[:min_len] - evals_model[:min_len])
                 dist = np.linalg.norm(diff)
                 
+                color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
                 label = f"{result['type']} (Eucl. Dist: {dist:.3e})"
-                plt.semilogy(diff, 'o--', label=label, markersize=4, alpha=0.7)
+                plt.semilogy(diff, 'o--', label=label, markersize=4, alpha=0.7, color=color)
         
         plt.xlabel('Index')
         plt.ylabel(r'Absolute Difference $|\lambda_i^{exact} - \lambda_i^{model}|$')
@@ -523,10 +522,8 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
     if trained_results:
         plt.figure(figsize=(10, 7))
         
-        # Get colors to match the mean line with the data points
-        colors = plt.cm.plasma(np.linspace(0.1, 0.9, len(trained_results)))
-
         for i, result in enumerate(trained_results):
+            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
             evals_model = result['evals']
             min_len = min(len(evals_exact), len(evals_model))
             
@@ -545,8 +542,8 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
                 # Update label to include mean and variance
                 label = f"{result['type']} (Mean: {mean_rel_diff:.3e}, Var: {var_rel_diff:.3e})"
                 
-                plt.semilogy(relative_diff, 'o--', label=label, markersize=4, alpha=0.7, color=colors[i])
-                plt.axhline(y=mean_rel_diff, color=colors[i], linestyle=':', linewidth=2, alpha=0.9)
+                plt.semilogy(relative_diff, 'o--', label=label, markersize=4, alpha=0.7, color=color)
+                plt.axhline(y=mean_rel_diff, color=color, linestyle=':', linewidth=2, alpha=0.9)
         
         plt.xlabel('Index')
         plt.ylabel(r'Relative Difference $|\lambda_i^{exact} - \lambda_i^{model}| / \lambda_i^{exact}$')
@@ -563,9 +560,8 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
     if trained_results:
         plt.figure(figsize=(10, 7))
         
-        colors = plt.cm.plasma(np.linspace(0.1, 0.9, len(trained_results)))
-
         for i, result in enumerate(trained_results):
+            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
             evals_model = result['evals']
             min_len = min(len(evals_exact), len(evals_model))
             
@@ -578,7 +574,7 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
                 relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
 
                 # Plot points
-                plt.semilogy(relative_diff, 'o', markersize=2, alpha=0.2, color=colors[i])
+                plt.semilogy(relative_diff, 'o', markersize=2, alpha=0.2, color=color)
 
                 # Sectors: High (0 to 1/3), Mid (1/3 to 2/3), Low (2/3 to 1)
                 s1 = min_len // 3
@@ -590,10 +586,10 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
                     seg_mean = np.nanmean(relative_diff[start:end]) if start < end else np.nan
                     means.append(seg_mean)
                     if not np.isnan(seg_mean):
-                        plt.hlines(y=seg_mean, xmin=start, xmax=end-1, colors=colors[i], linestyles='-', linewidth=2)
+                        plt.hlines(y=seg_mean, xmin=start, xmax=end-1, colors=color, linestyles='-', linewidth=2)
                 
                 label = f"{result['type']}\nMeans: H={means[0]:.1e}, M={means[1]:.1e}, L={means[2]:.1e}"
-                plt.plot([], [], color=colors[i], label=label)
+                plt.plot([], [], color=color, label=label)
 
         plt.xlabel('Index')
         plt.ylabel(r'Relative Difference')
@@ -607,8 +603,12 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
         plt.close()
 
 if __name__ == "__main__":
-    paths = [
+    """paths = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
-    ]
+    ]"""
+
+    paths = ["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+             "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample1024_bcPBC_PBC_phi0.0_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex_phi"]    
+    
     run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=paths)

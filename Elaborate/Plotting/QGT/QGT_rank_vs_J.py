@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.patches import Patch
+plt.style.use("/scratch/f/F.Conoscenti/Thesis_QSL/matplotlibrc")
 import pickle
 from pathlib import Path
 import numpy as np
@@ -107,7 +108,6 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
     plt.figure(figsize=(10, 6))
     
     markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
     
     all_data = []
     all_js_set = set()
@@ -120,7 +120,19 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
                 print(f"Path not found: {model_path}")
                 continue
             
+        if "ViT" in str(model_path):
+            c = 'tab:orange'
+        elif "HFDS" in str(model_path):
+            c = 'tab:blue'
+        else:
+            c = plt.cm.tab10(i % 10)
+            
         js = get_available_js(model_path)
+        if "4x4" in str(model_path):
+            js = [j for j in js if abs(j - 0.57) > 1e-5]
+
+        if "6x6" in str(model_path):
+            js = [j for j in js if abs(j - 0.55) > 1e-5]
         mean_ranks = []
         std_ranks = []
         
@@ -145,7 +157,7 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
                 'valid_js': valid_js,
                 'mean_ranks': mean_ranks,
                 'std_ranks': std_ranks,
-                'color': colors[i % len(colors)]
+                'color': c
             })
 
     sorted_all_js = sorted(list(all_js_set))
@@ -196,9 +208,9 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
         save_name = f"{base}_{lattice_dim}{ext}"
 
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("QGT Rank", fontsize=12)
-    plt.title(f"QGT Rank vs $J_2$ {lattice_dim}", fontsize=14)
+    plt.xlabel("$J_2$", fontsize=16)
+    plt.ylabel("QGT Rank", fontsize=16)
+    plt.title(f"QGT Rank vs $J_2$ {lattice_dim}", fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     
@@ -294,8 +306,6 @@ def get_qgt_condition_number_from_seeds(model_folder, j_val):
 def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number_vs_J2.png"):
     plt.figure(figsize=(10, 6))
     
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
-    
     all_data = []
     all_js_set = set()
 
@@ -306,7 +316,19 @@ def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number
                 print(f"Path not found: {model_path}")
                 continue
             
+        if "ViT" in str(model_path):
+            c = 'tab:orange'
+        elif "HFDS" in str(model_path):
+            c = 'tab:blue'
+        else:
+            c = plt.cm.tab10(i % 10)
+            
         js = get_available_js(model_path)
+        if "4x4" in str(model_path):
+            js = [j for j in js if abs(j - 0.57) > 1e-5]
+
+        if "6x6" in str(model_path):
+            js = [j for j in js if abs(j - 0.55) > 1e-5]
         mean_conds = []
         std_conds = []
         
@@ -330,7 +352,7 @@ def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number
                 'valid_js': valid_js,
                 'mean_conds': mean_conds,
                 'std_conds': std_conds,
-                'color': colors[i % len(colors)]
+                'color': c
             })
 
     sorted_all_js = sorted(list(all_js_set))
@@ -380,9 +402,9 @@ def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number
         save_name = f"{base}_{lattice_dim}{ext}"
 
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("QGT Condition Number", fontsize=12)
-    plt.title(f"QGT Condition Number vs $J_2$ {lattice_dim}", fontsize=14)
+    plt.xlabel("$J_2$", fontsize=16)
+    plt.ylabel("QGT Condition Number", fontsize=16)
+    plt.title(f"QGT Condition Number vs $J_2$ {lattice_dim}", fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     plt.yscale('log')
@@ -520,7 +542,6 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
 
         plt.figure(figsize=(10, 6))
         
-        colors = plt.cm.tab10(np.linspace(0, 1, len(group_models)))
         linestyles = ['-', '--', '-.', ':']
         
         for i, model_path in enumerate(group_models):
@@ -531,6 +552,11 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
                     continue
             
             js = get_available_js(model_path)
+            if "4x4" in str(model_path):
+                js = [j for j in js if abs(j - 0.57) > 1e-5]
+
+            if "6x6" in str(model_path):
+                js = [j for j in js if abs(j - 0.55) > 1e-5]
             
             n_params = get_param_count(model_path)
             if "ViT" in str(model_path):
@@ -545,7 +571,12 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
             else:
                 model_label = base_label
                 
-            color = colors[i % len(colors)]
+            if group_name == "ViT":
+                color = 'tab:orange' if len(group_models) == 1 else plt.cm.Oranges(0.5 + 0.5 * i / len(group_models))
+            elif group_name == "HFDS":
+                color = 'tab:blue' if len(group_models) == 1 else plt.cm.Blues(0.5 + 0.5 * i / len(group_models))
+            else:
+                color = plt.cm.tab10(i % 10)
             
             for k, j in enumerate(js):
                 iters, means, stds = get_qgt_condition_number_vs_iteration(model_path, j, single_seed=True)
@@ -555,9 +586,9 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
                     
                     plt.plot(iters, means, label=label, color=color, linestyle=ls, alpha=0.8)
 
-        plt.xlabel("Iterations", fontsize=12)
-        plt.ylabel("QGT Condition Number", fontsize=12)
-        plt.title(f"QGT Condition Number vs Iteration ({group_name})", fontsize=14)
+        plt.xlabel("Iterations", fontsize=16)
+        plt.ylabel("QGT Condition Number", fontsize=16)
+        plt.title(f"QGT Condition Number vs Iteration ({group_name})", fontsize=16)
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.legend(loc='best', fontsize='small')
         plt.yscale('log')
@@ -583,25 +614,27 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
         plt.show()
 
 if __name__ == "__main__":
-    """
-    #4x4
+    
+    """#4x4
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"    
-        ]
+        ]"""
+    
 
-
-    """
+    
     """#6x6
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd4_feat64_sample4096_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model"
-
-    ]"""
-
+    
+    ]
+    """
+    
     #8x8
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi"
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi",
+        "ViT_Heisenberg/plot/8x8/QGT/layers2_d24_heads6_patch2_sample8192_lr0.0075_iter200_parityTrue_rotTrue_QGT"
     ]
 
 

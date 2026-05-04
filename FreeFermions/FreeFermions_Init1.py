@@ -1,9 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy.optimize import curve_fit
+import os
 
 def get_spectral_states(L, phi_range):
     n_sites = L * L
@@ -44,16 +43,6 @@ def get_spectral_states(L, phi_range):
         gs_energies.append(e_gs / n_sites)
         excited_energies.append(e_exc / n_sites)
 
-    plt.figure(figsize=(8, 6))
-    plt.plot(phis/np.pi, np.array(gs_energies), label="GS (0-Flux)", color='blue')
-    plt.plot(phis/np.pi, np.array(excited_energies), label="Excited (0-Flux)", color='red', linestyle='--')
-    plt.title(f"0-Flux Fermi Sea (L={L})")
-    plt.ylabel("Energy per site (t units)")
-    plt.xlabel(r"Twist Angle $\phi$ ($\pi$ units)")
-    plt.legend()
-    plt.savefig(f"FreeFermions/plots/Spectral_flow/0_flux_spectral_flow_L{L}.png", dpi=300)
-    plt.show()
-
     return np.array(gs_energies), np.array(excited_energies)
 
 def plot_pi_flux_dispersion():
@@ -87,7 +76,7 @@ def plot_pi_flux_dispersion():
     ax.view_init(elev=20, azim=45)
 
     plt.savefig("FreeFermions/plots/Dispersions/pi_flux_dispersion.png", dpi=300)
-    plt.show()
+    
 
 def plot_dirac_cuts(L, phi):
     # 1. Create the continuous 3D surface
@@ -134,7 +123,7 @@ def plot_dirac_cuts(L, phi):
     ax.set_ylabel(r"$k_y$")
     ax.view_init(elev=25, azim=45)
     plt.savefig(f"FreeFermions/plots/Dispersions/dirac_cuts_L{L}_phi{phi/np.pi:.1f}.png", dpi=300)
-    plt.show()
+    
 
 def get_0_flux_spectral_flow(L, phi_range):
     n_sites = L * L
@@ -164,18 +153,6 @@ def get_0_flux_spectral_flow(L, phi_range):
         e_exc = e_gs - eigenvalues[n_sites // 2 - 1] + eigenvalues[n_sites // 2]
         gs_energies.append(e_gs / n_sites)
         excited_energies.append(e_exc / n_sites)
-
-    
-    plt.figure(figsize=(8, 6))
-    plt.plot(phis/np.pi, np.array(gs_energies), label="Ground State (GS)", color='blue', lw=2)
-    plt.plot(phis/np.pi, np.array(excited_energies), label="First Excited State", color='red', linestyle='--', lw=2)
-    plt.title(f"pi-flux Fermi Sea (L={L})")
-    plt.xlabel(r"Twist Angle $\phi$ ($\pi$ units)")
-    plt.ylabel("Energy per site (t units)")
-    plt.legend()
-    plt.grid(True, linestyle='--', alpha=0.6)
-    plt.savefig(f"FreeFermions/plots/Spectral_flow/0_flux_spectral_flow_L{L}.png", dpi=300)
-    plt.show()
 
     return np.array(gs_energies), np.array(excited_energies)
 
@@ -247,10 +224,12 @@ def plot_0_flux_cuts(L, phi):
     ax.set_ylabel(r"$k_y$")
     ax.view_init(elev=25, azim=45)
     plt.savefig(f"FreeFermions/plots/Dispersions/0_flux_cuts_L{L}_phi{phi/np.pi:.1f}.png", dpi=300)
-    plt.show()
+    
 
 def plot_side_by_side(L_list, phis):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), sharey=False)
+    fig1, ax1 = plt.subplots(figsize=(8, 6))
+    fig2, ax2 = plt.subplots(figsize=(8, 6))
+    fig3, ax3 = plt.subplots(figsize=(8, 6))
     x_phi = phis / np.pi
     
     # Colors for different L sizes
@@ -259,33 +238,50 @@ def plot_side_by_side(L_list, phis):
     for i, L in enumerate(L_list):
         color = colors[i % len(colors)]
         
-        # --- Left Plot: 0-Flux (Standard Fermi Sea) ---
+        # --- 0-Flux (Standard Fermi Sea) ---
         gs0, exc0 = get_0_flux_spectral_flow(L, phis)
         ax1.plot(x_phi, gs0, label=f"GS L={L}", color=color, lw=2)
         ax1.plot(x_phi, exc0, color=color, linestyle='--', alpha=0.5) # Excited state
         
-        # --- Right Plot: Pi-Flux (Dirac Spin Liquid) ---
+        # --- Pi-Flux (Dirac Spin Liquid) ---
         gs_pi, exc_pi = get_spectral_states(L, phis)
-        ax2.plot(x_phi, gs_pi, label=f"GS L={L}", color=color, lw=2)
-        ax2.plot(x_phi, exc_pi, color=color, linestyle='--', alpha=0.5) # Excited state
+        if L % 4 == 0:
+            ax2.plot(x_phi, gs_pi, label=f"GS L={L}", color=color, lw=2)
+            #ax2.plot(x_phi, exc_pi, color=color, linestyle='--', alpha=0.5) # Excited state
+        elif L % 4 == 2:
+            ax3.plot(x_phi, gs_pi, label=f"GS L={L}", color=color, lw=2)
+            #ax3.plot(x_phi, exc_pi, color=color, linestyle='--', alpha=0.5) # Excited state
 
-    # Formatting Left Plot
+    # Formatting 0-Flux Plot
     ax1.set_title("0-Flux: Uniform Fermi Sea", fontsize=14)
     ax1.set_xlabel(r"Twist Angle $\phi$ ($\pi$ units)")
     ax1.set_ylabel("Energy per site (t units)")
     ax1.grid(True, linestyle='--', alpha=0.6)
-    ax1.legend(title="Lattice Size")
+    if len(ax1.lines) > 0:
+        ax1.legend(title="Lattice Size")
+    fig1.tight_layout()
+    fig1.savefig("FreeFermions/plots/Spectral_flow/0_flux_spectral_flow.png", dpi=300)
 
-    # Formatting Right Plot
-    ax2.set_title(r"$\pi$-Flux: Dirac Spin Liquid", fontsize=14)
+    # Formatting Pi-Flux Plot (L = 4, 8, 12...)
+    ax2.set_title(r"$\pi$-Flux: Dirac Spin Liquid ", fontsize=14)
     ax2.set_xlabel(r"Twist Angle $\phi$ ($\pi$ units)")
     ax2.set_ylabel("Energy per site (t units)")
     ax2.grid(True, linestyle='--', alpha=0.6)
-    ax2.legend(title="Lattice Size")
+    if len(ax2.lines) > 0:
+        ax2.legend(title="Lattice Size")
+    fig2.tight_layout()
+    fig2.savefig("FreeFermions/plots/Spectral_flow/pi_flux_spectral_flow_L4n.png", dpi=300)
 
-    plt.tight_layout()
-    plt.savefig("FreeFermions/plots/Spectral_flow/side_by_side_spectral_flow.png", dpi=300)
-    plt.show()
+    # Formatting Pi-Flux Plot (L = 6, 10, 14...)
+    ax3.set_title(r"$\pi$-Flux: Dirac Spin Liquid", fontsize=14)
+    ax3.set_xlabel(r"Twist Angle $\phi$ ($\pi$ units)")
+    ax3.set_ylabel("Energy per site (t units)")
+    ax3.grid(True, linestyle='--', alpha=0.6)
+    if len(ax3.lines) > 0:
+        ax3.legend(title="Lattice Size")
+    fig3.tight_layout()
+    fig3.savefig("FreeFermions/plots/Spectral_flow/pi_flux_spectral_flow_L4n_plus_2.png", dpi=300)
+    
 
 
 def get_mf_correlation_length(L, phi, flux_type='pi'):
@@ -384,7 +380,7 @@ def plot_1_over_Correlation_lengths(L_values, phi_range):
     plt.tight_layout()
     # Updated filename to reflect the change
     plt.savefig("FreeFermions/plots/Correlation_lengths/inv_correlation_length_comparison.png", dpi=300)
-    plt.show()
+    
 
 def get_second_moment_inv_xi(L, phi, flux_type='pi'):
     n_sites = L * L
@@ -473,8 +469,207 @@ def plot_second_moment_comparison(L_values, phi_range):
 
     plt.tight_layout()
     plt.savefig("FreeFermions/plots/Correlation_lengths/inv_xi_2nd_moment_comparison.png", dpi=300)
-    plt.show()
+    
 
+def plot_structure_factor(L, phi, flux_type='pi'):
+    n_sites = L * L
+    def idx(x, y): return (x % L) * L + (y % L)
+    
+    # 1. Build Hamiltonian
+    h_matrix = np.zeros((n_sites, n_sites), dtype=complex)
+    for x in range(L):
+        for y in range(L):
+            h_matrix[idx(x, y), idx(x, y+1)] = -1.0
+            h_matrix[idx(x, y+1), idx(x, y)] = -1.0
+            t_horiz = -1.0 * ((-1)**y if flux_type == 'pi' else 1.0)
+            if x == L - 1:
+                h_matrix[idx(x, y), idx(0, y)] = t_horiz * np.exp(1j * phi)
+                h_matrix[idx(0, y), idx(x, y)] = np.conj(t_horiz * np.exp(1j * phi))
+            else:
+                h_matrix[idx(x, y), idx(x+1, y)] = t_horiz
+                h_matrix[idx(x+1, y), idx(x, y)] = t_horiz
+
+    # 2. Get Correlation Matrix P (Ground State)
+    vals, vecs = np.linalg.eigh(h_matrix)
+    occ_vecs = vecs[:, :n_sites // 2]
+    P = occ_vecs @ occ_vecs.conj().T
+    
+    # 3. Calculate Structure Factor S(q) via 2D FFT
+    corr_r = np.zeros((L, L))
+    for dx in range(L):
+        for dy in range(L):
+            # True physical spin-spin correlation for free fermions via Wick's theorem:
+            # C(r) = 3/4 * delta_{r,0} - 3/2 * |P_{0,r}|^2
+            P_sq = np.abs(P[idx(0, 0), idx(dx, dy)])**2
+            if dx == 0 and dy == 0:
+                corr_r[dx, dy] = 0.75 - 1.5 * P_sq
+            else:
+                corr_r[dx, dy] = -1.5 * P_sq
+            
+    S_q = np.abs(np.fft.fft2(corr_r))
+    
+    # Wrap around for a fully periodic plot in momentum space
+    S_q_periodic = np.zeros((L+1, L+1))
+    S_q_periodic[:L, :L] = S_q
+    S_q_periodic[L, :L] = S_q[0, :]
+    S_q_periodic[:L, L] = S_q[:, 0]
+    S_q_periodic[L, L] = S_q[0, 0]
+    
+    # 4. Plot
+    fig, ax = plt.subplots(figsize=(6, 5))
+    c = ax.imshow(S_q_periodic, origin='lower', cmap='viridis', extent=[0, 2*np.pi, 0, 2*np.pi])
+    fig.colorbar(c, label='|S(q)|')
+    ax.set_xlabel(r'$q_x$')
+    ax.set_ylabel(r'$q_y$')
+    ax.set_title(f'Structure Factor S(q) [{flux_type}-flux, L={L}, $\phi$={phi/np.pi:.2f}$\pi$]')
+    ax.set_xticks([0, np.pi, 2*np.pi], ['0', r'$\pi$', r'$2\pi$'])
+    ax.set_yticks([0, np.pi, 2*np.pi], ['0', r'$\pi$', r'$2\pi$'])
+    fig.tight_layout()
+    fig.savefig(f"FreeFermions/plots/Correlation_lengths/structure_factor_L{L}_{flux_type}flux.png", dpi=300)
+
+def plot_spin_stiffness(L_list):
+    """
+    Calculates and plots the spin stiffness (helicity modulus) for different system sizes.
+    The stiffness is computed as the curvature of the ground state energy per site
+    with respect to a boundary twist angle phi, evaluated at phi=0.
+    rho_s = d^2(E_gs/N) / d(phi^2) | at phi=0
+    """
+    stiffness_0_flux = []
+    stiffness_pi_flux = []
+
+    # A small range of phi around 0 to perform the quadratic fit
+    phi_fit_range = np.linspace(-0.05, 0.05, 21) # Small range for accurate curvature at phi=0
+
+    print("Calculating spin stiffness...")
+    for L in L_list:
+        print(f"  L = {L}")
+        # --- 0-Flux Case ---
+        gs_energies_0, _ = get_0_flux_spectral_flow(L, phi_fit_range)
+        # Fit E(phi) = a*phi^2 + b*phi + c. The stiffness is 2*a.
+        coeffs_0 = np.polyfit(phi_fit_range, gs_energies_0, 2)
+        stiffness_0_flux.append(2 * coeffs_0[0])
+
+        # --- Pi-Flux Case ---
+        gs_energies_pi, _ = get_spectral_states(L, phi_fit_range)
+        coeffs_pi = np.polyfit(phi_fit_range, gs_energies_pi, 2)
+        stiffness_pi_flux.append(2 * coeffs_pi[0])
+
+    # --- Plotting ---
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    inv_L = [1/L for L in L_list]
+
+    ax.plot(inv_L, stiffness_0_flux, marker='o', linestyle='-', label='0-Flux (Fermi Sea)')
+    ax.plot(inv_L, stiffness_pi_flux, marker='s', linestyle='--', label=r'$\pi$-Flux (Dirac Liquid)')
+
+    ax.axhline(0, color='grey', lw=1, linestyle=':')
+    ax.set_title("Spin Stiffness vs. Inverse System Size", fontsize=14)
+    ax.set_xlabel(r"$1/L$")
+    ax.set_ylabel(r"Spin Stiffness $\rho_s$")
+    ax.grid(True, linestyle='--', alpha=0.6)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("FreeFermions/plots/Stiffness/spin_stiffness.png", dpi=300)
+    print("Spin stiffness plot saved to FreeFermions/plots/Stiffness/spin_stiffness.png")
+
+def plot_energy_gap_vs_L_fit(L_list, target_phi, flux_type='pi'):
+    """
+    Calculates the energy gap E(0)-E(phi) for different system sizes L,
+    plots it against 1/L, and fits it with a power law.
+    """
+    print(f"\nCalculating absolute energy gap for phi={target_phi/np.pi:.2f}pi, flux={flux_type}")
+    
+    inv_L_vals = []
+    gaps = []
+
+    for L in L_list:
+        if flux_type == 'pi':
+            gs_energies, _ = get_spectral_states(L, [0, target_phi])
+        else: # '0' flux
+            gs_energies, _ = get_0_flux_spectral_flow(L, [0, target_phi])
+        
+        e0 = gs_energies[0]
+        e_phi = gs_energies[1]
+        gap = np.abs(e0 - e_phi)
+        
+        inv_L_vals.append(1/L)
+        gaps.append(gap)
+        print(f"  L={L}: E(0)={e0:.6f}, E(phi)={e_phi:.6f}, Absolute Gap={gap:.6f}")
+
+    inv_L_arr = np.array(inv_L_vals)
+    gaps_arr = np.array(gaps)
+
+    # --- Fitting ---
+    def fit_func(x, a, n, b):
+        return a * x**n + b
+
+    def fit_func_exp(x, a, c, b):
+        x_safe = np.where(x == 0, 1e-10, x)
+        return a * np.exp(-1.0 / (x_safe * c)) + b
+
+    popt = None
+    popt_exp = None
+    err_pl = float('inf')
+    err_exp = float('inf')
+    inv_L_fine = np.linspace(0, max(inv_L_arr) * 1.1, 100)
+    
+    if len(inv_L_arr) >= 3:
+        try:
+            popt, _ = curve_fit(fit_func, inv_L_arr, gaps_arr, p0=[gaps_arr[0], 2.0, 0.0], maxfev=5000)
+            a, n_fit, b = popt
+            fit_label = f'Power-law $y = a(1/L)^n + b$ ($n={n_fit:.3f}$)'
+            gap_fit = fit_func(inv_L_fine, *popt)
+            err_pl = np.sum((gaps_arr - fit_func(inv_L_arr, *popt))**2)
+        except Exception as e:
+            print(f"Power-law fit failed: {e}")
+            
+        try:
+            popt_exp, _ = curve_fit(fit_func_exp, inv_L_arr, gaps_arr, p0=[gaps_arr[0], 5.0, 0.0], 
+                                    bounds=([-np.inf, 1e-5, -np.inf], [np.inf, np.inf, np.inf]), maxfev=5000)
+            a_exp, c_exp, b_exp = popt_exp
+            fit_label_exp = f'Exponential $y = a e^{{-L/\\xi}} + b$ ($\\xi={c_exp:.3f}$)'
+            gap_fit_exp = fit_func_exp(inv_L_fine, *popt_exp)
+            err_exp = np.sum((gaps_arr - fit_func_exp(inv_L_arr, *popt_exp))**2)
+        except Exception as e:
+            print(f"Exponential fit failed: {e}")
+
+    use_pl = False
+    use_exp = False
+    if popt is not None and popt_exp is not None:
+        if err_pl <= err_exp:
+            use_pl = True
+        else:
+            use_exp = True
+    elif popt is not None:
+        use_pl = True
+    elif popt_exp is not None:
+        use_exp = True
+
+    # --- Plotting ---
+    plt.figure(figsize=(9, 6))
+    plt.plot(inv_L_arr, gaps_arr, 'o', color='tab:red', markersize=8, label='Data')
+
+    if use_pl:
+        plt.plot(inv_L_fine, gap_fit, '--', color='black', label=fit_label)
+        plt.plot(0, popt[2], '*', color='blue', markersize=12, markeredgecolor='black', label=f'PL Extrapolated: {popt[2]:.4f}')
+    elif use_exp:
+        plt.plot(inv_L_fine, gap_fit_exp, ':', color='tab:green', linewidth=2, label=fit_label_exp)
+        plt.plot(0, popt_exp[2], 'X', color='tab:green', markersize=10, markeredgecolor='black', label=f'Exp Extrapolated: {popt_exp[2]:.4f}')
+
+    plt.xlabel('1/L', fontsize=14)
+    plt.ylabel(f'Absolute Energy Gap per site $|E(0) - E(\phi)|$', fontsize=14)
+    plt.title(f'Free Fermion Energy Gap vs 1/L ({flux_type}-flux, $\phi$={target_phi/np.pi:.2f}$\pi$)', fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(fontsize=12)
+    plt.xlim(left=0)
+    plt.tight_layout()
+    
+    save_dir = "FreeFermions/plots/Gap_scaling"
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"gap_vs_invL_{flux_type}_phi{target_phi/np.pi:.1f}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Plot saved to {save_path}")
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -487,13 +682,13 @@ if __name__ == "__main__":
 
     # --- plot 0,pi for Ls twist phi-------------------------------------------------------
     phis = np.linspace(0, 2*np.pi, 100)
-    L_values = [8, 10, 12 ,14, 16] 
+    L_values = [4, 6,8, 10] 
     #plot_side_by_side(L_values, phis)
 
 
     # ------------pi flux dispersion kx ky----------------------------------------------------------------------
-    #plot_pi_flux_dispersion()
-    #plot_dirac_cuts(L=10, phi=3.14)
+    plot_pi_flux_dispersion()
+    plot_dirac_cuts(L=4, phi=0)
 
     #------------0 flux dispersion kx ky----------------------------------------------------------------------
     #plot_fermi_surface_dispersion()
@@ -503,13 +698,32 @@ if __name__ == "__main__":
     #--- Correllation length ------------------------
     L = 8
     phi = 0
-    xi_0 = get_mf_correlation_length(L, phi, '0')
-    xi_pi = get_mf_correlation_length(L, phi, 'pi')
+    #xi_0 = get_mf_correlation_length(L, phi, '0')
+    #xi_pi = get_mf_correlation_length(L, phi, 'pi')
 
     L_values = [4,6,8,10]
-    phi_range = np.linspace(0, 2*np.pi, 100)
-    plot_1_over_Correlation_lengths(L_values, phi_range)
+    #phi_range = np.linspace(0, 2*np.pi, 100)
+    #plot_1_over_Correlation_lengths(L_values, phi_range)
 
     L_values = [4,6,8,10]
-    phis = np.linspace(0, 2*np.pi, 30)
-    plot_second_moment_comparison(L_values, phis)    
+    #phis = np.linspace(0, 2*np.pi, 30)
+    #plot_second_moment_comparison(L_values, phis)    
+
+    #--- Structure factor S(q) ------------------------
+    L = 10
+    phi = np.pi
+    #plot_structure_factor(L, phi, '0')
+    #plot_structure_factor(L, phi, 'pi')
+
+    #--- Spin Stiffness -----------------------------
+    os.makedirs("FreeFermions/plots/Stiffness", exist_ok=True)
+    L_stiffness = [4, 6, 8, 10, 12, 14, 16, 20, 24, 50, 100 ]
+    #plot_spin_stiffness(L_stiffness)
+
+    #--- Gap scaling vs 1/L ---
+    L_gap_scaling = [6,10, 14, 18, 22]
+    target_phi_gap = 1 * np.pi
+    #plot_energy_gap_vs_L_fit(L_gap_scaling, target_phi_gap, flux_type='pi')
+    #plot_energy_gap_vs_L_fit(L_gap_scaling, target_phi_gap, flux_type='0')
+
+    

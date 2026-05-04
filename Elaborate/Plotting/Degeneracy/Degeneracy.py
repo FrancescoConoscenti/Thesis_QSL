@@ -149,7 +149,7 @@ def calculate_overlap_vmap(vstate_psi, vstate_phi):
 
 
 def plot_En_degeneracy(models, target_J=0.5):
-    plot_data = {} # Key: bc_label, Value: dict with lists for inv_N, means, stds
+    plot_data = {} # Key: bc_label, Value: dict with lists for inv_L, means, stds
 
     for model_path in models:
         # Fix path if running locally vs cluster
@@ -233,12 +233,12 @@ def plot_En_degeneracy(models, target_J=0.5):
         if seed_energies:
             mean_E = np.mean(seed_energies)
             std_E = np.std(seed_energies)
-            inv_N = 1.0 / (L*L)
+            inv_L = 1.0 / L
             
             if bc_label not in plot_data:
-                plot_data[bc_label] = {'inv_N': [], 'means': [], 'stds': []}
+                plot_data[bc_label] = {'inv_L': [], 'means': [], 'stds': []}
             
-            plot_data[bc_label]['inv_N'].append(inv_N)
+            plot_data[bc_label]['inv_L'].append(inv_L)
             plot_data[bc_label]['means'].append(mean_E)
             plot_data[bc_label]['stds'].append(std_E)
             print(f"Model: {os.path.basename(model_path)}, L={L}, BC={bc_label}")
@@ -252,13 +252,13 @@ def plot_En_degeneracy(models, target_J=0.5):
     colors = plt.cm.viridis(np.linspace(0, 0.9, max(len(plot_data), 1)))
     
     for i, (bc_label, data) in enumerate(sorted(plot_data.items())):
-        inv_N_vals = data['inv_N']
+        inv_L_vals = data['inv_L']
         means = data['means']
         stds = data['stds']
         
-        # Sort by inv_N for clean plotting of lines
-        sort_indices = np.argsort(inv_N_vals)
-        inv_N_sorted = np.array(inv_N_vals)[sort_indices]
+        # Sort by inv_L for clean plotting of lines
+        sort_indices = np.argsort(inv_L_vals)
+        inv_L_sorted = np.array(inv_L_vals)[sort_indices]
         means_sorted = np.array(means)[sort_indices]
         stds_sorted = np.array(stds)[sort_indices]
 
@@ -266,15 +266,15 @@ def plot_En_degeneracy(models, target_J=0.5):
         marker = markers[i % len(markers)]
         
         # Plot error bars for each point
-        plt.errorbar(inv_N_sorted, means_sorted, yerr=stds_sorted, 
+        plt.errorbar(inv_L_sorted, means_sorted, yerr=stds_sorted, 
                      fmt=marker, color=color, capsize=5, label=bc_label, markersize=8, linestyle='none')
         
         # Plot a connecting line
-        plt.plot(inv_N_sorted, means_sorted, color=color, linestyle='--', alpha=0.5)
+        plt.plot(inv_L_sorted, means_sorted, color=color, linestyle='--', alpha=0.5)
 
     plt.legend(loc='best')
 
-    plt.xlabel("1/L²")
+    plt.xlabel("1/L")
     plt.ylabel("Energy per site")
     plt.title(f"Finite Size Scaling / Degeneracy Check (J={target_J})")
     plt.grid(True)
@@ -395,13 +395,162 @@ def plot_Fidelity_Degeneracy(models, target_J=0.5, n_samples=16):
         print(f"Plot saved to {os.path.join(save_dir, 'Degeneracy_check_Fidelity.png')}")
         plt.show()
 
+def plot_En_gap_degeneracy(models, target_J=0.5):
+    energies_by_L_bc = {}
+
+    for model_path in models:
+        # Fix path if running locally vs cluster
+        if not os.path.exists(model_path):
+            model_path = model_path.replace("/cluster/home/fconoscenti", "/scratch/f/F.Conoscenti")
+        
+        if not os.path.exists(model_path):
+            print(f"Warning: Path not found, skipping: {model_path}")
+            continue
+
+        # Extract parameters for grouping
+        params = parse_model_path_local(model_path)
+        L = params.get('L')
+        if L is None:
+            print(f"Warning: Could not determine L for {model_path}, skipping.")
+            continue
+
+        bc_x = params.get('bc_x', 'PBC')
+        bc_y = params.get('bc_y', 'PBC')
+        bc_label = f"{bc_x}, {bc_y}"
+
+        seed_energies = []
+        
+        # Find specific J folder
+        j_folder = None
+
+        if os.path.exists(model_path):
+            for d in os.listdir(model_path):
+                if d.startswith("J=") or d.startswith("J2="):
+                    try:
+                        part = d.split('=')[1]
+                        val_str = part.split('_')[0] if '_' in part else part
+                        if abs(float(val_str) - target_J) < 1e-5:
+                            j_folder = os.path.join(model_path, d)
+                            break
+                    except ValueError:
+                        continue
+        
+        if j_folder and os.path.exists(j_folder):
+            seeds = sorted([s for s in os.listdir(j_folder) if os.path.isdir(os.path.join(j_folder, s)) and "seed" in s])
+            for seed_sub in seeds:
+                full_seed_path = os.path.join(j_folder, seed_sub)
+
+                if os.path.isdir(full_seed_path):
+                    E_final = None
+                    var_path = os.path.join(full_seed_path, "variables.pkl")
+                    if os.path.exists(var_path):
+                        try:
+                            with open(var_path, "rb") as f:
+                                vars_data = pickle.load(f)
+                            E_pkl = vars_data.get('E_vs_final')
+                            if E_pkl is not None:
+                                E_final = float(np.real(E_pkl))
+                        except Exception as e:
+                            print(f"Error reading {var_path}: {e}")
+
+                    # Compare with output.txt
+                    out_path = os.path.join(full_seed_path, "output.txt")
+                    if os.path.exists(out_path):
+                        try:
+                            with open(out_path, "r") as f:
+                                content = f.read()
+                            matches = re.findall(r"Final Energy from VMC:\s*([-\d\.e]+)", content)
+                            if matches:
+                                E_txt = float(matches[-1])
+                                if E_final is None:
+                                    E_final = E_txt
+                                elif abs(E_final - E_txt) > 1e-5:
+                                    E_final = E_txt
+                        except Exception as e:
+                            print(f"Error reading output.txt in {seed_sub}: {e}")
+
+                    if E_final is not None:
+                        if L in [6, 8, 10] and bc_label in ["APC, PBC", "APC, APC", "PBC, APC"]:
+                            E_final *= 4.0
+                        seed_energies.append(E_final)
+        
+        if seed_energies:
+            mean_E = np.mean(seed_energies)
+            std_E = np.std(seed_energies)
+            
+            if L not in energies_by_L_bc:
+                energies_by_L_bc[L] = {}
+            energies_by_L_bc[L][bc_label] = (mean_E, std_E)
+
+    plot_data = {}
+
+    for L in sorted(energies_by_L_bc.keys()):
+        bc_dict = energies_by_L_bc[L]
+        
+        if "PBC, PBC" not in bc_dict:
+            print(f"Warning: 'PBC, PBC' not found for L={L}. Skipping gap calculation for this size.")
+            continue
+            
+        ref_E, ref_std = bc_dict["PBC, PBC"]
+
+        for bc_label, (mean_E, std_E) in bc_dict.items():
+            if bc_label == "PBC, PBC":
+                continue # Skip plotting the zero gap for the reference sector
+                
+            # Compute total energy gap = (E_bc - E_ref) * L^2
+            gap = (mean_E - ref_E) * (L * L)
+            gap_std = np.sqrt(std_E**2 + ref_std**2) * (L * L)
+
+            label = f"{bc_label} - PBC, PBC"
+            if label not in plot_data:
+                plot_data[label] = {'inv_L': [], 'gaps': [], 'stds': []}
+            
+            plot_data[label]['inv_L'].append(1.0 / L)
+            plot_data[label]['gaps'].append(gap)
+            plot_data[label]['stds'].append(gap_std)
+
+    # --- PLOT 3: Energy Gaps ---
+    if plot_data:
+        plt.figure(figsize=(10, 6))
+        markers = ['o', 's', '^', 'D', 'v', '<', '>']
+        colors = plt.cm.viridis(np.linspace(0, 0.9, max(len(plot_data), 1)))
+        
+        for i, (bc_label, data) in enumerate(sorted(plot_data.items())):
+            inv_L_vals = data['inv_L']
+            gaps = data['gaps']
+            stds = data['stds']
+            
+            sort_indices = np.argsort(inv_L_vals)
+            inv_L_sorted = np.array(inv_L_vals)[sort_indices]
+            gaps_sorted = np.array(gaps)[sort_indices]
+            stds_sorted = np.array(stds)[sort_indices]
+
+            color = colors[i % len(colors)]
+            marker = markers[i % len(markers)]
+            
+            plt.errorbar(inv_L_sorted, gaps_sorted, yerr=stds_sorted, 
+                         fmt=marker, color=color, capsize=5, label=bc_label, markersize=8, linestyle='--')
+            
+        plt.legend(loc='best')
+        plt.xlabel("1/L")
+        plt.ylabel("Total Energy Gap $\Delta E$")
+        plt.title(f"Total Energy Gap vs 1/L (Reference: PBC, PBC) (J={target_J})")
+        plt.grid(True)
+        
+        save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, "Degeneracy_check_Energy_Gap.png")
+        plt.savefig(save_path)
+        print(f"Plot saved to {save_path}")
+        plt.show()
+
 
 if __name__ == "__main__": 
     
-    models = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+    models = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/BC/layers1_hidd4_feat64_sample1024_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/BC/layers1_hidd4_feat64_sample1024_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/BC/layers1_hidd4_feat64_sample1024_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/BC/layers1_hidd4_feat64_sample1024_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_Initrandom_typecomplex_newBC_no_k_shift",
 
 
               "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
@@ -410,17 +559,18 @@ if __name__ == "__main__":
             "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/BC/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
 
             
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/BC/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/BC/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/BC/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/BC/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
 
             
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/BC/layers1_hidd8_feat64_sample2048_bcAPC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/BC/layers1_hidd8_feat64_sample2048_bcAPC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/BC/layers1_hidd8_feat64_sample2048_bcPBC_APC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/BC/layers1_hidd8_feat64_sample2048_bcPBC_PBC_lr0.02_iter2000_parityTrue_rotFalse_InitFermi_typecomplex_newBC",
             
             ]
     plot_En_degeneracy(models, target_J=0.5)
-    plot_Fidelity_Degeneracy(models, target_J=0.5, n_samples=1024)
+    #plot_Fidelity_Degeneracy(models, target_J=0.5, n_samples=1024)
+    plot_En_gap_degeneracy(models, target_J=0.5)

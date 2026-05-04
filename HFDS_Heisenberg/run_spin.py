@@ -18,7 +18,7 @@ print("Devices:", jax.devices())
 import pickle
 sys.path.append(os.path.dirname(os.path.dirname("/scratch/f/F.Conoscenti/Thesis_QSL")))
 
-from netket.driver import VMC_SR
+
 
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion
 
@@ -30,7 +30,6 @@ from Elaborate.Plotting.Old.Sign_vs_iteration import *
 from Elaborate.Sign_Obs import *
 from Elaborate.Plotting.QGT.QGT_vs_iteration import *
 
-from DMRG.DMRG_NQS_Imp_sampl import Observable_Importance_sampling
 
 from Observables import run_observables
 
@@ -58,7 +57,7 @@ J1J2 = True
 J2 = args.J2
 seed = int(args.seed)
 
-dtype   = "complex"
+dtype   = "complex" #real or complex
 MFinitialization = "Fermi" #G_MF#random #Fermi
 determinant_type = "hidden"
 
@@ -66,18 +65,18 @@ parity = True
 rotation = True
 
 
-n_hid_ferm       = 4
-features         = 32   #hidden units per layer
+n_hid_ferm       = 1
+features         = 2   #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.01
-n_samples        = 4096 #total number of samples
+lr               = 0.02
+n_samples        = 16 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
-n_chains         = n_samples//16  #number of parallel Markov chains
-chunk_size       = n_samples//16  #samples are divided in chunks to compute observables in parallel
-N_iter           = 2000 #N_opt on the top of the one of the loaded model, if any
+n_chains         = n_samples  #number of parallel Markov chains
+chunk_size       = n_samples  #samples are divided in chunks to compute observables in parallel
+N_iter           = 11 #N_opt on the top of the one of the loaded model, if any
 
 #---------------------------Load another model -----------------------------------------
 #load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
@@ -202,14 +201,29 @@ if start_block == 0 and load_path:
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 
+
+from netket.driver import VMC_SR
+vstate.n_samples = n_samples
+
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-6,
+    diag_shift=1e-4,
     variational_state=vstate,
     use_ntk=True,
     momentum=0.9
 ) 
+
+"""from netket.experimental.driver import VMC_SRt
+
+vmc = VMC_SRt(
+    hamiltonian=ha,
+    optimizer=optimizer,
+    diag_shift=1e-4,
+    variational_state=vstate,
+    mode = 'complex',
+) """
+
 vmc._step_count = start_block * save_every
 
 for i in range(start_block, block_iter):

@@ -363,7 +363,6 @@ def plot_energy_diff_vs_js(model_paths, values_HFDS=None, values_ViT=None, save_
     plt.figure(figsize=(10, 6))
     
     markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
 
     lattice_size = ""
     if len(model_paths) > 0:
@@ -389,6 +388,13 @@ def plot_energy_diff_vs_js(model_paths, values_HFDS=None, values_ViT=None, save_
             if not os.path.exists(model_path):
                 print(f"Path not found: {model_path}")
                 continue
+            
+        if "ViT" in str(model_path):
+            color = "tab:orange"
+        elif "HFDS" in str(model_path):
+            color = "tab:blue"
+        else:
+            color = "black"
             
         js = get_available_js(model_path)
         mean_diffs = []
@@ -493,15 +499,15 @@ def plot_energy_diff_vs_js(model_paths, values_HFDS=None, values_ViT=None, save_
                 label = base_label
 
             plt.errorbar(valid_js, mean_diffs, yerr=std_diffs, label=label, 
-                         marker=markers[i % len(markers)], color=colors[i % len(colors)], capsize=5, linestyle='-', alpha=0.8)
+                         marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("Energy Difference ($E - E_{exact}$)", fontsize=12)
+    plt.xlabel("$J_2$", fontsize=16)
+    plt.ylabel("$E - E_{exact}$", fontsize=16)
     
     title = "Energy Difference vs $J_2$"
     if lattice_size:
         title += f" ({lattice_size})"
-    plt.title(title, fontsize=14)
+    plt.title(title, fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     plt.yscale("log")
@@ -520,7 +526,6 @@ def plot_rel_error_vs_js(model_paths, save_name="Rel_Error_vs_J2.png"):
     plt.figure(figsize=(10, 6))
     
     markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_paths)))
 
     for i, model_path in enumerate(model_paths):
         if not os.path.exists(model_path):
@@ -528,6 +533,13 @@ def plot_rel_error_vs_js(model_paths, save_name="Rel_Error_vs_J2.png"):
             if not os.path.exists(model_path):
                 print(f"Path not found: {model_path}")
                 continue
+            
+        if "ViT" in str(model_path):
+            color = "tab:orange"
+        elif "HFDS" in str(model_path):
+            color = "tab:blue"
+        else:
+            color = "black"
             
         js = get_available_js(model_path)
         mean_errors = []
@@ -560,7 +572,7 @@ def plot_rel_error_vs_js(model_paths, save_name="Rel_Error_vs_J2.png"):
                 label = base_label
 
             plt.errorbar(valid_js, mean_errors, yerr=std_errors, label=label, 
-                         marker=markers[i % len(markers)], color=colors[i % len(colors)], capsize=5, linestyle='-', alpha=0.8)
+                         marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
     plt.xlabel("$J_2$", fontsize=12)
     plt.ylabel("Relative Error", fontsize=12)
@@ -580,7 +592,6 @@ def plot_fidelity_vs_js(model_paths, save_name="Infidelity_vs_J2.png"):
     plt.figure(figsize=(10, 6))
     
     markers = ['o', 's', '^', 'v', 'D', 'p', '*', 'X']
-    colors = plt.cm.Reds(np.linspace(0.5, 1.0, len(model_paths)))
 
     lattice_size = ""
     if len(model_paths) > 0:
@@ -600,6 +611,13 @@ def plot_fidelity_vs_js(model_paths, save_name="Infidelity_vs_J2.png"):
             if not os.path.exists(model_path):
                 print(f"Path not found: {model_path}")
                 continue
+            
+        if "ViT" in str(model_path):
+            color = "orange"
+        elif "HFDS" in str(model_path):
+            color = "blue"
+        else:
+            color = "black"
             
         js = get_available_js(model_path)
         mean_fidelities = []
@@ -632,16 +650,16 @@ def plot_fidelity_vs_js(model_paths, save_name="Infidelity_vs_J2.png"):
                 label = base_label
 
             plt.errorbar(valid_js, mean_fidelities, yerr=std_fidelities, label=label, 
-                         marker=markers[i % len(markers)], color=colors[i], capsize=5, linestyle='-', alpha=0.8)
+                         marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("1 - Fidelity", fontsize=12)
+    plt.xlabel("$J_2$", fontsize=16)
+    plt.ylabel("1 - Fidelity", fontsize=16)
     plt.yscale("log")
     
     title = "1 - Fidelity vs $J_2$"
     if lattice_size:
         title += f" ({lattice_size})"
-    plt.title(title, fontsize=14)
+    plt.title(title, fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     
@@ -660,7 +678,7 @@ if __name__ == "__main__":
     values_HFDS = None
 
     values_ViT = None
-    
+
     """models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model"
@@ -668,24 +686,33 @@ if __name__ == "__main__":
         ]"""
     
 
-    """models=[
+    models=[
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
-            ]"""
+            ]
     
+    """models=["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
+    ]"""
     """models=[
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
     ]"""
 
-    models=["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10",
+    """models=[
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d60_heads10_patch2_sample4096_lr0.0075_iter4000_parityTrue_rotFalse_latest_model",
+
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10",
             "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d60_heads10_patch2_sample4096_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"]
-    
+    """
     
     #plot_rel_error_vs_js(models)
     #plot_energy_vs_js(models)
-    plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
-    #plot_fidelity_vs_js(models)
+    #plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
+    plot_fidelity_vs_js(models)
 
 
     

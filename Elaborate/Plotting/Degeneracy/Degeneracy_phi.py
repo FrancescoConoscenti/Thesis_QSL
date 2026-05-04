@@ -20,13 +20,30 @@ def plot_energy_vs_phi(base_dir, target_J=0.5):
     energy_errors = []
 
     base_path = Path(base_dir)
-    if not base_path.exists():
-        print(f"Error: Directory {base_dir} does not exist.")
-        return
+    match_L = re.search(r'(\d+)x\d+', str(base_path))
+    L = int(match_L.group(1)) if match_L else "Unknown"
+
+    if L == 4:
+        print("Using provided manual data for 4x4 lattice...")
+        phi_values = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+        energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
+        energy_errors = [0.0] * len(energies)
+        dirs_to_scan = []
+    elif L == 8:
+        print("Using provided manual data for 8x8 lattice...")
+        phi_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+        energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
+        energy_errors = [0.0] * len(energies)
+        dirs_to_scan = []
+    else:
+        if not base_path.exists():
+            print(f"Error: Directory {base_dir} does not exist.")
+            return
+        dirs_to_scan = list(base_path.iterdir())
 
     print(f"Scanning {base_dir} for models with varying phi...")
 
-    for model_dir in base_path.iterdir():
+    for model_dir in dirs_to_scan:
         if not model_dir.is_dir():
             continue
         
@@ -137,16 +154,30 @@ def plot_adiabatic_energy_vs_phi(base_directory, target_J):
     energy_errors = []
 
     base_path = Path(base_directory)
-    if not base_path.exists():
-        print(f"Error: Directory {base_directory} does not exist.")
-        return
-        
     match_L = re.search(r'(\d+)x\d+', str(base_path))
     L = int(match_L.group(1)) if match_L else "Unknown"
 
+    if L == 4:
+        print("Using provided manual data for 4x4 lattice...")
+        phi_values = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+        energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
+        energy_errors = [0.0] * len(energies)
+        dirs_to_scan = []
+    elif L == 8:
+        print("Using provided manual data for 8x8 lattice...")
+        phi_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+        energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
+        energy_errors = [0.0] * len(energies)
+        dirs_to_scan = []
+    else:
+        if not base_path.exists():
+            print(f"Error: Directory {base_directory} does not exist.")
+            return
+        dirs_to_scan = list(base_path.iterdir())
+
     print(f"Scanning {base_directory} for models with varying phi...")
 
-    for model_dir in base_path.iterdir():
+    for model_dir in dirs_to_scan:
         if not model_dir.is_dir():
             continue
         
@@ -245,9 +276,6 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
 
     for base_dir in directories:
         base_path = Path(base_dir)
-        if not base_path.exists():
-            print(f"Warning: Directory {base_dir} does not exist.")
-            continue
         
         # Extract L from path (e.g. "4x4", "6x6")
         match_L = re.search(r'(\d+)x\d+', str(base_path))
@@ -255,6 +283,34 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
             print(f"Warning: Could not determine L from path {base_dir}")
             continue
         L = int(match_L.group(1))
+
+        if L == 4:
+            manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+            manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
+            for p, e in zip(manual_phis, manual_energies):
+                if p not in data_by_phi:
+                    data_by_phi[p] = {'L': [], 'E': [], 'err': []}
+                data_by_phi[p]['L'].append(4)
+                data_by_phi[p]['E'].append(e)
+                data_by_phi[p]['err'].append(0.0)
+            print(f"Using provided manual data for L=4")
+            continue
+
+        elif L == 8:
+            manual_phis = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+            manual_energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
+            for p, e in zip(manual_phis, manual_energies):
+                if p not in data_by_phi:
+                    data_by_phi[p] = {'L': [], 'E': [], 'err': []}
+                data_by_phi[p]['L'].append(8)
+                data_by_phi[p]['E'].append(e)
+                data_by_phi[p]['err'].append(0.0)
+            print(f"Using provided manual data for L=8")
+            continue
+
+        if not base_path.exists():
+            print(f"Warning: Directory {base_dir} does not exist.")
+            continue
 
         for model_dir in base_path.iterdir():
             if not model_dir.is_dir():
@@ -345,6 +401,10 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
         E_vals = np.array(data_by_phi[phi]['E'])
         err_vals = np.array(data_by_phi[phi]['err'])
 
+        # Convert from energy per site to total energy
+        E_vals = E_vals * (L_vals ** 2)
+        err_vals = err_vals * (L_vals ** 2)
+
         # Sort by 1/L for clean continuous lines
         sort_idx = np.argsort(inv_L)
         inv_L = inv_L[sort_idx]
@@ -355,8 +415,8 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
                      capsize=5, markersize=8, markeredgecolor='black', linewidth=2)
 
     plt.xlabel('1/L', fontsize=14)
-    plt.ylabel('Final Adiabatic Energy per site', fontsize=14)
-    plt.title(f'Adiabatic Energy vs 1/L for varying $\phi$ (J={target_J})', fontsize=16)
+    plt.ylabel('Final Adiabatic Total Energy', fontsize=14)
+    plt.title(f'Adiabatic Total Energy vs 1/L for varying $\phi$ (J={target_J})', fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.7)
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -367,11 +427,333 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
     # Save the plot
     save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
     save_dir.mkdir(parents=True, exist_ok=True)
-    save_path = save_dir / f"Adiabatic_Energy_vs_invL_J={target_J}.png"
+    save_path = save_dir / f"Adiabatic_Total_Energy_vs_invL_J={target_J}.png"
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300)
     print(f"\n✅ Plot saved successfully to {save_path}")
+    plt.show()
+
+def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
+    data_by_L = {}
+
+    print(f"Scanning directories for models with varying phi to plot vs phi for all L...")
+
+    for base_dir in directories:
+        base_path = Path(base_dir)
+        
+        # Extract L from path (e.g. "4x4", "6x6")
+        match_L = re.search(r'(\d+)x\d+', str(base_path))
+        if not match_L:
+            print(f"Warning: Could not determine L from path {base_dir}")
+            continue
+        L = int(match_L.group(1))
+
+        if L == 4:
+            manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+            manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
+            if L not in data_by_L:
+                data_by_L[L] = {'phi': [], 'E': [], 'err': []}
+            for p, e in zip(manual_phis, manual_energies):
+                data_by_L[L]['phi'].append(p)
+                data_by_L[L]['E'].append(e)
+                data_by_L[L]['err'].append(0.0)
+            print(f"Using provided manual data for L=4")
+            continue
+
+        elif L == 8:
+            manual_phis = [0.0, 0.1, 0.2, 0.3]
+            manual_energies = [-0.4971, -0.4966, -0.4945]
+            if L not in data_by_L:
+                data_by_L[L] = {'phi': [], 'E': [], 'err': []}
+            for p, e in zip(manual_phis, manual_energies):
+                data_by_L[L]['phi'].append(p)
+                data_by_L[L]['E'].append(e)
+                data_by_L[L]['err'].append(0.0)
+            print(f"Using provided manual data for L=8")
+            continue
+
+        if not base_path.exists():
+            print(f"Warning: Directory {base_dir} does not exist.")
+            continue
+
+        if L not in data_by_L:
+            data_by_L[L] = {'phi': [], 'E': [], 'err': []}
+
+        for model_dir in base_path.iterdir():
+            if not model_dir.is_dir():
+                continue
+            
+            # Extract phi value from folder name
+            match = re.search(r'phi([\d\.]+)', model_dir.name)
+            if match:
+                phi = float(match.group(1))
+            else:
+                continue
+
+            # Find the specific J folder
+            target_j_folder = None
+            for d in model_dir.iterdir():
+                if d.is_dir() and (d.name.startswith("J=") or d.name.startswith("J2=")):
+                    try:
+                        part = d.name.split('=')[1]
+                        val_str = part.split('_')[0] if '_' in part else part
+                        if abs(float(val_str) - target_J) < 1e-5:
+                            target_j_folder = d
+                            break
+                    except ValueError:
+                        continue
+            
+            if not target_j_folder:
+                continue
+
+            # Read energies from seeds
+            seed_energies = []
+            for seed_dir in target_j_folder.iterdir():
+                if seed_dir.is_dir() and "seed" in seed_dir.name:
+                    E_final = None
+                    var_path = seed_dir / "variables.pkl"
+                    
+                    if var_path.exists():
+                        try:
+                            with open(var_path, "rb") as f:
+                                data = pickle.load(f)
+                                if 'E_vs_final' in data:
+                                    E_final = float(np.real(data['E_vs_final']))
+                        except Exception as e:
+                            pass
+                    
+                    out_path = seed_dir / "output.txt"
+                    if E_final is None and out_path.exists():
+                        try:
+                            with open(out_path, "r") as f:
+                                content = f.read()
+                            matches = re.findall(r"Final Energy from VMC:\s*([-\d\.e]+)", content)
+                            if not matches:
+                                matches = re.findall(r"Final Energy per site:\s*([-\d\.e]+)", content)
+                            if matches:
+                                E_final = float(matches[-1])
+                        except Exception as e:
+                            pass
+                    
+                    if E_final is not None:
+                        seed_energies.append(E_final)
+
+            if seed_energies:
+                mean_e = np.mean(seed_energies)
+                std_e = np.std(seed_energies) / np.sqrt(len(seed_energies)) if len(seed_energies) > 1 else 0.0
+                
+                data_by_L[L]['phi'].append(phi)
+                data_by_L[L]['E'].append(mean_e)
+                data_by_L[L]['err'].append(std_e)
+                print(f"Found L = {L}, phi = {phi}, E = {mean_e:.6f} ± {std_e:.6f} ({len(seed_energies)} seeds)")
+
+    if not data_by_L:
+        print("No data found to plot.")
+        return
+
+    plt.figure(figsize=(10, 6))
+    
+    L_sorted = sorted(data_by_L.keys())
+    colors = plt.cm.viridis(np.linspace(0, 0.9, len(L_sorted)))
+
+    for i, L in enumerate(L_sorted):
+        phi_vals = np.array(data_by_L[L]['phi'])
+        E_vals = np.array(data_by_L[L]['E'])
+        err_vals = np.array(data_by_L[L]['err'])
+
+        # Sort by phi
+        sort_idx = np.argsort(phi_vals)
+        phi_vals = phi_vals[sort_idx]
+        E_vals = E_vals[sort_idx]
+        err_vals = err_vals[sort_idx]
+
+        plt.errorbar(phi_vals, E_vals, yerr=err_vals, fmt='-o', color=colors[i],
+                     capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label=f"L={L}")
+
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
+    plt.ylabel('Final Adiabatic Energy per site', fontsize=14)
+    plt.title(f'Adiabatic Energy vs Boundary Twist $\phi$ for all L (J={target_J})', fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(fontsize=12)
+    
+    # Save the plot
+    save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_dir / f"Adiabatic_Energy_vs_phi_all_L_J={target_J}.png"
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    print(f"\n✅ Plot saved successfully to {save_path}")
+    plt.show()
+
+def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
+    print(f"\nCalculating absolute energy gap per site |E(0) - E({target_phi})| vs 1/L and fitting...")
+    energy_data = {}
+    energy_err = {}
+
+    for base_dir in directories:
+        base_path = Path(base_dir)
+        match_L = re.search(r'(\d+)x\d+', str(base_path))
+        if not match_L:
+            continue
+        L = int(match_L.group(1))
+
+        if L not in energy_data:
+            energy_data[L] = {}
+            energy_err[L] = {}
+
+        # Pre-fill manually available L=4 and L=8 points 
+        if L == 4:
+            manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+            manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
+            for p, e in zip(manual_phis, manual_energies):
+                energy_data[L][p] = e
+                energy_err[L][p] = 0.0
+            continue
+
+        elif L == 8:
+            manual_phis = [0.0, 0.1, 0.2, 0.3]
+            manual_energies = [-0.4971, -0.4966, -0.4945]
+            for p, e in zip(manual_phis, manual_energies):
+                energy_data[L][p] = e
+                energy_err[L][p] = 0.0
+            continue
+
+        if not base_path.exists():
+            continue
+
+        # Scrape dynamically
+        for model_dir in base_path.iterdir():
+            if not model_dir.is_dir(): continue
+            match = re.search(r'phi([\d\.]+)', model_dir.name)
+            if not match: continue
+            phi = float(match.group(1))
+
+            # We only need data for 0.0 and our target_phi to calculate the gap
+            if abs(phi) > 1e-5 and abs(phi - target_phi) > 1e-5:
+                continue
+
+            target_j_folder = None
+            for d in model_dir.iterdir():
+                if d.is_dir() and (d.name.startswith("J=") or d.name.startswith("J2=")):
+                    try:
+                        part = d.name.split('=')[1]
+                        val_str = part.split('_')[0] if '_' in part else part
+                        if abs(float(val_str) - target_J) < 1e-5:
+                            target_j_folder = d
+                            break
+                    except ValueError: pass
+            
+            if not target_j_folder: continue
+
+            seed_energies = []
+            for seed_dir in target_j_folder.iterdir():
+                if seed_dir.is_dir() and "seed" in seed_dir.name:
+                    E_final = None
+                    var_path = seed_dir / "variables.pkl"
+                    if var_path.exists():
+                        try:
+                            with open(var_path, "rb") as f:
+                                data = pickle.load(f)
+                                if 'E_vs_final' in data: E_final = float(np.real(data['E_vs_final']))
+                        except Exception: pass
+                    out_path = seed_dir / "output.txt"
+                    if E_final is None and out_path.exists():
+                        try:
+                            with open(out_path, "r") as f: content = f.read()
+                            matches = re.findall(r"Final Energy from VMC:\s*([-\d\.e]+)", content)
+                            if not matches: matches = re.findall(r"Final Energy per site:\s*([-\d\.e]+)", content)
+                            if matches: E_final = float(matches[-1])
+                        except Exception: pass
+                    if E_final is not None: seed_energies.append(E_final)
+
+            if seed_energies:
+                mean_e = np.mean(seed_energies)
+                std_e = np.std(seed_energies) / np.sqrt(len(seed_energies)) if len(seed_energies) > 1 else 0.0
+                energy_data[L][phi] = mean_e
+                energy_err[L][phi] = std_e
+
+    L_list, gaps, gap_errs = [], [], []
+    for L in sorted(energy_data.keys()):
+        phi_0_key = next((k for k in energy_data[L].keys() if abs(k) < 1e-5), None)
+        phi_t_key = next((k for k in energy_data[L].keys() if abs(k - target_phi) < 1e-5), None)
+
+        if phi_0_key is not None and phi_t_key is not None:
+            e0, e_phi = energy_data[L][phi_0_key], energy_data[L][phi_t_key]
+            err0, err_phi = energy_err[L][phi_0_key], energy_err[L][phi_t_key]
+            
+            gap = np.abs(e0 - e_phi)
+            err = np.sqrt(err0**2 + err_phi**2)
+            L_list.append(L); gaps.append(gap); gap_errs.append(err)
+            print(f"L={L}: E(0)={e0:.6f}, E({target_phi})={e_phi:.6f} => Absolute Gap per site={gap:.6f} ± {err:.6f}")
+
+    if len(L_list) < 2:
+        print(f"Not enough data points to compute and fit energy gap for phi={target_phi}")
+        return
+
+    L_arr = np.array(L_list)
+    inv_L = 1.0 / L_arr
+    gaps_arr, gap_errs_arr = np.array(gaps), np.array(gap_errs)
+
+    plt.figure(figsize=(9, 6))
+    plt.errorbar(inv_L, gaps_arr, yerr=gap_errs_arr, fmt='o', color='tab:red',
+                 capsize=5, markersize=8, markeredgecolor='black', label='Gap Data')
+
+    from scipy.optimize import curve_fit
+
+    def fit_func(x, a, n, b):
+        return a * x**n + b
+
+    def fit_func_cubic(x, a, b):
+        return a * x**3
+
+    if len(inv_L) >= 3:
+        try:
+            p0 = [gaps_arr[0], 1.0, 0.0]
+            popt, pcov = curve_fit(fit_func, inv_L, gaps_arr, p0=p0, maxfev=10000)
+            a, n_fit, b = popt
+            inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
+            plt.plot(inv_L_fit, fit_func(inv_L_fit, *popt), '--', color='black', label=f'Fit $y = ax^n + b$ ($n={n_fit:.3f}$)')
+        except Exception as e:
+            print(f"Curve fit failed: {e}")
+            actual_degree = min(degree, len(inv_L) - 1)
+            if actual_degree > 0:
+                coeffs = np.polyfit(inv_L, gaps_arr, actual_degree)
+                p = np.poly1d(coeffs)
+                inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
+                plt.plot(inv_L_fit, p(inv_L_fit), '--', color='black', label=f'Fit (deg {actual_degree})')
+    else:
+        actual_degree = min(degree, len(inv_L) - 1)
+        if actual_degree > 0:
+            coeffs = np.polyfit(inv_L, gaps_arr, actual_degree)
+            p = np.poly1d(coeffs)
+            inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
+            plt.plot(inv_L_fit, p(inv_L_fit), '--', color='black', label=f'Fit (deg {actual_degree})')
+
+    if len(inv_L) >= 2:
+        try:
+            p0_cub = [gaps_arr[0], 0.0]
+            popt_cub, _ = curve_fit(fit_func_cubic, inv_L, gaps_arr, p0=p0_cub, maxfev=10000)
+            inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
+            plt.plot(inv_L_fit, fit_func_cubic(inv_L_fit, *popt_cub), ':', color='tab:blue', linewidth=2, label=r'Fit $y = ax^3 + b$')
+        except Exception as e:
+            print(f"Cubic curve fit failed: {e}")
+
+    plt.xlabel('1/L', fontsize=14)
+    plt.ylabel(f'Absolute Energy Gap per site $|E(0) - E({target_phi})|$', fontsize=14)
+    plt.title(f'Absolute Energy Gap per site vs 1/L for $\\phi$={target_phi} (J={target_J})', fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(fontsize=12)
+    plt.xlim(left=0)
+    plt.tight_layout()
+    
+    save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_dir / f"Energy_Gap_per_site_Fit_vs_invL_phi={target_phi}_J={target_J}.png"
+    
+    plt.savefig(save_path, dpi=300)
+    print(f"✅ Plot saved successfully to {save_path}\n")
     plt.show()
 
 @jax.jit
@@ -720,6 +1102,7 @@ if __name__ == "__main__":
 
     #phi
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi"
+    base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phiJ0"
     plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
@@ -740,3 +1123,7 @@ if __name__ == "__main__":
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi"
     ]
     plot_adiabatic_energy_vs_L(l_directories, target_J)
+    plot_adiabatic_energy_vs_phi_all_L(l_directories, target_J)
+    
+    # Plot and fit energy gap for twist phi=1.0 (or any other desired target phi)
+    plot_energy_gap_vs_L_fit(l_directories, target_J, target_phi=0.2, degree=2)

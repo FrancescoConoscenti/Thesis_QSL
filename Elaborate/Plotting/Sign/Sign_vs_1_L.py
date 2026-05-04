@@ -1,4 +1,8 @@
 import os
+# Force JAX to use CPU when unpickling on login/plotting nodes to avoid CUDA initialization errors
+os.environ["JAX_PLATFORM_NAME"] = "cpu"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 import re
 import pickle
 import numpy as np
@@ -52,6 +56,7 @@ def get_marshall_signs_for_J(model_folder, target_J):
 
     for seed_dir in target_j_folder.iterdir():
         if seed_dir.is_dir() and seed_dir.name.startswith("seed_"):
+            sign_found = False
             pkl_path = seed_dir / "variables.pkl"
             if not pkl_path.exists():
                 pkl_path = seed_dir / "variables"
@@ -64,14 +69,36 @@ def get_marshall_signs_for_J(model_folder, target_J):
                         if 'sign_vstate_MCMC' in data:
                             val = data['sign_vstate_MCMC']
                             signs.append(np.real(val))
+                            sign_found = True
                         elif 'sign_vstate' in data:
                              val = data['sign_vstate']
                              if isinstance(val, (list, np.ndarray)):
                                  signs.append(np.real(val[-1]))
                              else:
                                  signs.append(np.real(val))
+                             sign_found = True
                 except Exception as e:
                     print(f"Error reading {pkl_path}: {e}")
+            
+            if not sign_found:
+                output_path = seed_dir / "output.txt"
+                if output_path.exists():
+                    found_in_txt = False
+                    try:
+                        with open(output_path, "r") as f:
+                            for line in f:
+                                # More flexible regex to catch case variations or missing spaces
+                                match = re.search(r"Marshall\s*Sign(?:.*MCMC.*)?:\s*([+-]?[\d.]+)", line, re.IGNORECASE)
+                                if match:
+                                    val = float(match.group(1))
+                                    signs.append(val)
+                                    found_in_txt = True
+                                    break
+                    except Exception as e:
+                        print(f"Error reading or parsing {output_path}: {e}")
+                    
+                    if not found_in_txt:
+                        print(f"  -> [Info] {seed_dir.name}: 'Marshall Sign' not found in output.txt. (Did the job finish?)")
     return signs
 
 def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
@@ -127,7 +154,7 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
     # Plot 1: 1/L
     plt.figure(figsize=(8, 6))
     for d in plot_data:
-        plt.errorbar(d['inv_Ls'], d['means'], yerr=d['errors'], label=d['label'], 
+        plt.errorbar(d['inv_Ls'], d['means'], yerr=d['errors'], label=f"{d['label']} data", 
                      color=d['color'], marker=d['marker'], capsize=5, linestyle='-', alpha=0.8)
 
     plt.xlabel("$1/L$", fontsize=14)
@@ -146,11 +173,11 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
     # Plot 2: 1/N
     plt.figure(figsize=(8, 6))
     for d in plot_data:
-        plt.errorbar(d['inv_Ns'], d['means'], yerr=d['errors'], label=d['label'], 
+        plt.errorbar(d['inv_Ns'], d['means'], yerr=d['errors'], label=f"{d['label']} data", 
                      color=d['color'], marker=d['marker'], capsize=5, linestyle='-', alpha=0.8)
 
     plt.xlabel("$1/N$", fontsize=14)
-    plt.ylabel("Mean Marshall Sign", fontsize=14)
+    plt.ylabel("Mean Marshall Sign", fontsize=16)
     plt.title(f"Marshall Sign vs $1/N$ at $J_2={target_J}$", fontsize=16)
     plt.grid(True, linestyle="--", alpha=0.4)
     plt.legend(fontsize=12)
@@ -164,21 +191,25 @@ def plot_sign_vs_inv_L(datasets, target_J, save_name="MarshallSign_vs_1_L"):
 
 if __name__ == "__main__":
     
-    target_J = 0.6
+    target_J = 0.5
     
     # --- Define your datasets here ---
     # Add paths for different system sizes (4x4, 6x6, etc.) for each model type
     
-    models_HFDS = ["/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+    models_HFDS = [
+        #"/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd12_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd6_feat128_sample1024_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd6_feat128_sample1024_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
                    "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
                 ]
     models_ViT = [
+        #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d60_heads10_patch2_sample4096_lr0.0075_iter4000_parityTrue_rotFalse_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter8000_parityTrue_rotTrue_QGT",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter3000_parityTrue_rotTrue_latest_model",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
-        ]
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"        ]
 
     datasets = [
         ("ViT", models_ViT , "tab:orange", "o"),
