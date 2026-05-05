@@ -35,12 +35,13 @@ from Observables import run_observables
 parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
+parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
 args = parser.parse_args()
 
 spin = True
 
 #Physical param
-L       = 10
+L       = args.L
 n_elecs = L*L # L*L should be half filling
 N_sites = L*L
 N_up    = (n_elecs+1)//2
@@ -80,8 +81,8 @@ rotation = True
 # 84k params for L=6 n_hid=8 features=64 layers=1
 # 145k params for L=6 n_hid=8 features=128 layers=1
 
-n_hid_ferm       = 10
-features         = 64    #hidden units per layer
+n_hid_ferm       = 2
+features         = 32    #hidden units per layer
 hid_layers       = 1
 
 #Network param
@@ -92,9 +93,9 @@ n_samples        = 4096  #total number of samples
 n_chains         = n_samples//32  #number of parallel Markov chains
 chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
 
-N_opt            = 3000
+N_opt            = 20
 
-number_data_points = 20
+number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 

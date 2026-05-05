@@ -488,13 +488,13 @@ def run_observables(log, folder):
     })
 
     # 6. Entropy
-    n_samples_entropy = 524288//2
+    """n_samples_entropy = 524288//2
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -504,14 +504,14 @@ def run_observables(log, folder):
     
 
     #7. Sign
-    n_samples_sign = 32768*2*2
+    """n_samples_sign = 32768*2*2
     sign_mean, sign_var = compute_sign(vstate, hilbert, n_samples=n_samples_sign)
     variables.update({
         'sign_vstate_MCMC': sign_mean,
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)
-    
+    """
     
     # 8. Sign Complexity
     """
