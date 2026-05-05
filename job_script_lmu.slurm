@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=HFphi
+#SBATCH --job-name=HFSRt_chains//64
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
@@ -47,7 +47,7 @@ SEED=${SEED_VALUES[$SEED_INDEX]}
 #srun python -m HFDS_Heisenberg.run_spin --seed "$SEED" --J2 "$J"
 #sleep 10
 
-srun python -m HFDS_Heisenberg.run_spin --L 8
+srun python -m HFDS_Heisenberg.run_spin --L 6
 
 
 #srun python -m Entanglement.Entanglement

@@ -87,20 +87,20 @@ hid_layers       = 1
 
 #Network param
 lr               = 0.02
-n_samples        = 4096  #total number of samples
+n_samples        = 1024 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
-n_chains         = n_samples//32  #number of parallel Markov chains
-chunk_size       = n_samples//2 #samples are divided in chunks to compute observables in parallel
+n_chains         = 128  #number of parallel Markov chains
+chunk_size       = n_samples #samples are divided in chunks to compute observables in parallel
 
-N_opt            = 20
+N_opt            = 10
 
 number_data_points = 2
 save_every       = N_opt//number_data_points
 block_iter       = N_opt//save_every
 
 
-model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
+model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}_SR2"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
 if J1J2==True:
@@ -177,6 +177,8 @@ print(f'Total number of parameters: {total_params}')
 optimizer = nk.optimizer.Sgd(learning_rate=lr)
 
 from netket.experimental.driver import VMC_SRt
+from netket.driver import VMC_SR
+
 
 vmc = VMC_SRt(
     hamiltonian=ha,
@@ -185,7 +187,16 @@ vmc = VMC_SRt(
     variational_state=vstate,
     mode = 'complex',
 ) 
-
+"""
+vmc = VMC_SR(
+            hamiltonian=ha,
+            optimizer=optimizer,
+            diag_shift=1e-6,
+            variational_state=vstate,
+            use_ntk=True,
+            momentum=0.8,
+        )
+"""
 log = nk.logging.RuntimeLog()
 
 
