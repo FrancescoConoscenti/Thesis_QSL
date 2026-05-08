@@ -28,7 +28,7 @@ sys.path.append("/scratch/f/F.Conoscenti/Thesis_QSL")
 from ViT_Heisenberg.ViT_model import ViT_sym
 from HFDS_Heisenberg.HFDS_model_spin import HiddenFermion, HiddenFermion_phi
 from Elaborate.Statistics.Energy import Energy, Exact_gs_en_6x6, plot_energy
-from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact, Corr_r, Corr_ij, compute_correlation_length
+from Elaborate.Statistics.Corr_Struct import Corr_Struct, Corr_Struct_Exact, Corr_r, Corr_ij, compute_correlation_length, compute_dimer_correlations
 from Elaborate.Statistics.Error_Stat import Relative_Error, Variance, Vscore, Magnetization, Exact_gs, Autocorrelation_time, Rhat
 from Elaborate.Statistics.count_params import vit_param_count, hidden_fermion_param_count
 from Elaborate.Plotting.Old.Sign_vs_iteration import *
@@ -376,50 +376,58 @@ def run_observables(log, folder):
     ################################################################################################à
     
     # 1. Correlations
-    """R = compute_correlations(vstate, lattice, L, folder, hilbert)
-    variables['R'] = R
-    save_variables(folder, variables)"""
+    """vstate.n_samples = 4096*2*2
+    corr_r, err_r = compute_correlations(vstate, lattice, L, hilbert, folder)
+    variables['corr_r'] = corr_r
+    variables['err_r'] = err_r
+    xi_exp, xi_err, popt_exp, r_fit, c_fit = compute_correlation_length(vstate, lattice, hilbert, L, folder)
+    variables['correlation_length'] = (xi_exp, xi_err)
+    variables['correlation_length_fit_params'] = popt_exp
+    variables['correlation_length_fit'] = (r_fit, c_fit)
+    coords, C = compute_dimer_correlations(vstate, L, folder, direction="x")
+    variables['dimer_correlations_x'] = (coords, C)
+    coords, C = compute_dimer_correlations(vstate, L, folder, direction="y")
+    variables['dimer_correlations_y'] = (coords, C)
+    save_variables(folder, variables) """
     
 
     # 2. Exact Energy
-    """E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
+    E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
     if E_exact is not None:
         print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
     
     # 3. Energy Stats
+    vstate.n_samples = 4096*2*2
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
     print(f"Final Energy per site: {E_vs_final_per_site}")
     print(f"Variance per site: {variance_per_site}")
     print(f"Vscore: {vscore}")
 
+    variables.update({
+        'E_vs_final': E_vs_final_per_site,
+        'vscore': vscore,
+        'variance': variance_per_site,
+        })
+
     if E_exact is not None:
         variables['E_exact'] = E_exact
         variables['rel_err_E'] = abs((E_vs_final_per_site - E_exact) / E_exact)
 
-    
-    
+
     # 5. Param Count
     count_params = compute_param_count(params, L)
-
-    variables.update({
-        'E_vs_final': E_vs_final_per_site,
-        'params': count_params,
-        'vscore': vscore,
-        'variance': variance_per_site,
-        'E_exact': E_exact,
-        'rel_err_E': abs((E_vs_final_per_site - E_exact) / E_exact) if E_exact is not None else None
-    })
-
-    save_variables(folder, variables)"""
+    variables.update({'param_count': count_params})
+    save_variables(folder, variables)
     
+
     # 6. Entanglement Entropy
-    """n_samples_entropy = 8192
+    n_samples_entropy = 16384
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)"""
+    save_variables(folder, variables)
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -437,13 +445,7 @@ def run_observables(log, folder):
         'sign_vstate_MCMC_variance': sign_var
     })
     save_variables(folder, variables)"""
-
-
-    #8. Correlation length
-    Corr_length = compute_correlation_length(vstate, lattice, hilbert, L, folder)
-    print(f"Correlation length: {Corr_length}")
-    variables['correlation_length'] = Corr_length
-    save_variables(folder, variables)
+    
     
     
     # 10. System specific observables
@@ -469,59 +471,65 @@ def run_observables(log, folder):
 if __name__ == "__main__":
 
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd4_feat32_sample4096_bcPBC_PBC_lr0.02_iter400_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/QGT/layers2_d24_heads6_patch2_sample8192_lr0.0075_iter200_parityTrue_rotTrue_QGT"
-    #model_path="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd8_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter10000_parityTrue_rotTrue_QGT"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd6_feat32_sample2048_bcPBC_PBC_lr0.02_iter10000_parityTrue_rotTrue_InitFermi_typecomplex_QGT"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.01_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi1.0_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex_phi"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
-    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/10x10/layers2_d24_heads6_patch2_sample2048_lr0.0075_iter8000_parityTrue_rotTrue_QGT"
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat64_sample1024_lr0.02_iter1000_parityTrue_rotTrue_InitFermi_typecomplex"
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model"
-    log = None
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd2_feat32_sample4096_bcPBC_PBC_phi0.0_lr0.02_iter10000_InitFermi_typecomplex_phi"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi0.0_lr0.02_iter3000_InitFermi_typecomplex_phi"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
+    
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
 
     if not os.path.exists(model_path):
         model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 
     if os.path.exists(model_path):
-        if os.path.exists(os.path.join(model_path, "log.pkl")):
-            try:
-                with open(os.path.join(model_path, "log.pkl"), "rb") as f:
-                    log = pickle.load(f)
-            except Exception as e:
-                print(f"Could not load existing log: {e}")
-
-        # Check if the path is already a specific J folder
-        if os.path.basename(os.path.normpath(model_path)).startswith("J=") or os.path.basename(os.path.normpath(model_path)).startswith("J2="):
-            j_paths = [model_path]
+        subdirs = [f for f in os.listdir(model_path) if os.path.isdir(os.path.join(model_path, f))]
+        has_j_folders = any(d.startswith("J=") or d.startswith("J2=") for d in subdirs)
+        is_j_folder = os.path.basename(os.path.normpath(model_path)).startswith("J=") or os.path.basename(os.path.normpath(model_path)).startswith("J2=")
+        
+        if is_j_folder or has_j_folders:
+            model_paths_to_process = [model_path]
         else:
-            j_folders = [f for f in os.listdir(model_path) if (f.startswith("J=") or f.startswith("J2=")) and os.path.isdir(os.path.join(model_path, f))]
-            try:
-                j_folders.sort(key=lambda x: float(x.split('=')[1]))
-            except:
-                j_folders.sort()
-            j_paths = [os.path.join(model_path, f) for f in j_folders]
+            # Assume it's a directory containing multiple models
+            model_paths_to_process = [os.path.join(model_path, d) for d in subdirs]
 
-        for j_path in j_paths:
-            seed_folders = [f for f in os.listdir(j_path) if f.startswith("seed_") and os.path.isdir(os.path.join(j_path, f))]
-            try:
-                seed_folders.sort(key=lambda x: int(x.split('_')[1]))
-            except:
-                seed_folders.sort()
-
-            for seed_folder in seed_folders:
-                full_path = os.path.join(j_path, seed_folder)
-                print(f"Running observables for: {full_path}")
-                original_stdout = sys.stdout
+        for mp in model_paths_to_process:
+            print(f"Processing model path: {mp}")
+            log = None
+            if os.path.exists(os.path.join(mp, "log.pkl")):
                 try:
-                    run_observables(log, full_path)
+                    with open(os.path.join(mp, "log.pkl"), "rb") as f:
+                        log = pickle.load(f)
                 except Exception as e:
-                    sys.stdout = original_stdout
-                    print(f"Error processing {full_path}: {e}")
-                finally:
-                    sys.stdout = original_stdout
+                    print(f"Could not load existing log: {e}")
+
+            # Check if the path is already a specific J folder
+            if os.path.basename(os.path.normpath(mp)).startswith("J=") or os.path.basename(os.path.normpath(mp)).startswith("J2="):
+                j_paths = [mp]
+            else:
+                j_folders = [f for f in os.listdir(mp) if (f.startswith("J=") or f.startswith("J2=")) and os.path.isdir(os.path.join(mp, f))]
+                try:
+                    j_folders.sort(key=lambda x: float(x.split('=')[1]))
+                except:
+                    j_folders.sort()
+                j_paths = [os.path.join(mp, f) for f in j_folders]
+
+            for j_path in j_paths:
+                seed_folders = [f for f in os.listdir(j_path) if f.startswith("seed_") and os.path.isdir(os.path.join(j_path, f))]
+                try:
+                    seed_folders.sort(key=lambda x: int(x.split('_')[1]))
+                except:
+                    seed_folders.sort()
+
+                for seed_folder in seed_folders:
+                    full_path = os.path.join(j_path, seed_folder)
+                    print(f"Running observables for: {full_path}")
+                    original_stdout = sys.stdout
+                    try:
+                        run_observables(log, full_path)
+                    except Exception as e:
+                        sys.stdout = original_stdout
+                        print(f"Error processing {full_path}: {e}")
+                    finally:
+                        sys.stdout = original_stdout
     else:
         print(f"Model path not found: {model_path}")

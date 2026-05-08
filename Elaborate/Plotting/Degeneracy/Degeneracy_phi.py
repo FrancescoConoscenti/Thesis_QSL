@@ -29,12 +29,6 @@ def plot_energy_vs_phi(base_dir, target_J=0.5):
         energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
         energy_errors = [0.0] * len(energies)
         dirs_to_scan = []
-    elif L == 8:
-        print("Using provided manual data for 8x8 lattice...")
-        phi_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-        energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
-        energy_errors = [0.0] * len(energies)
-        dirs_to_scan = []
     else:
         if not base_path.exists():
             print(f"Error: Directory {base_dir} does not exist.")
@@ -163,12 +157,6 @@ def plot_adiabatic_energy_vs_phi(base_directory, target_J):
         energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
         energy_errors = [0.0] * len(energies)
         dirs_to_scan = []
-    elif L == 8:
-        print("Using provided manual data for 8x8 lattice...")
-        phi_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-        energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
-        energy_errors = [0.0] * len(energies)
-        dirs_to_scan = []
     else:
         if not base_path.exists():
             print(f"Error: Directory {base_directory} does not exist.")
@@ -294,18 +282,6 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
                 data_by_phi[p]['E'].append(e)
                 data_by_phi[p]['err'].append(0.0)
             print(f"Using provided manual data for L=4")
-            continue
-
-        elif L == 8:
-            manual_phis = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-            manual_energies = [-0.4971, -0.4966, -0.4945, -0.4918, -0.4881, -0.4840, -0.4799, -0.4763, -0.4734, -0.4715, -0.4709, -0.4715, -0.4734, -0.4763, -0.4799, -0.4840, -0.4881, -0.4917, -0.4946, -0.4965, -0.4971]
-            for p, e in zip(manual_phis, manual_energies):
-                if p not in data_by_phi:
-                    data_by_phi[p] = {'L': [], 'E': [], 'err': []}
-                data_by_phi[p]['L'].append(8)
-                data_by_phi[p]['E'].append(e)
-                data_by_phi[p]['err'].append(0.0)
-            print(f"Using provided manual data for L=8")
             continue
 
         if not base_path.exists():
@@ -461,18 +437,6 @@ def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
             print(f"Using provided manual data for L=4")
             continue
 
-        elif L == 8:
-            manual_phis = [0.0, 0.1, 0.2, 0.3]
-            manual_energies = [-0.4971, -0.4966, -0.4945]
-            if L not in data_by_L:
-                data_by_L[L] = {'phi': [], 'E': [], 'err': []}
-            for p, e in zip(manual_phis, manual_energies):
-                data_by_L[L]['phi'].append(p)
-                data_by_L[L]['E'].append(e)
-                data_by_L[L]['err'].append(0.0)
-            print(f"Using provided manual data for L=8")
-            continue
-
         if not base_path.exists():
             print(f"Warning: Directory {base_dir} does not exist.")
             continue
@@ -607,14 +571,6 @@ def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
         if L == 4:
             manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
             manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
-            for p, e in zip(manual_phis, manual_energies):
-                energy_data[L][p] = e
-                energy_err[L][p] = 0.0
-            continue
-
-        elif L == 8:
-            manual_phis = [0.0, 0.1, 0.2, 0.3]
-            manual_energies = [-0.4971, -0.4966, -0.4945]
             for p, e in zip(manual_phis, manual_energies):
                 energy_data[L][p] = e
                 energy_err[L][p] = 0.0
@@ -1110,7 +1066,7 @@ if __name__ == "__main__":
     plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
-    base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi"
+    base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi1"
     plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
@@ -1120,7 +1076,7 @@ if __name__ == "__main__":
     l_directories = [
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi",
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi",
-         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi"
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi1"
     ]
     plot_adiabatic_energy_vs_L(l_directories, target_J)
     plot_adiabatic_energy_vs_phi_all_L(l_directories, target_J)

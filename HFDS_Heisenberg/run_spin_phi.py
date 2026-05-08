@@ -43,11 +43,11 @@ parser.add_argument("--bc_y",            type=str,   default="PBC", choices=["PB
 parser.add_argument("--parity",          type=lambda x: x.lower() == "true", default=True,  help="Use parity symmetry")
 parser.add_argument("--rotation",        type=lambda x: x.lower() == "true", default=True,  help="Use rotation symmetry")
 parser.add_argument("--phi_list",        type=float, nargs='+',
-                    default=[0.0],
+                    default=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0],
                     help="List of twist angles in radians")
 parser.add_argument("--model_path",      type=str,   default=None,  help="Path to initial model (e.g., phi=0.0) to warm-start from")
-parser.add_argument("--N_iter_first",    type=int,   default=500,    help="Number of iterations for the first phi")
-parser.add_argument("--N_iter_adiabatic",type=int,   default=100,     help="Number of iterations for subsequent phis")
+parser.add_argument("--N_iter_first",    type=int,   default=2000,    help="Number of iterations for the first phi")
+parser.add_argument("--N_iter_adiabatic",type=int,   default=200,     help="Number of iterations for subsequent phis")
 args = parser.parse_args()
 
 # ── Physical parameters ────────────────────────────────────────────────────────
@@ -70,12 +70,13 @@ parity          = args.parity
 rotation        = args.rotation
 
 # ── Network / sampler parameters ──────────────────────────────────────────────
-n_hid_ferm  = 1
-features    = 2
+n_hid_ferm  = 2
+features    = 64
 hid_layers  = 1
-lr          = 0.02
-n_samples   = 16
-n_chains    = n_samples
+
+lr          = 0.01
+n_samples   = 4096
+n_chains    = 128
 chunk_size  = n_samples
 
 # ── State carried across phis ─────────────────────────────────────────────────
@@ -98,7 +99,7 @@ for idx, phi in enumerate(args.phi_list):
     )
     seed_str   = f"seed_{seed}"
     J_value    = f"J={J2}"
-    model_path = f"HFDS_Heisenberg/plot/{L}x{L}/phiJ0/{model_name}/{J_value}"
+    model_path = f"HFDS_Heisenberg/plot/{L}x{L}/phi_new/{model_name}/{J_value}"
     folder     = f"{model_path}/{seed_str}"
     save_model = f"{folder}/models"
 
@@ -177,7 +178,7 @@ for idx, phi in enumerate(args.phi_list):
             n_samples=n_samples,
             seed=pkey,
             chunk_size=chunk_size,
-            n_discard_per_chain=5,
+            n_discard_per_chain=128,
         )
 
         total_params = sum(p.size for p in jax.tree_util.tree_leaves(vstate.parameters))
@@ -228,7 +229,7 @@ for idx, phi in enumerate(args.phi_list):
         vmc = VMC_SR(
             hamiltonian=ha,
             optimizer=optimizer,
-            diag_shift=1e-4,
+            diag_shift=1e-7,
             variational_state=vstate,
             use_ntk=True,
             momentum=0.9,

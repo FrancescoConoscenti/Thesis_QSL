@@ -39,6 +39,7 @@ parser = argparse.ArgumentParser(description="Example script with parameters")
 parser.add_argument("--J2", type=float, default=0.5, help="Coupling parameter J2")
 parser.add_argument("--seed", type=float, default=1, help="seed")
 parser.add_argument("--L", type=int, default=4, help="Linear size of the lattice")
+parser.add_argument("--model_path", type=str, default=None, help="Path to load the model from")
 args = parser.parse_args()
 
 spin = True
@@ -53,7 +54,6 @@ N_up    = (n_elecs+1)//2
 N_dn    = n_elecs//2
 n_dim = 2
 
-J1J2 = True
 J2 = args.J2
 seed = int(args.seed)
 
@@ -65,23 +65,24 @@ parity = True
 rotation = True
 
 
-n_hid_ferm       = 1
-features         = 2   #hidden units per layer
+n_hid_ferm       = 2
+features         = 32  #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.02
-n_samples        = 16 #total number of samples
+lr               = 0.005
+n_samples        = 4096*2 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
-n_chains         = n_samples  #number of parallel Markov chains
+n_chains         = 128  #number of parallel Markov chains
 chunk_size       = n_samples  #samples are divided in chunks to compute observables in parallel
-N_iter           = 11 #N_opt on the top of the one of the loaded model, if any
-
+N_iter           = 4000 #N_opt on the top of the one of the loaded model, if any
+ 
 #---------------------------Load another model -----------------------------------------
 #load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
-load_path = None #set to None to not load any model and start from scratch
-previous_iter = 0
+#load_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd6_feat128_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex" #set to None to not load any model and start from scratch
+load_path = None
+previous_iter = 0 # 2000 # 2000 #number of iterations already done in the loaded model, used to set the correct iteration number for saving the new model and the log
 
 N_opt = N_iter
 save_every = N_opt // 10
@@ -91,13 +92,11 @@ block_iter = N_opt // save_every
 model_name = f"layers{hid_layers}_hidd{n_hid_ferm}_feat{features}_sample{n_samples}_lr{lr}_iter{N_opt}_parity{parity}_rot{rotation}_Init{MFinitialization}_type{dtype}"
 seed_str = f"seed_{seed}"
 J_value = f"J={J2}"
-if J1J2==True:
-   model_path = f'HFDS_Heisenberg/plot/{L}x{L}/{model_name}/{J_value}'
-   folder = f'{model_path}/{seed_str}'
-   save_model = f"{model_path}/{seed_str}/models"
-else:
-    folder = f'HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}'
-    save_model = f"HFDS_Heisenberg/plot/Ising/spin/{model_name}/{J_value}/models"
+
+model_path = f'HFDS_Heisenberg/plot/{L}x{L}/{model_name}/{J_value}'
+folder = f'{model_path}/{seed_str}'
+save_model = f"{model_path}/{seed_str}/models"
+
 
 os.makedirs(save_model, exist_ok=True)
 os.makedirs(folder, exist_ok=True)  #create folder for the plots and the output file
@@ -208,7 +207,7 @@ vstate.n_samples = n_samples
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-4,
+    diag_shift=1e-7,
     variational_state=vstate,
     use_ntk=True,
     momentum=0.9

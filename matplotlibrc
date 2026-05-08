@@ -5,6 +5,8 @@ axes.labelsize: 18
 xtick.labelsize: 14
 ytick.labelsize: 14
 legend.fontsize: 11
+figure.autolayout: True
+
 
 # STYLE SETTINGS (Optional bonus)
 axes.labelpad: 12

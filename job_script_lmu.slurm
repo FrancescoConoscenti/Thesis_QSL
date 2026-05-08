@@ -1,19 +1,18 @@
 #!/bin/bash
-#SBATCH --job-name=Obs
+#SBATCH --job-name=Obs4
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
-##SBATCH -p inter
-##SBATCH --gres=gpu:h100nvl:1
+#SBATCH -p inter
+#SBATCH --gres=gpu:h100nvl:1 
 
 ##SBATCH -p inter
 ##SBATCH --gres=gpu:v100:1
-##SBATCH --gres=rtx8000:1
 
-##SBATCH -p cip 
-##SBATCH --gres=gpu:a40:1
+#SBATCH -p cip 
+#SBATCH --gres=gpu:a40:1
 
-#SBATCH --gres=gpu:1
+##SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 
 #SBATCH --mem=32G
@@ -68,7 +67,7 @@ PHI=${PHI_VALUES[$PHI_INDEX]}
 #srun python -m Entanglement.test_var_init
 #srun python -m Entanglement.test_var_init_no_bipartite
 
-srun python -m Observables
-#srun python -m Elaborate.Statistics.Degeneracy
+srun python -m Observables 
+#srun python -m Elaborate.Statistics.Degeneracy 
 
-#srun python -m HFDS_Heisenberg.run_spin_phi --L 6 --seed "$SEED" --J2 "$J" --bc_x "$BC_X" --bc_y "$BC_Y"
+#srun python -m HFDS_Heisenberg.run_spin_phi --L 10
