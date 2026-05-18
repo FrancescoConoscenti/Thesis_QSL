@@ -363,6 +363,22 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
         print("No data found to plot.")
         return
 
+    # Add missing data points using symmetry E(phi) = E(2.0 - phi)
+    existing_phis = list(data_by_phi.keys())
+    for phi in existing_phis:
+        sym_phi = round(2.0 - phi, 5)
+        if 0.0 <= sym_phi <= 2.0:
+            sym_phi_key = next((p for p in data_by_phi.keys() if abs(p - sym_phi) < 1e-5), sym_phi)
+            
+            if sym_phi_key not in data_by_phi:
+                data_by_phi[sym_phi_key] = {'L': [], 'E': [], 'err': []}
+            
+            for i, L_val in enumerate(data_by_phi[phi]['L']):
+                if L_val not in data_by_phi[sym_phi_key]['L']:
+                    data_by_phi[sym_phi_key]['L'].append(L_val)
+                    data_by_phi[sym_phi_key]['E'].append(data_by_phi[phi]['E'][i])
+                    data_by_phi[sym_phi_key]['err'].append(data_by_phi[phi]['err'][i])
+
     plt.figure(figsize=(10, 6))
     
     phis_sorted = sorted(data_by_phi.keys())
@@ -516,6 +532,20 @@ def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
         print("No data found to plot.")
         return
 
+    # Add missing data points using symmetry E(phi) = E(2.0 - phi)
+    for L_val in data_by_L:
+        existing_phis = list(data_by_L[L_val]['phi'])
+        existing_Es = list(data_by_L[L_val]['E'])
+        existing_errs = list(data_by_L[L_val]['err'])
+        
+        for i, phi in enumerate(existing_phis):
+            sym_phi = round(2.0 - phi, 5)
+            if 0.0 <= sym_phi <= 2.0:
+                if not any(abs(p - sym_phi) < 1e-5 for p in data_by_L[L_val]['phi']):
+                    data_by_L[L_val]['phi'].append(sym_phi)
+                    data_by_L[L_val]['E'].append(existing_Es[i])
+                    data_by_L[L_val]['err'].append(existing_errs[i])
+
     plt.figure(figsize=(10, 6))
     
     L_sorted = sorted(data_by_L.keys())
@@ -568,14 +598,7 @@ def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
             energy_err[L] = {}
 
         # Pre-fill manually available L=4 and L=8 points 
-        if L == 4:
-            manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
-            manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
-            for p, e in zip(manual_phis, manual_energies):
-                energy_data[L][p] = e
-                energy_err[L][p] = 0.0
-            continue
-
+    
         if not base_path.exists():
             continue
 
@@ -710,6 +733,36 @@ def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
     
     plt.savefig(save_path, dpi=300)
     print(f"✅ Plot saved successfully to {save_path}\n")
+    plt.show()
+
+    # ---------------------------------------------------------
+    # Plot Total Energy Gap vs 1/L
+    # ---------------------------------------------------------
+    total_gaps_arr = gaps_arr * (L_arr ** 2)
+    total_gap_errs_arr = gap_errs_arr * (L_arr ** 2)
+
+    plt.figure(figsize=(9, 6))
+    plt.errorbar(inv_L, total_gaps_arr, yerr=total_gap_errs_arr, fmt='s', color='tab:purple',
+                 capsize=5, markersize=8, markeredgecolor='black', label='Total Gap Data')
+
+    actual_degree = min(degree, len(inv_L) - 1)
+    if actual_degree > 0:
+        coeffs = np.polyfit(inv_L, total_gaps_arr, actual_degree)
+        p_poly = np.poly1d(coeffs)
+        inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
+        plt.plot(inv_L_fit, p_poly(inv_L_fit), '--', color='black', label=f'Polynomial Fit (deg {actual_degree})')
+
+    plt.xlabel('1/L', fontsize=14)
+    plt.ylabel(f'Absolute Total Energy Gap $|E_{{tot}}(0) - E_{{tot}}({target_phi})|$', fontsize=14)
+    plt.title(f'Absolute Total Energy Gap vs 1/L for $\\phi$={target_phi} (J={target_J})', fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend(fontsize=12)
+    plt.xlim(left=0)
+    plt.tight_layout()
+    
+    save_path_total = save_dir / f"Total_Energy_Gap_Fit_vs_invL_phi={target_phi}_J={target_J}.png"
+    plt.savefig(save_path_total, dpi=300)
+    print(f"✅ Plot saved successfully to {save_path_total}\n")
     plt.show()
 
 @jax.jit
@@ -1074,12 +1127,14 @@ if __name__ == "__main__":
 
     # Plot against 1/L for multiple sizes:
     l_directories = [
-         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi",
-         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi",
-         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi1"
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi_new",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi_new",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi_new",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
+
     ]
     plot_adiabatic_energy_vs_L(l_directories, target_J)
     plot_adiabatic_energy_vs_phi_all_L(l_directories, target_J)
     
     # Plot and fit energy gap for twist phi=1.0 (or any other desired target phi)
-    plot_energy_gap_vs_L_fit(l_directories, target_J, target_phi=0.2, degree=2)
+    plot_energy_gap_vs_L_fit(l_directories, target_J, target_phi=0.6, degree=2)

@@ -691,9 +691,11 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
             ]
     
-    """models=["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
-            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
-    ]"""
+    models=["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d10_heads5_patch2_sample1024_lr0.0075_iter40000_parityTrue_rotTrue_QGT",
+        #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
+    ]
+
     """models=[
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/layers1_hidd8_feat64_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_8",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/8x8/layers3_d40_heads8_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
@@ -711,7 +713,7 @@ if __name__ == "__main__":
     
     #plot_rel_error_vs_js(models)
     #plot_energy_vs_js(models)
-    #plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
+    plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
     plot_fidelity_vs_js(models)
 
 

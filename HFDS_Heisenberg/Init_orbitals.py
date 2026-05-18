@@ -9,7 +9,7 @@ from jax.nn.initializers import normal, zeros
 
 from HFDS_Heisenberg.MF_Init import init_orbitals_mf, init_orbitals_mf_phi
 #from HFDS_Heisenberg.Optimized_Gutwiller_MF_Init import optimized_gutzwiller_params
-#from HFDS_Heisenberg.Gutzwiller_MF_Init import update_orbitals_gmf
+from HFDS_Heisenberg.Gutzwiller_MF_Init import init_orbitals_gmf
 #from HFDS_Heisenberg.Gutzwiller_MF_Init_old import update_orbitals_gmf_init
 
 import logging
@@ -46,8 +46,8 @@ class Orbitals(nn.Module):
   def _init_gutzwiller(self, key, shape, dtype):
     #logger.info(f"Initializing Gutzwiller orbitals with h={self.h_opt}, phi={self.phi_opt}")
     #mf = update_orbitals_gmf_init(self.lattice, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
-    #mf = update_orbitals_gmf(self.L, dtype=dtype, h=self.h_opt, phi=self.phi_opt)
-    mf = None
+    mf = init_orbitals_gmf(self.L, self.bounds, dtype=dtype)
+    #mf = None
 
     return mf
       

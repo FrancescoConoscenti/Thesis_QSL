@@ -336,11 +336,12 @@ if __name__ == "__main__":
     
     
     models = [
-        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
-              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd8_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"]
+        "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d10_heads5_patch2_sample1024_lr0.0075_iter40000_parityTrue_rotTrue_QGT",
+        #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"]
+              #,
+              #"/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+              #"/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd8_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"]
     
     plot_overlap_vs_js(models)
     plot_sector_overlap_scatter(models)

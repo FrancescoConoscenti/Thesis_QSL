@@ -45,7 +45,7 @@ parser.add_argument("--rotation",        type=lambda x: x.lower() == "true", def
 parser.add_argument("--phi_list",        type=float, nargs='+',
                     default=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0],
                     help="List of twist angles in radians")
-parser.add_argument("--model_path",      type=str,   default=None,  help="Path to initial model (e.g., phi=0.0) to warm-start from")
+parser.add_argument("--model_path",      type=str,   default="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new/layers1_hidd2_feat64_sample4096_bcPBC_PBC_phi0.6_lr0.01_iter200_InitFermi_typecomplex_phi",  help="Path to initial model (e.g., phi=0.0) to warm-start from")
 parser.add_argument("--N_iter_first",    type=int,   default=2000,    help="Number of iterations for the first phi")
 parser.add_argument("--N_iter_adiabatic",type=int,   default=200,     help="Number of iterations for subsequent phis")
 args = parser.parse_args()
@@ -71,11 +71,11 @@ rotation        = args.rotation
 
 # ── Network / sampler parameters ──────────────────────────────────────────────
 n_hid_ferm  = 2
-features    = 64
+features    = 16
 hid_layers  = 1
 
-lr          = 0.01
-n_samples   = 4096
+lr          = 0.02
+n_samples   = 1024
 n_chains    = 128
 chunk_size  = n_samples
 
@@ -83,11 +83,21 @@ chunk_size  = n_samples
 original_stdout    = sys.stdout
 previous_variables = None
 
-for idx, phi in enumerate(args.phi_list):
+phi_list = args.phi_list
+if args.model_path:
+    match_phi = re.search(r"_phi([\d\.]+)_", args.model_path)
+    if match_phi:
+        start_phi = float(match_phi.group(1))
+        print(f"Parsed start_phi={start_phi} from model_path. Continuing sweep after this value.")
+        phi_list = [p for p in phi_list if p > start_phi + 1e-5]
+    else:
+        print(f"Could not parse starting phi from model_path {args.model_path}. Using full phi_list.")
+
+for idx, phi in enumerate(phi_list):
 
     print(f"\n=== Starting phi = {phi} ===")
 
-    N_iter = args.N_iter_first if idx == 0 else args.N_iter_adiabatic
+    N_iter = args.N_iter_first if (idx == 0 and not args.model_path) else args.N_iter_adiabatic
 
     # ── Build folder / file paths ──────────────────────────────────────────────
     model_name = (

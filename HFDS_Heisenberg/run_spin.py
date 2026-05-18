@@ -65,18 +65,18 @@ parity = True
 rotation = True
 
 
-n_hid_ferm       = 2
+n_hid_ferm       = 1
 features         = 32  #hidden units per layer
 hid_layers       = 1
 
 #Network param
-lr               = 0.005
-n_samples        = 4096*2 #total number of samples
+lr               = 0.02
+n_samples        = 1024 #total number of samples
 #n_samples = 4096  n_chains  = 128  chunk_size = 4096
 #n_samples = 8192  n_chains  = 256  chunk_size = 2048  
 n_chains         = 128  #number of parallel Markov chains
 chunk_size       = n_samples  #samples are divided in chunks to compute observables in parallel
-N_iter           = 4000 #N_opt on the top of the one of the loaded model, if any
+N_iter           = 20000 #N_opt on the top of the one of the loaded model, if any
  
 #---------------------------Load another model -----------------------------------------
 #load_path = "/cluster/home/fconoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_bcPBC_PBC_lr0.02_iter4000_parityTrue_rotTrue_InitFermi_typecomplex"
@@ -207,10 +207,10 @@ vstate.n_samples = n_samples
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-7,
+    diag_shift=1e-8,
     variational_state=vstate,
     use_ntk=True,
-    momentum=0.9
+    momentum=0.95
 ) 
 
 """from netket.experimental.driver import VMC_SRt

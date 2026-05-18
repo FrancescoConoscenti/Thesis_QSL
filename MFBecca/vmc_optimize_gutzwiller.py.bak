@@ -1,0 +1,375 @@
+"""
+VMC optimization of the Gutzwiller-projected BCS mean-field state
+for the J1-J2 Heisenberg model on the square lattice.
+
+Method: NetKet MCState + Stochastic Reconfiguration (SR/natural gradient)
+Ansatz: |Psi> = P_G |Phi_BCS>, parameterized by (t, Delta1, Delta4, Delta5)
+Ref: Ferrari & Becca, PRB 102, 014417 (2020); Hu et al., PRB 88, 060402(R) (2013)
+
+Usage:
+    python vmc_optimize_gutzwiller.py [--Lx 4] [--Ly 4] [--J2 0.5]
+                                      [--n_samples 2048] [--n_iter 300]
+"""
+
+import os
+os.environ["JAX_ENABLE_X64"] = "1"
+
+import argparse
+import json
+import time
+
+import jax
+jax.config.update("jax_enable_x64", True)
+import jax.numpy as jnp
+import numpy as np
+import flax.linen as nn
+import optax
+import netket as nk
+
+# ---------------------------------------------------------------------------
+# BCS pair wave function (JAX-compatible)
+# ---------------------------------------------------------------------------
+
+def build_fmat(t, d1, d4, d5, Lx, Ly):
+    """
+    Build the N x N pair wave function matrix f(r_i - r_j) from BCS parameters.
+
+    The BCS gap is d-wave:
+        Delta(k) = d1*(cos kx - cos ky)               [d_{x^2-y^2}, 1st nn]
+                 + d4*(cos 2kx - cos 2ky)              [d_{x^2-y^2}, 4th nn]
+                 + d5*(sin(kx+2ky)+sin(2kx+ky)
+                       -sin(kx-2ky)-sin(2kx-ky))       [d_{xy}, 5th nn]
+
+    The hopping dispersion is:
+        eps(k) = -2t*(cos kx + cos ky)                 [s-wave, 1st nn]
+
+    The pair amplitude is:
+        f(r) = (1/N) sum_k [v_k/u_k] e^{i k.r}
+
+    where u_k, v_k are the Bogoliubov coherence factors.
+    """
+    N = Lx * Ly
+    kx_vals = 2.0 * jnp.pi * jnp.arange(Lx) / Lx
+    ky_vals = 2.0 * jnp.pi * jnp.arange(Ly) / Ly
+    kx_g, ky_g = jnp.meshgrid(kx_vals, ky_vals, indexing="ij")
+    kx = kx_g.reshape(-1)
+    ky = ky_g.reshape(-1)
+
+    # Dispersion and gap (both real for real parameters)
+    eps = -2.0 * t * (jnp.cos(kx) + jnp.cos(ky))
+    Delta = (d1 * (jnp.cos(kx) - jnp.cos(ky))
+             + d4 * (jnp.cos(2.0 * kx) - jnp.cos(2.0 * ky))
+             + d5 * (jnp.sin(kx + 2.0 * ky) + jnp.sin(2.0 * kx + ky)
+                     - jnp.sin(kx - 2.0 * ky) - jnp.sin(2.0 * kx - ky)))
+
+    E = jnp.sqrt(eps ** 2 + Delta ** 2 + 1e-14)
+
+    # Bogoliubov coherence factors
+    u = jnp.sqrt(jnp.clip((1.0 + eps / E) / 2.0, 0.0, 1.0))
+    v_mag = jnp.sqrt(jnp.clip((1.0 - eps / E) / 2.0, 0.0, 1.0))
+    # Sign of v follows sign of Delta (real d-wave case)
+    v = jnp.where(Delta >= 0.0, v_mag, -v_mag)
+
+    # ratio v_k/u_k, cast to complex for the DFT
+    ratio = jnp.where(jnp.abs(u) > 1e-10, v / u, 0.0).astype(jnp.complex128)
+
+    # Real-space site positions
+    xs = jnp.tile(jnp.arange(Lx), Ly).astype(float)
+    ys = jnp.repeat(jnp.arange(Ly), Lx).astype(float)
+
+    # f(r) = (1/N) sum_k ratio_k * e^{i(kx*rx + ky*ry)}
+    phases = jnp.exp(1j * (jnp.outer(kx, xs) + jnp.outer(ky, ys)))  # (N, N)
+    f_r = jnp.dot(ratio, phases) / N  # (N,)
+
+    # Build Toeplitz-like matrix f_mat[i,j] = f(r_i - r_j) with PBC
+    xi = jnp.tile(jnp.arange(Lx), Ly)
+    yi = jnp.repeat(jnp.arange(Ly), Lx)
+    dx = (xi[:, None] - xi[None, :]) % Lx
+    dy = (yi[:, None] - yi[None, :]) % Ly
+    flat_idx = dx * Ly + dy  # (N, N) integer indices into f_r
+    return f_r[flat_idx]  # (N, N) complex
+
+
+# ---------------------------------------------------------------------------
+# Flax model: Gutzwiller-projected BCS
+# ---------------------------------------------------------------------------
+
+class GutzwillerBCS(nn.Module):
+    """
+    Variational ansatz: log Psi(sigma) = log det[ f(R_i^up - R_j^dn) ]
+
+    Parameters (all real scalars, optimized by SR):
+      d1     : d_{x^2-y^2} pairing ratio Delta_1/t, 1st neighbors
+      d4     : d_{x^2-y^2} pairing ratio Delta_4/t, 4th neighbors
+      d5     : d_{xy}       pairing ratio Delta_5/t, 5th neighbors
+
+    Note: t is fixed to 1.0 (gauge freedom -- only ratios Delta/t matter
+    physically, since rescaling t,Delta together leaves v_k/u_k invariant).
+
+    The Gutzwiller projection is enforced by construction:
+    we only evaluate the determinant on singly-occupied configurations
+    (the Hilbert space is constrained to total_sz=0 with no empty/doubly
+    occupied sites by NetKet's sampler).
+    """
+
+    Lx: int
+    Ly: int
+
+    @nn.compact
+    def __call__(self, sigma):
+        """
+        Args:
+          sigma: (batch, N) float array with values +-0.5
+                 (+0.5 = up-spin, -0.5 = down-spin)
+        Returns:
+          log_psi: (batch,) complex array of log-amplitudes
+        """
+        N = self.Lx * self.Ly
+        Nup = N // 2
+
+        # Variational parameters (t fixed to 1: only Delta/t ratios are physical)
+        t  = 1.0
+        d1 = self.param("d1", nn.initializers.constant(0.8),  ())
+        d4 = self.param("d4", nn.initializers.constant(0.1), ())
+        d5 = self.param("d5", nn.initializers.constant(0.05), ())
+
+        # Build pair wave function matrix (shared across all samples in batch)
+        f_mat = build_fmat(t, d1, d4, d5, self.Lx, self.Ly)
+
+        def log_amp_single(s):
+            """log-amplitude for a single spin configuration s of shape (N,)."""
+            # Extract up/down site indices using fixed-size where (jit-compatible)
+            up_idx = jnp.where(s > 0.0, size=Nup, fill_value=0)[0]
+            dn_idx = jnp.where(s < 0.0, size=Nup, fill_value=0)[0]
+
+            # Submatrix of the pair wave function: f[up, dn]
+            sub = f_mat[up_idx][:, dn_idx]  # (Nup, Ndn)
+
+            # log det = log|det| + i*arg(det)
+            sign, logabs = jnp.linalg.slogdet(sub)
+            return logabs + jnp.log(sign.astype(jnp.complex128) + 0j)
+
+        return jax.vmap(log_amp_single)(sigma)
+
+
+# ---------------------------------------------------------------------------
+# Build J1-J2 Hamiltonian
+# ---------------------------------------------------------------------------
+
+def make_j1j2_hamiltonian(hi, Lx, Ly, J1, J2):
+    """Construct the J1-J2 Heisenberg Hamiltonian using NetKet operators."""
+    graph = nk.graph.Square(Lx, pbc=True)
+    H_J1 = nk.operator.Heisenberg(hilbert=hi, graph=graph, J=J1)
+
+    edges_J2 = []
+    for x in range(Lx):
+        for y in range(Ly):
+            i = x * Ly + y
+            for dx, dy in [(1, 1), (1, -1)]:
+                j = ((x + dx) % Lx) * Ly + ((y + dy) % Ly)
+                if j > i:
+                    edges_J2.append((i, j))
+    g2 = nk.graph.Graph(edges=edges_J2, n_nodes=Lx * Ly)
+    H_J2 = nk.operator.Heisenberg(hilbert=hi, graph=g2, J=J2)
+    return H_J1 + H_J2
+
+
+# ---------------------------------------------------------------------------
+# Main VMC optimization loop
+# ---------------------------------------------------------------------------
+
+def run_vmc(Lx=4, Ly=4, J1=1.0, J2=0.5,
+            n_samples=2048, n_iter=300,
+            sr_diag_shift=1e-3, sr_diag_shift_decay=0.95,
+            learning_rate=0.05, seed=42):
+    """
+    Run VMC optimization with Stochastic Reconfiguration.
+
+    SR (natural gradient) is the standard optimizer for Gutzwiller-projected
+    states: it preconditions the gradient with the inverse quantum geometric
+    tensor (QGT), dramatically improving convergence over plain SGD.
+
+    Args:
+      Lx, Ly          : lattice dimensions
+      J1, J2          : exchange couplings (J1=1 sets energy scale)
+      n_samples       : MC samples per SR step
+      n_iter          : number of SR iterations
+      sr_diag_shift   : regularization for QGT inversion (epsilon in S + eps*I)
+      sr_diag_shift_decay : multiplicative decay of sr_diag_shift per step
+      learning_rate   : SGD step size after SR preconditioning
+      seed            : random seed
+
+    Returns:
+      history : dict with 'energy', 'energy_err', 'params' lists
+    """
+    N = Lx * Ly
+    print(f"\n{'='*60}")
+    print(f"Gutzwiller-BCS VMC  |  {Lx}x{Ly} lattice  |  J2/J1 = {J2/J1:.3f}")
+    print(f"n_samples={n_samples}, n_iter={n_iter}, SR diag_shift={sr_diag_shift}")
+    print(f"{'='*60}")
+
+    # Hilbert space (fixed total S^z = 0, half-filling)
+    hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
+
+    # Hamiltonian
+    H = make_j1j2_hamiltonian(hi, Lx, Ly, J1, J2)
+
+    # Model
+    model = GutzwillerBCS(Lx=Lx, Ly=Ly)
+
+    # Sampler: MetropolisExchange swaps two antiparallel spins -> conserves S^z
+    sampler = nk.sampler.MetropolisExchange(hi, n_chains=16, graph=nk.graph.Square(Lx, pbc=True))
+
+    # Variational state
+    vs = nk.vqs.MCState(
+        sampler,
+        model,
+        n_samples=n_samples,
+        n_discard_per_chain=32,
+        seed=seed,
+    )
+
+    print(f"\nInitial parameters (t fixed=1.0, optimizing d1,d4,d5):")
+    for k, v in vs.parameters.items():
+        print(f"  {k} = {float(v):.4f}")
+
+    # SR optimizer: SGD with learning_rate, preconditioned by QGT via SR
+    # LinearSchedule for sr_diag_shift: start at sr_diag_shift, decay each step
+    optimizer = optax.sgd(learning_rate)
+    sr = nk.optimizer.SR(
+        qgt=nk.optimizer.qgt.QGTJacobianDense(holomorphic=False),
+        solver=nk.optimizer.solver.cholesky,
+        diag_shift=sr_diag_shift,
+    )
+
+    # Driver
+    driver = nk.driver.VMC(H, optimizer, variational_state=vs, preconditioner=sr)
+
+    # Training loop with logging
+    history = {"energy": [], "energy_err": [], "params": [], "time": []}
+    t0 = time.time()
+    min_energy = np.inf
+    best_params = None
+
+    print(f"\n{'Iter':>6}  {'E/N':>12}  {'σ(E)/N':>10}  {'t (s)':>8}  params (t,d1,d4,d5)")
+    print("-" * 75)
+
+    for step in range(n_iter):
+        # Decay the SR diagonal shift
+        sr.diag_shift = max(sr_diag_shift * (sr_diag_shift_decay ** step), 1e-5)
+
+        driver.run(n_iter=1)
+        e = vs.expect(H)
+        E_mean = e.mean.real / N
+        E_err  = e.error_of_mean.real / N
+        elapsed = time.time() - t0
+
+        params = {k: float(v) for k, v in vs.parameters.items()}
+        history["energy"].append(E_mean)
+        history["energy_err"].append(E_err)
+        history["params"].append(params)
+        history["time"].append(elapsed)
+
+        if E_mean < min_energy:
+            min_energy = E_mean
+            best_params = dict(params)
+
+        if step % 10 == 0 or step < 5:
+            p = params
+            print(f"{step:>6d}  {E_mean:>12.6f}  {E_err:>10.6f}  {elapsed:>8.1f}s"
+                  f"  d1={p['d1']:.4f} d4={p['d4']:.4f} d5={p['d5']:.5f}")
+
+    print(f"\n{'='*60}")
+    print(f"Optimization complete.")
+    print(f"Best E/N = {min_energy:.6f}")
+    print(f"Best parameters: {best_params}")
+    print(f"Total time: {time.time()-t0:.1f}s")
+
+    # Literature reference values for comparison (from Ferrari & Becca 2020, 4x4)
+    # and Capriotti et al. 2001 for Gutzwiller-BCS
+    print(f"\nLiterature reference (J2/J1=0.5, 4x4, Gutzwiller-projected):")
+    print(f"  E0/N ≈ -0.497 (Capriotti et al. 2001, VMC)")
+    print(f"  E0/N ≈ -0.494 (Hu et al. 2013, VMC with d-wave)")
+
+    return history, best_params, vs
+
+
+# ---------------------------------------------------------------------------
+# Run multiple J2 values to trace the phase diagram
+# ---------------------------------------------------------------------------
+
+def scan_j2(Lx=4, Ly=4, J2_values=None, n_samples=1024, n_iter=200, seed=42):
+    """
+    Optimize parameters at several J2/J1 values and report optimal energies.
+    Useful for locating the spin-liquid to VBS transition.
+    """
+    if J2_values is None:
+        J2_values = [0.0, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
+
+    results = {}
+    for J2 in J2_values:
+        print(f"\n\n--- J2/J1 = {J2:.2f} ---")
+        history, best_params, vs = run_vmc(
+            Lx=Lx, Ly=Ly, J1=1.0, J2=J2,
+            n_samples=n_samples, n_iter=n_iter, seed=seed,
+        )
+        results[J2] = {
+            "E_min": min(history["energy"]),
+            "best_params": best_params,
+        }
+
+    print("\n\n=== Phase diagram summary ===")
+    print(f"{'J2/J1':>8}  {'E_min/N':>12}  {'d1':>8}  {'d4':>8}  {'d5':>10}")
+    print("-" * 55)
+    for J2, res in results.items():
+        p = res["best_params"]
+        print(f"{J2:>8.3f}  {res['E_min']:>12.6f}  {p['d1']:>8.4f}  {p['d4']:>8.4f}  {p['d5']:>10.5f}")
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="VMC optimization of Gutzwiller-BCS state")
+    parser.add_argument("--Lx", type=int, default=4)
+    parser.add_argument("--Ly", type=int, default=4)
+    parser.add_argument("--J1", type=float, default=1.0)
+    parser.add_argument("--J2", type=float, default=0.5,
+                        help="J2/J1 frustration ratio (or use --scan)")
+    parser.add_argument("--n_samples", type=int, default=2048)
+    parser.add_argument("--n_iter", type=int, default=300)
+    parser.add_argument("--lr", type=float, default=0.05, help="SGD learning rate")
+    parser.add_argument("--sr_shift", type=float, default=1e-2,
+                        help="Initial SR diagonal regularization")
+    parser.add_argument("--sr_decay", type=float, default=0.97,
+                        help="SR diagonal shift decay per iteration")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--scan", action="store_true",
+                        help="Scan over multiple J2 values for phase diagram")
+    parser.add_argument("--save", type=str, default=None,
+                        help="Save results to JSON file")
+    args = parser.parse_args()
+
+    if args.scan:
+        results = scan_j2(
+            Lx=args.Lx, Ly=args.Ly,
+            J2_values=[0.0, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6],
+            n_samples=args.n_samples, n_iter=args.n_iter, seed=args.seed,
+        )
+        if args.save:
+            with open(args.save, "w") as f:
+                json.dump({str(k): v for k, v in results.items()}, f, indent=2)
+    else:
+        history, best_params, vs = run_vmc(
+            Lx=args.Lx, Ly=args.Ly, J1=args.J1, J2=args.J2,
+            n_samples=args.n_samples, n_iter=args.n_iter,
+            sr_diag_shift=args.sr_shift,
+            sr_diag_shift_decay=args.sr_decay,
+            learning_rate=args.lr,
+            seed=args.seed,
+        )
+        if args.save:
+            with open(args.save, "w") as f:
+                json.dump({"history": history, "best_params": best_params}, f, indent=2)

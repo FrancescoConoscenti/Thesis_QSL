@@ -208,6 +208,92 @@ def plot_corr_r(r_fit, c_fit, err_fit, popt_exp, popt_pow, folder):
     plt.savefig(f'{folder}/physical_obs/Corr_decay_pow_loglog.png', bbox_inches='tight')
     plt.close()
 
+    # --- Subsets (Axis and Diagonal) Fits and Plots ---
+    def plain_exp_decay(r, A, xi):
+        return A * np.exp(-r / xi)
+
+    def power_law_decay(r, a, n, b):
+        return a * r**n + b
+
+    def fit_and_plot_subset(r_sub, c_sub, err_sub, title_suffix, filename_suffix):
+        if len(r_sub) < 2:
+            return
+            
+        c_sub_abs = np.abs(c_sub)
+        p0_exp = [c_sub_abs[0], np.max(r_sub) / 4.0 if np.max(r_sub) > 0 else 1.0]
+        popt_exp_sub = None
+        try:
+            popt_exp_sub, _ = curve_fit(plain_exp_decay, r_sub, c_sub_abs, p0=p0_exp, sigma=np.where(err_sub == 0, 1e-10, err_sub), absolute_sigma=True, maxfev=10000)
+        except RuntimeError:
+            pass
+
+        p0_pow = [c_sub_abs[0], -1.0, 0.0]
+        popt_pow_sub = None
+        try:
+            popt_pow_sub, _ = curve_fit(power_law_decay, r_sub, c_sub_abs, p0=p0_pow, sigma=np.where(err_sub == 0, 1e-10, err_sub), absolute_sigma=True, maxfev=10000)
+        except RuntimeError:
+            pass
+
+        r_plot_sub = np.linspace(np.min(r_sub), np.max(r_sub), 100) if len(r_sub) > 0 else r_plot
+
+        # Exponential plot
+        plt.figure(figsize=(6,4))
+        plt.errorbar(r_sub, c_sub_abs, yerr=err_sub, fmt='o', label=f'Data $|C(r)|$', color='blue', capsize=3)
+        if popt_exp_sub is not None:
+            plt.plot(r_plot_sub, plain_exp_decay(r_plot_sub, *popt_exp_sub), label=f'Exp Fit: A={popt_exp_sub[0]:.2f}, $\\xi$={popt_exp_sub[1]:.2f}', color='red')
+        plt.xlabel('Distance $r$')
+        plt.ylabel('$|C(r)|$')
+        plt.title(f'Spin-Spin Correlation Function $|C(r)|$ {title_suffix}')
+        plt.legend()
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f'{folder}/physical_obs/Corr_decay_exp_{filename_suffix}.png', bbox_inches='tight')
+        plt.close()
+
+        # Power-law plot
+        plt.figure(figsize=(6,4))
+        plt.errorbar(r_sub, c_sub_abs, yerr=err_sub, fmt='o', label=f'Data $|C(r)|$', color='blue', capsize=3)
+        if popt_pow_sub is not None:
+            plt.plot(r_plot_sub, power_law_decay(r_plot_sub, *popt_pow_sub), label=f'Poly Fit: a={popt_pow_sub[0]:.2f}, n={popt_pow_sub[1]:.2f}, b={popt_pow_sub[2]:.2f}', color='green', linestyle='--')
+        plt.xlabel('Distance $r$')
+        plt.ylabel('$|C(r)|$')
+        plt.title(f'Spin-Spin Correlation Function $|C(r)|$ {title_suffix}')
+        plt.legend()
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f'{folder}/physical_obs/Corr_decay_pow_{filename_suffix}.png', bbox_inches='tight')
+        plt.close()
+
+        # Power-law Log-Log plot
+        plt.figure(figsize=(6,4))
+        plt.errorbar(r_sub, c_sub_abs, yerr=err_sub, fmt='o', label=f'Data $|C(r)|$', color='blue', capsize=3)
+        if popt_pow_sub is not None:
+            plt.plot(r_plot_sub, power_law_decay(r_plot_sub, *popt_pow_sub), label=f'Poly Fit: a={popt_pow_sub[0]:.2f}, n={popt_pow_sub[1]:.2f}, b={popt_pow_sub[2]:.2f}', color='green', linestyle='--')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('Distance $r$')
+        plt.ylabel('$|C(r)|$')
+        plt.title(f'Spin-Spin Correlation Function $|C(r)|$ {title_suffix}')
+        plt.legend()
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(f'{folder}/physical_obs/Corr_decay_pow_loglog_{filename_suffix}.png', bbox_inches='tight')
+        plt.close()
+
+    axis_mask = np.isclose(r_fit, np.round(r_fit))
+    diag_mask = np.isclose(r_fit / np.sqrt(2), np.round(r_fit / np.sqrt(2)))
+
+    r_axis = r_fit[axis_mask]
+    c_axis = c_fit[axis_mask]
+    err_axis = err_fit[axis_mask]
+
+    r_diag = r_fit[diag_mask]
+    c_diag = c_fit[diag_mask]
+    err_diag = err_fit[diag_mask]
+
+    fit_and_plot_subset(r_axis, c_axis, err_axis, '(Axis)', 'axis')
+    fit_and_plot_subset(r_diag, c_diag, err_diag, '(Diagonal)', 'diag')
+
 def make_dimer_correlations( hilbert, Lx, Ly, direction="x"):
     """
     Build all dimer operators D_R^alpha = S_R . S_{R+alpha_hat}

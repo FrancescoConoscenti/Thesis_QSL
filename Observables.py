@@ -374,30 +374,14 @@ def run_observables(log, folder):
             variables = pickle.load(f)
 
     ################################################################################################à
-    
-    # 1. Correlations
-    """vstate.n_samples = 4096*2*2
-    corr_r, err_r = compute_correlations(vstate, lattice, L, hilbert, folder)
-    variables['corr_r'] = corr_r
-    variables['err_r'] = err_r
-    xi_exp, xi_err, popt_exp, r_fit, c_fit = compute_correlation_length(vstate, lattice, hilbert, L, folder)
-    variables['correlation_length'] = (xi_exp, xi_err)
-    variables['correlation_length_fit_params'] = popt_exp
-    variables['correlation_length_fit'] = (r_fit, c_fit)
-    coords, C = compute_dimer_correlations(vstate, L, folder, direction="x")
-    variables['dimer_correlations_x'] = (coords, C)
-    coords, C = compute_dimer_correlations(vstate, L, folder, direction="y")
-    variables['dimer_correlations_y'] = (coords, C)
-    save_variables(folder, variables) """
-    
 
-    # 2. Exact Energy
+    # 1. Exact Energy
     E_exact, ket_gs = compute_exact_energy(L, J2, hamiltonian)
     if E_exact is not None:
         print(f"Exact ground state energy per site for L={L}, J2={J2}: {E_exact}")
     
     # 3. Energy Stats
-    vstate.n_samples = 4096*2*2
+    vstate.n_samples = 4096*2
     E_vs_final_per_site, variance_per_site, vscore = compute_energy_stats(log, L, folder, folder_energy, E_exact, vstate, hamiltonian)
     print(f"Final Energy per site: {E_vs_final_per_site}")
     print(f"Variance per site: {variance_per_site}")
@@ -421,13 +405,13 @@ def run_observables(log, folder):
     
 
     # 6. Entanglement Entropy
-    n_samples_entropy = 16384
+    """n_samples_entropy = 16384
     s2, s2_error = compute_entropy(vstate, n_samples=n_samples_entropy)
     variables.update({
         's2': s2,
         's2_error': s2_error
     })
-    save_variables(folder, variables)
+    save_variables(folder, variables)"""
     
     #6. Entanglement Scaling
     """results = compute_entanglement_scaling(vstate, L, n_samples=65536*2) 
@@ -449,10 +433,26 @@ def run_observables(log, folder):
     
     
     # 10. System specific observables
-    """if L == 4 and ket_gs is not None:
+    if L == 4 and ket_gs is not None:
         l4_vars = compute_L4_observables(vstate, ket_gs, hilbert, L, folder, count_params, J2)
         variables.update(l4_vars)
-        save_variables(folder, variables)"""
+        save_variables(folder, variables)
+
+
+    # 10. Correlations
+    vstate.n_samples = 4096*2
+    corr_r, err_r = compute_correlations(vstate, lattice, L, hilbert, folder)
+    variables['corr_r'] = corr_r
+    variables['err_r'] = err_r
+    xi_exp, xi_err, popt_exp, r_fit, c_fit = compute_correlation_length(vstate, lattice, hilbert, L, folder)
+    variables['correlation_length'] = (xi_exp, xi_err)
+    variables['correlation_length_fit_params'] = popt_exp
+    variables['correlation_length_fit'] = (r_fit, c_fit)
+    coords, C = compute_dimer_correlations(vstate, L, folder, direction="x")
+    variables['dimer_correlations_x'] = (coords, C)
+    coords, C = compute_dimer_correlations(vstate, L, folder, direction="y")
+    variables['dimer_correlations_y'] = (coords, C)
+    save_variables(folder, variables)
         
     """
     # 9. QGT
@@ -475,9 +475,11 @@ if __name__ == "__main__":
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd2_feat32_sample4096_bcPBC_PBC_phi0.0_lr0.02_iter10000_InitFermi_typecomplex_phi"
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample2048_bcPBC_PBC_phi0.0_lr0.02_iter3000_InitFermi_typecomplex_phi"
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
-    
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
-
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new/layers1_hidd2_feat64_sample4096_bcPBC_PBC_phi0.5_lr0.02_iter200_InitFermi_typecomplex_phi"
+    #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d20_heads5_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat64_sample1024_lr0.02_iter30000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
     if not os.path.exists(model_path):
         model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 
