@@ -45,7 +45,7 @@ parser.add_argument("--rotation",        type=lambda x: x.lower() == "true", def
 parser.add_argument("--phi_list",        type=float, nargs='+',
                     default=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0],
                     help="List of twist angles in radians")
-parser.add_argument("--model_path",      type=str,   default="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new/layers1_hidd2_feat64_sample4096_bcPBC_PBC_phi0.6_lr0.01_iter200_InitFermi_typecomplex_phi",  help="Path to initial model (e.g., phi=0.0) to warm-start from")
+parser.add_argument("--model_path",      type=str,   default="/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_sz1/layers1_hidd2_feat16_sample1024_bcPBC_PBC_phi0.0_lr0.02_iter2000_InitFermi_typecomplex_phi",  help="Path to initial model (e.g., phi=0.0) to warm-start from")
 parser.add_argument("--N_iter_first",    type=int,   default=2000,    help="Number of iterations for the first phi")
 parser.add_argument("--N_iter_adiabatic",type=int,   default=200,     help="Number of iterations for subsequent phis")
 args = parser.parse_args()
@@ -55,17 +55,23 @@ spin    = True
 L       = args.L
 N_sites = L * L
 n_elecs = N_sites
-N_up    = (n_elecs + 1) // 2
-N_dn    = n_elecs // 2
 n_dim   = 2
 
+# Physics
 J2              = args.J2
+sz              = 1.0  # 0.0 if gs, 1.0 if excited state
+
+# Init
 seed            = int(args.seed)
 dtype           = "complex"
 MFinitialization = "Fermi"
+
+# BC
 bc_x            = args.bc_x
 bc_y            = args.bc_y
 bounds          = (bc_x, bc_y)
+
+# Symmetry
 parity          = args.parity
 rotation        = args.rotation
 
@@ -109,7 +115,7 @@ for idx, phi in enumerate(phi_list):
     )
     seed_str   = f"seed_{seed}"
     J_value    = f"J={J2}"
-    model_path = f"HFDS_Heisenberg/plot/{L}x{L}/phi_new/{model_name}/{J_value}"
+    model_path = f"HFDS_Heisenberg/plot/{L}x{L}/phi_sz1/{model_name}/{J_value}"
     folder     = f"{model_path}/{seed_str}"
     save_model = f"{folder}/models"
 
@@ -141,13 +147,13 @@ for idx, phi in enumerate(phi_list):
         )
 
         # ── Hilbert space & graph ──────────────────────────────────────────────────
-        hi      = nk.hilbert.Spin(s=1/2, N=L**2, total_sz=0)
+        hi      = nk.hilbert.Spin(s=1/2, N=L**2, total_sz=sz)
         lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
         print("Hilbert space size =", hi.size)
 
         # ── Hamiltonian ────────────────────────────────────────────────────────────
         ha = build_heisenberg_twisted(
-            L, L, J1=1.0, J2=J2, phi=phi, apbc_y=False
+            L, L, J1=1.0, J2=J2, phi=phi, apbc_y=False, hi=hi
         ).to_jax_operator()
 
         # ── Model ──────────────────────────────────────────────────────────────────
@@ -267,9 +273,9 @@ for idx, phi in enumerate(phi_list):
         # ── Observables ───────────────────────────────────────────────────────────
         print("Running observables computation...")
         if final_log_data and "Energy" in final_log_data:
-            run_observables(helper.MockLog(final_log_data), folder)
+            run_observables(helper.MockLog(final_log_data), folder, hilbert = hi, hamiltonian = ha, lattice = lattice)
         else:
-            run_observables(None, folder)
+            run_observables(None, folder, hilbert = hi, hamiltonian = ha, lattice = lattice)
 
         # ── Carry parameters forward ──────────────────────────────────────────────
         previous_variables = vstate.variables

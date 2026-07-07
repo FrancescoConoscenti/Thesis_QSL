@@ -120,11 +120,10 @@ def plot_energy_vs_phi(base_dir, target_J=0.5):
     plt.errorbar(phi_values, energies, yerr=energy_errors, fmt='-o', color='tab:blue',
                  capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label="VMC Energy")
     
-    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
-    plt.ylabel('Final VMC Energy per site', fontsize=14)
-    plt.title(f'Energy vs Boundary Twist $\phi$ (J={target_J})', fontsize=16)
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)')
+    plt.ylabel('Final VMC Energy per site')
+    plt.title(f'Energy vs Boundary Twist $\phi$ (J={target_J})')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
     
     # Save the plot
     save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
@@ -247,11 +246,10 @@ def plot_adiabatic_energy_vs_phi(base_directory, target_J):
     plt.figure(figsize=(8, 6))
     plt.errorbar(phi_values, energies, yerr=energy_errors, fmt='-o', color='tab:orange',
                  capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label="Adiabatic Energy")       
-    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
-    plt.ylabel('Final Adiabatic Energy per site', fontsize=14)
-    plt.title(f'Adiabatic Energy vs Boundary Twist $\phi$ L = {L} (J={target_J})', fontsize=16)
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)')
+    plt.ylabel('Adiabatic Energy per site')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     # Save the plot
     plt.savefig(f"Elaborate/plot/Degeneracy/adiabatic_energy_vs_phi_J{target_J}_L{L}.png", dpi=300, bbox_inches='tight')
     print(f"\n✅ Plot saved successfully to Elaborate/plot/Degeneracy/adiabatic_energy_vs_phi_J{target_J}_L{L}.png")
@@ -406,15 +404,15 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
         plt.errorbar(inv_L, E_vals, yerr=err_vals, fmt='-o', color=cmap(norm(phi)),
                      capsize=5, markersize=8, markeredgecolor='black', linewidth=2)
 
-    plt.xlabel('1/L', fontsize=14)
-    plt.ylabel('Final Adiabatic Total Energy', fontsize=14)
-    plt.title(f'Adiabatic Total Energy vs 1/L for varying $\phi$ (J={target_J})', fontsize=16)
+    plt.xlabel('1/L')
+    plt.ylabel('Final Adiabatic Total Energy')
+    plt.title(f'Adiabatic Total Energy vs 1/L for varying $\phi$ (J={target_J})')
     plt.grid(True, linestyle='--', alpha=0.7)
     
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     cbar = plt.colorbar(sm, ax=plt.gca())
-    cbar.set_label(r'Twist Angle $\phi$ (units of $\pi$)', fontsize=12)
+    cbar.set_label(r'Twist Angle $\phi$ (units of $\pi$)', )
     
     # Save the plot
     save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
@@ -427,29 +425,34 @@ def plot_adiabatic_energy_vs_L(directories, target_J):
     plt.show()
 
 def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
-    data_by_L = {}
+    data_by_key = {}
 
     print(f"Scanning directories for models with varying phi to plot vs phi for all L...")
 
     for base_dir in directories:
         base_path = Path(base_dir)
-        
+
+        # Distinguish the data source folder (e.g. "phi_sz1" vs "phi_new") so
+        # they get separate labels and are never connected to each other.
+        source = "sz1" if "phi_sz1" in base_path.name else "default"
+
         # Extract L from path (e.g. "4x4", "6x6")
         match_L = re.search(r'(\d+)x\d+', str(base_path))
         if not match_L:
             print(f"Warning: Could not determine L from path {base_dir}")
             continue
         L = int(match_L.group(1))
+        key = (L, source)
 
-        if L == 4:
+        if L == 4 and source == "default":
             manual_phis = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
             manual_energies = [-0.5287, -0.5211, -0.5048, -0.4926, -0.4862, -0.4858, -0.4858, -0.4938, -0.5059, -0.5215, -0.5285]
-            if L not in data_by_L:
-                data_by_L[L] = {'phi': [], 'E': [], 'err': []}
+            if key not in data_by_key:
+                data_by_key[key] = {'phi': [], 'E': [], 'err': []}
             for p, e in zip(manual_phis, manual_energies):
-                data_by_L[L]['phi'].append(p)
-                data_by_L[L]['E'].append(e)
-                data_by_L[L]['err'].append(0.0)
+                data_by_key[key]['phi'].append(p)
+                data_by_key[key]['E'].append(e)
+                data_by_key[key]['err'].append(0.0)
             print(f"Using provided manual data for L=4")
             continue
 
@@ -457,8 +460,8 @@ def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
             print(f"Warning: Directory {base_dir} does not exist.")
             continue
 
-        if L not in data_by_L:
-            data_by_L[L] = {'phi': [], 'E': [], 'err': []}
+        if key not in data_by_key:
+            data_by_key[key] = {'phi': [], 'E': [], 'err': []}
 
         for model_dir in base_path.iterdir():
             if not model_dir.is_dir():
@@ -522,39 +525,47 @@ def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
             if seed_energies:
                 mean_e = np.mean(seed_energies)
                 std_e = np.std(seed_energies) / np.sqrt(len(seed_energies)) if len(seed_energies) > 1 else 0.0
-                
-                data_by_L[L]['phi'].append(phi)
-                data_by_L[L]['E'].append(mean_e)
-                data_by_L[L]['err'].append(std_e)
+
+                data_by_key[key]['phi'].append(phi)
+                data_by_key[key]['E'].append(mean_e)
+                data_by_key[key]['err'].append(std_e)
                 print(f"Found L = {L}, phi = {phi}, E = {mean_e:.6f} ± {std_e:.6f} ({len(seed_energies)} seeds)")
 
-    if not data_by_L:
+    if not data_by_key:
         print("No data found to plot.")
         return
 
-    # Add missing data points using symmetry E(phi) = E(2.0 - phi)
-    for L_val in data_by_L:
-        existing_phis = list(data_by_L[L_val]['phi'])
-        existing_Es = list(data_by_L[L_val]['E'])
-        existing_errs = list(data_by_L[L_val]['err'])
-        
+    # Add missing data points using symmetry E(phi) = E(2.0 - phi), within each (L, source) group
+    for key in data_by_key:
+        existing_phis = list(data_by_key[key]['phi'])
+        existing_Es = list(data_by_key[key]['E'])
+        existing_errs = list(data_by_key[key]['err'])
+
         for i, phi in enumerate(existing_phis):
             sym_phi = round(2.0 - phi, 5)
             if 0.0 <= sym_phi <= 2.0:
-                if not any(abs(p - sym_phi) < 1e-5 for p in data_by_L[L_val]['phi']):
-                    data_by_L[L_val]['phi'].append(sym_phi)
-                    data_by_L[L_val]['E'].append(existing_Es[i])
-                    data_by_L[L_val]['err'].append(existing_errs[i])
+                if not any(abs(p - sym_phi) < 1e-5 for p in data_by_key[key]['phi']):
+                    data_by_key[key]['phi'].append(sym_phi)
+                    data_by_key[key]['E'].append(existing_Es[i])
+                    data_by_key[key]['err'].append(existing_errs[i])
 
     plt.figure(figsize=(10, 6))
-    
-    L_sorted = sorted(data_by_L.keys())
-    colors = plt.cm.viridis(np.linspace(0, 0.9, len(L_sorted)))
 
-    for i, L in enumerate(L_sorted):
-        phi_vals = np.array(data_by_L[L]['phi'])
-        E_vals = np.array(data_by_L[L]['E'])
-        err_vals = np.array(data_by_L[L]['err'])
+    L_sorted = sorted(set(L for L, _ in data_by_key.keys()))
+    colors = dict(zip(L_sorted, plt.cm.viridis(np.linspace(0, 0.9, len(L_sorted)))))
+
+    # Style per source so phi_sz1 datapoints are visually distinct and never
+    # connected to phi_new (or other) datapoints of the same L.
+    source_style = {
+        "default": {"fmt": "-o", "label_suffix": ""},
+        "sz1": {"fmt": "--s", "label_suffix": " (Sz=1)"},
+    }
+
+    for key in sorted(data_by_key.keys()):
+        L, source = key
+        phi_vals = np.array(data_by_key[key]['phi'])
+        E_vals = np.array(data_by_key[key]['E'])
+        err_vals = np.array(data_by_key[key]['err'])
 
         # Sort by phi
         sort_idx = np.argsort(phi_vals)
@@ -562,19 +573,20 @@ def plot_adiabatic_energy_vs_phi_all_L(directories, target_J):
         E_vals = E_vals[sort_idx]
         err_vals = err_vals[sort_idx]
 
-        plt.errorbar(phi_vals, E_vals, yerr=err_vals, fmt='-o', color=colors[i],
-                     capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label=f"L={L}")
+        style = source_style.get(source, source_style["default"])
+        plt.errorbar(phi_vals, E_vals, yerr=err_vals, fmt=style["fmt"], color=colors[L],
+                     capsize=5, markersize=8, markeredgecolor='black', linewidth=2,
+                     label=f"L={L}{style['label_suffix']}")
 
-    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
-    plt.ylabel('Final Adiabatic Energy per site', fontsize=14)
-    plt.title(f'Adiabatic Energy vs Boundary Twist $\phi$ for all L (J={target_J})', fontsize=16)
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)')
+    plt.ylabel('Adiabatic Energy per site')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     
     # Save the plot
     save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
     save_dir.mkdir(parents=True, exist_ok=True)
-    save_path = save_dir / f"Adiabatic_Energy_vs_phi_all_L_J={target_J}.png"
+    save_path = save_dir / f"Adiabatic_Energy_vs_phi_all_L_J={target_J}_sz1.png"
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300)
@@ -719,11 +731,11 @@ def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
         except Exception as e:
             print(f"Cubic curve fit failed: {e}")
 
-    plt.xlabel('1/L', fontsize=14)
-    plt.ylabel(f'Absolute Energy Gap per site $|E(0) - E({target_phi})|$', fontsize=14)
-    plt.title(f'Absolute Energy Gap per site vs 1/L for $\\phi$={target_phi} (J={target_J})', fontsize=16)
+    plt.xlabel('1/L')
+    plt.ylabel(f'Absolute Energy Gap per site $|E(0) - E({target_phi})|$')
+    plt.title(f'Absolute Energy Gap per site vs 1/L for $\\phi$={target_phi} (J={target_J})')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     plt.xlim(left=0)
     plt.tight_layout()
     
@@ -752,11 +764,11 @@ def plot_energy_gap_vs_L_fit(directories, target_J, target_phi, degree=2):
         inv_L_fit = np.linspace(0, max(inv_L)*1.2, 100)
         plt.plot(inv_L_fit, p_poly(inv_L_fit), '--', color='black', label=f'Polynomial Fit (deg {actual_degree})')
 
-    plt.xlabel('1/L', fontsize=14)
-    plt.ylabel(f'Absolute Total Energy Gap $|E_{{tot}}(0) - E_{{tot}}({target_phi})|$', fontsize=14)
-    plt.title(f'Absolute Total Energy Gap vs 1/L for $\\phi$={target_phi} (J={target_J})', fontsize=16)
+    plt.xlabel('1/L')
+    plt.ylabel(f'Absolute Total Energy Gap $|E_{{tot}}(0) - E_{{tot}}({target_phi})|$')
+    plt.title(f'Absolute Total Energy Gap vs 1/L for $\\phi$={target_phi} (J={target_J})')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     plt.xlim(left=0)
     plt.tight_layout()
     
@@ -980,11 +992,11 @@ def plot_adiabatic_fidelity_vs_phi(base_directory, target_J):
     plt.figure(figsize=(8, 6))
     plt.errorbar(phi_values, fidelities, yerr=fidelity_errors, fmt='-o', color='tab:green',
                  capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label="Adiabatic Fidelity")
-    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
-    plt.ylabel('Final Adiabatic Fidelity', fontsize=14)
-    plt.title(f'Adiabatic Fidelity vs Boundary Twist $\phi$ (J={target_J})', fontsize=16)       
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)')
+    plt.ylabel('Final Adiabatic Fidelity')
+    plt.title(f'Adiabatic Fidelity vs Boundary Twist $\phi$ (J={target_J})')       
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     # Save the plot
     plt.savefig(f"adiabatic_fidelity_vs_phi_J{target_J}.png", dpi=300, bbox_inches='tight')
     print(f"\n✅ Plot saved successfully to adiabatic_fidelity_vs_phi_J{target_J}.png")
@@ -1085,11 +1097,11 @@ def plot_adiabatic_corrlength_vs_phi(base_dir, target_J):
     plt.errorbar(phi_values, energies, yerr=energy_errors, fmt='-o', color='tab:blue',
                  capsize=5, markersize=8, markeredgecolor='black', linewidth=2, label="VMC Energy")
     
-    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)', fontsize=14)
-    plt.ylabel('Final Correlation Length', fontsize=14)
-    plt.title(f'Correlation Length vs Boundary Twist $\phi$ (J={target_J})', fontsize=16)
+    plt.xlabel(r'Twist angle $\phi$ (units of $\pi$)')
+    plt.ylabel('Final Correlation Length')
+    plt.title(f'Correlation Length vs Boundary Twist $\phi$ (J={target_J})')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend(fontsize=12)
+    plt.legend()
     
     # Save the plot
     save_dir = Path("/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Degeneracy")
@@ -1112,15 +1124,15 @@ if __name__ == "__main__":
     #phi
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi"
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phiJ0"
-    plot_adiabatic_energy_vs_phi(base_directory, target_J)
+    #plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi"
-    plot_adiabatic_energy_vs_phi(base_directory, target_J)
+    #plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
     base_directory = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi1"
-    plot_adiabatic_energy_vs_phi(base_directory, target_J)
+    #plot_adiabatic_energy_vs_phi(base_directory, target_J)
     #plot_adiabatic_fidelity_vs_phi(base_directory, target_J)
     
 
@@ -1130,11 +1142,17 @@ if __name__ == "__main__":
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi_new",
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi_new",
          "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi_new",
-        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new",
+        "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/phi_sz1",
+                 "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/phi_sz1",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/phi_sz1",
+         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_sz1",
+
+
 
     ]
-    plot_adiabatic_energy_vs_L(l_directories, target_J)
+    #plot_adiabatic_energy_vs_L(l_directories, target_J)
     plot_adiabatic_energy_vs_phi_all_L(l_directories, target_J)
     
     # Plot and fit energy gap for twist phi=1.0 (or any other desired target phi)
-    plot_energy_gap_vs_L_fit(l_directories, target_J, target_phi=0.6, degree=2)
+    #plot_energy_gap_vs_L_fit(l_directories, target_J, target_phi=0.6, degree=2)

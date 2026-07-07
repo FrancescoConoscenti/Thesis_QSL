@@ -143,7 +143,7 @@ def plot_entropy_scaling_from_pkl(pkl_path, save_path=None, vit_variances=None, 
                 final_handles.append(empty_handle)
                 final_labels.append("")
                 
-    plt.legend(final_handles, final_labels, loc='best', ncol=len(ordered_names))
+    #plt.legend(final_handles, final_labels, loc='best', ncol=len(ordered_names))
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
 
@@ -157,6 +157,7 @@ if __name__ == "__main__":
     # Input file to load the data from
     #pkl_file_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots/Entropy_vs_L_Scaling_Unnormalized_data_unconstrained_1.pkl"
     pkl_file_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots5/Entropy_vs_Partition_Square_L10_data.pkl"
+    pkl_file_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots7/Entropy_vs_L_Scaling_Unnormalized_data_2.pkl"
     # Where to save the generated plot
     save_image_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots/Entropy_vs_Partition_Square_L10_Replot4.png"
     
@@ -164,4 +165,4 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(save_image_path), exist_ok=True)
     
     # Generate and save the plot
-    plot_entropy_scaling_from_pkl(pkl_file_path, save_image_path, vit_variances=[0.001, 0.01, 0.1, 1,10,100], hfds_variances=[0.001, 0.01, 0.1, 1,10,100])
+    plot_entropy_scaling_from_pkl(pkl_file_path, save_image_path, vit_variances=[0.001, 0.01, 0.1, 1,10,100], hfds_variances=[0.001, 0.005, 0.01])

@@ -4,6 +4,9 @@ from matplotlib import cm
 from scipy.optimize import curve_fit
 import os
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 def get_spectral_states(L, phi_range):
     n_sites = L * L
     gs_energies = []
@@ -77,6 +80,7 @@ def plot_pi_flux_dispersion():
 
     plt.savefig("FreeFermions/plots/Dispersions/pi_flux_dispersion.png", dpi=300)
     
+import pathlib as Path
 
 def plot_dirac_cuts(L, phi):
     # 1. Create the continuous 3D surface
@@ -92,7 +96,6 @@ def plot_dirac_cuts(L, phi):
     ax.plot_surface(kx_surf, ky_surf, -energy_surf, cmap=cm.Blues, alpha=0.3, antialiased=True)
 
     # 2. Calculate and plot the discrete lines (cuts) for a given phi
-    # We plot lines along ky for each discrete kx
     nx_values = np.arange(L)
     ky_continuous = np.linspace(-np.pi, np.pi, 200)
 
@@ -104,8 +107,8 @@ def plot_dirac_cuts(L, phi):
         # Calculate energy along this cut
         e_line = 2 * np.sqrt(np.cos(kx_plot)**2 + np.cos(ky_continuous)**2)
         
-        # Draw the lines on the cones
-        ax.plot([kx_plot]*len(ky_continuous), ky_continuous, e_line, color='red', lw=2, alpha=0.8)
+        # CHANGED: Commented out the upper dispersion lines, keeping only the lower ones
+        # ax.plot([kx_plot]*len(ky_continuous), ky_continuous, e_line, color='red', lw=2, alpha=0.8)
         ax.plot([kx_plot]*len(ky_continuous), ky_continuous, -e_line, color='red', lw=2, alpha=0.8)
 
     # 3. Mark the discrete points (kx, ky) actually sampled by the LxL lattice
@@ -115,15 +118,30 @@ def plot_dirac_cuts(L, phi):
             ky_pt = (( (2 * np.pi * ny) / L + np.pi) % (2 * np.pi)) - np.pi
             e_pt = 2 * np.sqrt(np.cos(kx_pt)**2 + np.cos(ky_pt)**2)
             
-            ax.scatter([kx_pt], [ky_pt], [e_pt], color='black', s=20)
             ax.scatter([kx_pt], [ky_pt], [-e_pt], color='black', s=20)
 
-    ax.set_title(f"Dirac Cone Sampling (L={L}, $\phi$={phi/np.pi:.2f}$\pi$)")
-    ax.set_xlabel(r"$k_x$")
-    ax.set_ylabel(r"$k_y$")
-    ax.view_init(elev=25, azim=45)
-    plt.savefig(f"FreeFermions/plots/Dispersions/dirac_cuts_L{L}_phi{phi/np.pi:.1f}.png", dpi=300)
+    ax.set_xlabel(r"$k_y$")
+    ax.set_ylabel(r"$k_x$")
+    ax.grid(False)
     
+    # CHANGED: Label the z-axis Energy epsilon(k)
+    ax.set_zlabel(r"Energy $\epsilon(k)$")
+    
+    # CHANGED: Set explicit ticks for x and y axes to just -pi, 0, pi
+    ax.set_xticks([-np.pi, 0, np.pi])
+    ax.set_xticklabels([r'$-\pi$', r'$0$', r'$\pi$'])
+    ax.set_yticks([-np.pi, 0, np.pi])
+    ax.set_yticklabels([r'$-\pi$', r'$0$', r'$\pi$'])
+    ax.set_zticklabels([ r'$0$'])
+    ax.set_zticks([0])
+    
+    ax.view_init(elev=25, azim=45)
+    
+    # Ensured directory exists before saving
+    save_path = f"FreeFermions/plots/Dispersions/dirac_cuts_L{L}_phi{phi/np.pi:.1f}.png"
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path, dpi=300)
+    plt.show()
 
 def get_0_flux_spectral_flow(L, phi_range):
     n_sites = L * L
@@ -688,7 +706,7 @@ if __name__ == "__main__":
 
     # ------------pi flux dispersion kx ky----------------------------------------------------------------------
     plot_pi_flux_dispersion()
-    plot_dirac_cuts(L=4, phi=0)
+    plot_dirac_cuts(L=6, phi=0.5*np.pi)
 
     #------------0 flux dispersion kx ky----------------------------------------------------------------------
     #plot_fermi_surface_dispersion()

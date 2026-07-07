@@ -65,7 +65,7 @@ parity = True
 rotation = True
 
 
-n_hid_ferm       = 1
+n_hid_ferm       = 2
 features         = 32  #hidden units per layer
 hid_layers       = 1
 
@@ -207,10 +207,10 @@ vstate.n_samples = n_samples
 vmc = VMC_SR(
     hamiltonian=ha,
     optimizer=optimizer,
-    diag_shift=1e-8,
+    diag_shift=1e-5,
     variational_state=vstate,
     use_ntk=True,
-    momentum=0.95
+    momentum=0.8
 ) 
 
 """from netket.experimental.driver import VMC_SRt

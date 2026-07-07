@@ -334,12 +334,12 @@ def plot_energy_vs_js(model_paths, save_name="Energy_vs_J2.png"):
             plt.plot([], [], linestyle="None", label="\n".join(p_info))
         plt.axhline(0, color='black', linestyle='--')
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("$E_{HFDS} - E_{ViT}$", fontsize=12)
+    plt.xlabel("$J_2$")
+    plt.ylabel("$E_{HFDS} - E_{ViT}$")
     title = "Energy Difference ($E_{HFDS} - E_{ViT}$) vs $J_2$"
     if lattice_size:
         title += f" ({lattice_size})"
-    plt.title(title, fontsize=14)
+    plt.title(title)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     
@@ -501,13 +501,13 @@ def plot_energy_diff_vs_js(model_paths, values_HFDS=None, values_ViT=None, save_
             plt.errorbar(valid_js, mean_diffs, yerr=std_diffs, label=label, 
                          marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=16)
-    plt.ylabel("$E - E_{exact}$", fontsize=16)
+    plt.xlabel("$J_2$")
+    plt.ylabel("$E - E_{exact}$")
     
     title = "Energy Difference vs $J_2$"
     if lattice_size:
         title += f" ({lattice_size})"
-    plt.title(title, fontsize=16)
+    plt.title(title)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     plt.yscale("log")
@@ -574,9 +574,9 @@ def plot_rel_error_vs_js(model_paths, save_name="Rel_Error_vs_J2.png"):
             plt.errorbar(valid_js, mean_errors, yerr=std_errors, label=label, 
                          marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=12)
-    plt.ylabel("Relative Error", fontsize=12)
-    plt.title("Relative Error vs $J_2$", fontsize=14)
+    plt.xlabel("$J_2$")
+    plt.ylabel("Relative Error")
+    plt.title("Relative Error vs $J_2$")
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     plt.yscale("log")
@@ -652,14 +652,211 @@ def plot_fidelity_vs_js(model_paths, save_name="Infidelity_vs_J2.png"):
             plt.errorbar(valid_js, mean_fidelities, yerr=std_fidelities, label=label, 
                          marker=markers[i % len(markers)], color=color, capsize=5, linestyle='-', alpha=0.8)
 
-    plt.xlabel("$J_2$", fontsize=16)
-    plt.ylabel("1 - Fidelity", fontsize=16)
+    plt.xlabel("$J_2$")
+    plt.ylabel("1 - Fidelity")
     plt.yscale("log")
     
     title = "1 - Fidelity vs $J_2$"
     if lattice_size:
         title += f" ({lattice_size})"
-    plt.title(title, fontsize=16)
+    plt.title(title)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend(loc='best')
+    
+    if lattice_size:
+        save_name = save_name.replace(".png", f"_{lattice_size}.png")
+    
+    save_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Errors/{save_name}"
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {save_path}")
+    plt.show()
+
+def plot_averaged_energy_diff_vs_js(model_paths, values_HFDS=None, values_ViT=None, save_name="Averaged_Energy_Diff_vs_J2.png"):
+    plt.figure(figsize=(10, 6))
+    
+    vit_diffs_by_j = {}
+    hfds_diffs_by_j = {}
+
+    lattice_size = ""
+    if len(model_paths) > 0:
+        path_str = str(model_paths[0])
+        if "10x10" in path_str:
+            lattice_size = "10x10"
+        elif "8x8" in path_str:
+            lattice_size = "8x8"
+        elif "6x6" in path_str:
+            lattice_size = "6x6"
+        elif "4x4" in path_str:
+            lattice_size = "4x4"
+
+    gs_10x10_path = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/Plotting/Errors/gs10x10.pkl"
+    gs_10x10 = {}
+    if os.path.exists(gs_10x10_path):
+        with open(gs_10x10_path, 'rb') as f:
+            gs_10x10 = pickle.load(f)
+
+    for model_path in model_paths:
+        if not os.path.exists(model_path):
+            model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+            if not os.path.exists(model_path):
+                print(f"Path not found: {model_path}")
+                continue
+            
+        is_vit = "ViT" in str(model_path)
+        is_hfds = "HFDS" in str(model_path)
+        if not is_vit and not is_hfds:
+            continue
+            
+        js = get_available_js(model_path)
+        is_10x10 = "10x10" in str(model_path)
+
+        for j in js:
+            exact_E = None
+            if is_hfds and values_HFDS is not None:
+                for k, v in values_HFDS.items():
+                    if abs(float(k) - j) < 1e-5:
+                        exact_E = v
+                        break
+            elif is_vit and values_ViT is not None:
+                for k, v in values_ViT.items():
+                    if abs(float(k) - j) < 1e-5:
+                        exact_E = v
+                        break
+            
+            if exact_E is None and is_10x10:
+                for k, v in gs_10x10.items():
+                    if abs(float(k) - j) < 1e-5:
+                        exact_E = v
+                        break
+            
+            diffs_for_model = []
+            if exact_E is not None:
+                vals = get_energy_from_seeds(model_path, j)
+                if vals:
+                    current_exact = exact_E
+                    if abs(np.mean(vals)) > 5.0 and abs(current_exact) < 2.0:
+                        if "4x4" in str(model_path): N=16
+                        elif "6x6" in str(model_path): N=36
+                        elif "8x8" in str(model_path): N=64
+                        elif "10x10" in str(model_path): N=100
+                        else: N=1
+                        current_exact *= N
+                    diffs_for_model = [v - current_exact for v in vals]
+            else:
+                vals = get_energy_diff_from_seeds(model_path, j)
+                if vals:
+                    diffs_for_model = vals
+                    
+            if diffs_for_model:
+                target_dict = vit_diffs_by_j if is_vit else hfds_diffs_by_j
+                if j not in target_dict:
+                    target_dict[j] = []
+                target_dict[j].extend(diffs_for_model)
+
+    if vit_diffs_by_j:
+        js = sorted(list(vit_diffs_by_j.keys()))
+        for j in js:
+            plt.scatter([j] * len(vit_diffs_by_j[j]), vit_diffs_by_j[j], color='tab:orange', alpha=0.3, s=20, zorder=1)
+        means = [np.mean(vit_diffs_by_j[j]) for j in js]
+        stds = [np.std(vit_diffs_by_j[j]) / np.sqrt(len(vit_diffs_by_j[j])) if len(vit_diffs_by_j[j]) > 1 else 0.0 for j in js]
+        plt.errorbar(js, means, yerr=stds, label="ViT (Averaged)", marker='o', color='tab:orange', capsize=5, linestyle='-', alpha=0.9, linewidth=2, zorder=3)
+
+    if hfds_diffs_by_j:
+        js = sorted(list(hfds_diffs_by_j.keys()))
+        for j in js:
+            plt.scatter([j] * len(hfds_diffs_by_j[j]), hfds_diffs_by_j[j], color='tab:blue', alpha=0.3, s=20, marker='s', zorder=1)
+        means = [np.mean(hfds_diffs_by_j[j]) for j in js]
+        stds = [np.std(hfds_diffs_by_j[j]) / np.sqrt(len(hfds_diffs_by_j[j])) if len(hfds_diffs_by_j[j]) > 1 else 0.0 for j in js]
+        plt.errorbar(js, means, yerr=stds, label="HFDS (Averaged)", marker='s', color='tab:blue', capsize=5, linestyle='-', alpha=0.9, linewidth=2, zorder=3)
+
+    plt.xlabel("$J_2$")
+    plt.ylabel("$E - E_{exact}$")
+    
+    title = "Averaged Energy Difference vs $J_2$"
+    if lattice_size:
+        title += f" ({lattice_size})"
+    plt.title(title)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend(loc='best')
+    plt.yscale("log")
+    
+    if lattice_size:
+        save_name = save_name.replace(".png", f"_{lattice_size}.png")
+    
+    save_path = f"/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/Errors/{save_name}"
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Plot saved to {save_path}")
+    plt.show()
+
+def plot_averaged_fidelity_vs_js(model_paths, save_name="Averaged_Infidelity_vs_J2.png"):
+    plt.figure(figsize=(10, 6))
+    
+    vit_fidelities_by_j = {}
+    hfds_fidelities_by_j = {}
+
+    lattice_size = ""
+    if len(model_paths) > 0:
+        path_str = str(model_paths[0])
+        if "10x10" in path_str:
+            lattice_size = "10x10"
+        elif "8x8" in path_str:
+            lattice_size = "8x8"
+        elif "6x6" in path_str:
+            lattice_size = "6x6"
+        elif "4x4" in path_str:
+            lattice_size = "4x4"
+
+    for model_path in model_paths:
+        if not os.path.exists(model_path):
+            model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
+            if not os.path.exists(model_path):
+                print(f"Path not found: {model_path}")
+                continue
+            
+        is_vit = "ViT" in str(model_path)
+        is_hfds = "HFDS" in str(model_path)
+        if not is_vit and not is_hfds:
+            continue
+            
+        js = get_available_js(model_path)
+        
+        for j in js:
+            vals = get_fidelity_from_seeds(model_path, j)
+            if vals:
+                infidelities = [1 - x for x in vals]
+                target_dict = vit_fidelities_by_j if is_vit else hfds_fidelities_by_j
+                if j not in target_dict:
+                    target_dict[j] = []
+                target_dict[j].extend(infidelities)
+
+    if vit_fidelities_by_j:
+        js = sorted(list(vit_fidelities_by_j.keys()))
+        for j in js:
+            plt.scatter([j] * len(vit_fidelities_by_j[j]), vit_fidelities_by_j[j], color='tab:orange', alpha=0.3, s=20, zorder=1)
+        means = [np.mean(vit_fidelities_by_j[j]) for j in js]
+        stds = [np.std(vit_fidelities_by_j[j]) / np.sqrt(len(vit_fidelities_by_j[j])) if len(vit_fidelities_by_j[j]) > 1 else 0.0 for j in js]
+        plt.errorbar(js, means, yerr=stds, label="ViT (Averaged)", marker='o', color='tab:orange', capsize=5, linestyle='-', alpha=0.9, linewidth=2, zorder=3)
+
+    if hfds_fidelities_by_j:
+        js = sorted(list(hfds_fidelities_by_j.keys()))
+        for j in js:
+            plt.scatter([j] * len(hfds_fidelities_by_j[j]), hfds_fidelities_by_j[j], color='tab:blue', alpha=0.3, s=20, marker='s', zorder=1)
+        means = [np.mean(hfds_fidelities_by_j[j]) for j in js]
+        stds = [np.std(hfds_fidelities_by_j[j]) / np.sqrt(len(hfds_fidelities_by_j[j])) if len(hfds_fidelities_by_j[j]) > 1 else 0.0 for j in js]
+        plt.errorbar(js, means, yerr=stds, label="HFDS (Averaged)", marker='s', color='tab:blue', capsize=5, linestyle='-', alpha=0.9, linewidth=2, zorder=3)
+
+    plt.xlabel("$J_2$")
+    plt.ylabel("1 - Fidelity")
+    plt.yscale("log")
+    
+    title = "Averaged 1 - Fidelity vs $J_2$"
+    if lattice_size:
+        title += f" ({lattice_size})"
+    plt.title(title)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     
@@ -691,8 +888,14 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
             ]
     
-    models=["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d10_heads5_patch2_sample1024_lr0.0075_iter40000_parityTrue_rotTrue_QGT",
-        #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+    models=["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d20_heads5_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d20_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d10_heads5_patch2_sample1024_lr0.0075_iter40000_parityTrue_rotTrue_QGT",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+            
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat64_sample1024_lr0.02_iter30000_parityTrue_rotTrue_InitFermi_typecomplex",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd1_feat32_sample1024_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
             "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
     ]
 
@@ -713,8 +916,11 @@ if __name__ == "__main__":
     
     #plot_rel_error_vs_js(models)
     #plot_energy_vs_js(models)
-    plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
-    plot_fidelity_vs_js(models)
+    #plot_energy_diff_vs_js(models, values_HFDS, values_ViT)
+    #plot_fidelity_vs_js(models)
+    
+    plot_averaged_energy_diff_vs_js(models, values_HFDS, values_ViT)
+    plot_averaged_fidelity_vs_js(models)
 
 
     

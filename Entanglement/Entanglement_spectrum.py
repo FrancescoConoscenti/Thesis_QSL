@@ -106,7 +106,7 @@ def load_trained_model(path, L, J2, hi_constrained, hi_full):
     
     if not os.path.exists(path):
         print(f"Error: Path {path} does not exist.")
-        return None, None
+        return None, None, None
 
     j_path = os.path.join(path, f"J={J2}")
     if not os.path.exists(j_path):
@@ -119,7 +119,7 @@ def load_trained_model(path, L, J2, hi_constrained, hi_full):
     seeds = [d for d in os.listdir(j_path) if d.startswith("seed_")]
     if not seeds:
         print("Error: No seed folder found.")
-        return None, None
+        return None, None, None
     seed_path = os.path.join(j_path, seeds[0])
     
     models_dir = os.path.join(seed_path, "models")
@@ -222,7 +222,9 @@ def plot_spectrum(ket_gs, vstate, L, J2, save_dir=None):
     N = L * L
     lattice = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
     hi_full = nk.hilbert.Spin(s=1/2, N=N)
-    hi_constrained = nk.hilbert.Spin(s=1/2, N=N, total_sz=0)
+    # Use vstate's own Hilbert space (whatever total_sz sector it was trained in)
+    # rather than assuming total_sz=0, so ket_gs/vstate embed into the correct sector.
+    hi_constrained = vstate.hilbert
 
     # Subsystem A indices
     indices_A = []
@@ -301,7 +303,6 @@ def plot_spectrum(ket_gs, vstate, L, J2, save_dir=None):
 
     plt.xlabel('Index')
     plt.ylabel(r'Eigenvalues $\lambda_i$')
-    plt.title(f'Entanglement Eigenvalues (L={L}, J2={J2})')
     plt.legend()
     plt.grid(True, alpha=0.3)
 
@@ -317,110 +318,246 @@ def plot_spectrum(ket_gs, vstate, L, J2, save_dir=None):
 
     return evals_vstate, total_error, sector_errors
 
-def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
-    print(f"--- Running Entanglement Spectrum Comparison (L={L}, J2={J2}) ---")
+def _model_color(model_type):
+    return 'orange' if model_type == 'ViT' else 'blue' if model_type == 'HFDS' else 'black'
 
-    N = L * L
-    lattice = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
 
-    # Hilbert spaces
-    hi_full = nk.hilbert.Spin(s=1/2, N=N)
-    hi_constrained = nk.hilbert.Spin(s=1/2, N=N, total_sz=0)
-
-    # Hamiltonian for Exact GS (using constrained space for efficiency)
-    ha = nk.operator.Heisenberg(hilbert=hi_constrained, graph=lattice, J=[1.0, J2], sign_rule=[False, False])
-
-    # 1. Exact Ground State
-    print("Computing Exact Ground State...")
-    E_gs, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
-    ket_gs = ket_gs.flatten()
-
-    # Embed Exact GS in full space
-    psi_exact = np.zeros(hi_full.n_states, dtype=ket_gs.dtype)
-    full_indices_constrained = hi_full.states_to_numbers(hi_constrained.all_states())
-    psi_exact[full_indices_constrained] = ket_gs
-    
-    # Normalize exact state
-    psi_exact /= np.linalg.norm(psi_exact)
-
-    # 2. ViT (Random Init)
-    print("Computing ViT (Random Init)...")
-    vit_model = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=normal(stddev=10))
-    # Initialize parameters
-    key = jax.random.PRNGKey(42)
-    dummy_input_c = jnp.zeros((1, N))
-    params_vit = vit_model.init(key, dummy_input_c)
-
-    # Compute state on constrained space
-    all_states_constrained = hi_constrained.all_states()
-    log_psi_vit_c = vit_model.apply(params_vit, all_states_constrained)
-    psi_vit_c = np.array(jnp.exp(log_psi_vit_c))
-
-    # Embed in full space
-    psi_vit = np.zeros(hi_full.n_states, dtype=psi_vit_c.dtype)
-    psi_vit[full_indices_constrained] = psi_vit_c
-
-    # 3. HFDS (Random Init)
-    print("Computing HFDS (Random Init)...")
-    hfds_model = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=32, MFinit="random", hilbert=hi_constrained, kernel_init=normal(stddev=10), dtype=jnp.complex128)
-    # Initialize parameters
-    key = jax.random.PRNGKey(42)
-    dummy_input_c = jnp.zeros((1, N))
-    params_hfds = hfds_model.init(key, dummy_input_c)
-
-    # Compute state on constrained space
-    all_states_constrained = hi_constrained.all_states()
-    log_psi_hfds = hfds_model.apply(params_hfds, all_states_constrained)
-    psi_hfds_c = np.array(jnp.exp(log_psi_hfds))
-
-    # Embed in full space
-    psi_hfds = np.zeros(hi_full.n_states, dtype=psi_hfds_c.dtype)
-    psi_hfds[full_indices_constrained] = psi_hfds_c
-
-    # Define Subsystem A (Half vertical)
-    indices_A = []
-    for y in range(L):
-        for x in range(L // 2): 
-            flat_index = y * L + x
-            indices_A.append(flat_index)
-
-    # Compute Spectra
-    _, evals_exact = compute_entanglement_spectrum_2d(N, indices_A, psi_exact)
-    _, evals_vit = compute_entanglement_spectrum_2d(N, indices_A, psi_vit)
-    _, evals_hfds = compute_entanglement_spectrum_2d(N, indices_A, psi_hfds)
-
-    # --- PLOT 1: Random Init vs Exact ---
+def plot_random_init(evals_exact, evals_vit, evals_hfds, save_dir, L):
     plt.figure(figsize=(10, 7))
-    plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=4, alpha=0.8, color='red', zorder=10)
-    plt.semilogy(evals_vit, 's--', label='ViT (Random)', markersize=4, alpha=0.6, color='orange')
-    plt.semilogy(evals_hfds, '^--', label='HFDS (Random)', markersize=4, alpha=0.6, color='blue')
-
+    plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=14, alpha=0.6, color='red', zorder=1)
+    plt.semilogy(evals_vit, 's--', label='ViT (Random)', markersize=10, alpha=0.6, color='orange', zorder=2)
+    plt.semilogy(evals_hfds, '^--', label='HFDS (Random)', markersize=10, alpha=0.6, color='blue', zorder=3)
     plt.xlabel('Index')
-    plt.ylabel(r'Eigenvalues $\lambda_i$')
-    plt.title(f'Entanglement Eigenvalues (Random Init) (L={L}, J2={J2})')
+    plt.ylabel(r'Eigenvalues $\lambda_i$') 
     plt.legend()
     plt.grid(True, alpha=0.3)
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Random_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Random init plot saved to {save_path}")
+    plt.close()
 
+
+def plot_trained_models(evals_exact, trained_results, save_dir, L):
+    plt.figure(figsize=(10, 7))
+    plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=14, alpha=0.6, color='red', zorder=1)
+    for result in trained_results:
+        color = _model_color(result['type'])
+        zorder = 3 if result['type'] == 'HFDS' else 2
+        label = f'{result["type"]}'
+        plt.semilogy(result['evals'], '*-', label=label, markersize=10, alpha=0.8, color=color, zorder=zorder)
+
+    fidelity_between_models = None
+    if len(trained_results) == 2:
+        fidelity_between_models = np.abs(np.vdot(trained_results[0]['psi'], trained_results[1]['psi']))**2
+
+    """stats_text = [f"F({res['type']}, Exact) = {res['fidelity']:.5f}" for res in trained_results]
+    if fidelity_between_models is not None:
+        stats_text.append(f"F({trained_results[0]['type']}, {trained_results[1]['type']}) = {fidelity_between_models:.5f}")
+    if stats_text:
+        props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+        plt.gca().text(0.05, 0.05, "\n".join(stats_text), transform=plt.gca().transAxes, fontsize=10, verticalalignment='bottom', bbox=props)
+    """
+    plt.xlabel('Index')
+    plt.ylabel(r'Eigenvalues $\lambda_i$')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Trained_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Trained models plot saved to {save_path}")
+    plt.close()
+
+
+def plot_spectrum_diff(evals_exact, trained_results, save_dir, L):
+    plt.figure(figsize=(10, 7))
+    for result in trained_results:
+        evals_model = result['evals']
+        min_len = min(len(evals_exact), len(evals_model))
+        if min_len > 0:
+            diff = np.abs(evals_exact[:min_len] - evals_model[:min_len])
+            dist = np.linalg.norm(diff)
+            color = _model_color(result['type'])
+            label = f"{result['type']} (Eucl. Dist: {dist:.3e})"
+            plt.semilogy(diff, 'o--', label=label, markersize=10, alpha=0.7, color=color)
+    plt.xlabel('Index')
+    plt.ylabel(r'Absolute Difference $|\lambda_i^{exact} - \lambda_i^{model}|$')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Diff_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Spectrum difference plot saved to {save_path}")
+    plt.close()
+
+
+def plot_spectrum_rel_diff(evals_exact, trained_results, save_dir, L):
+    plt.figure(figsize=(10, 7))
+    for result in trained_results:
+        color = _model_color(result['type'])
+        evals_model = result['evals']
+        min_len = min(len(evals_exact), len(evals_model))
+        if min_len > 0:
+            denominator = evals_exact[:min_len]
+            valid_indices = denominator > 1e-12
+            diff = np.abs(denominator - evals_model[:min_len])
+            relative_diff = np.full_like(diff, np.nan)
+            relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
+            mean_rel_diff = np.nanmean(relative_diff)
+            var_rel_diff = np.nanvar(relative_diff)
+            label = f"{result['type']} (Mean: {mean_rel_diff:.3e}, Var: {var_rel_diff:.3e})"
+            plt.semilogy(relative_diff, 'o--', label=label, markersize=10, alpha=0.7, color=color)
+            plt.axhline(y=mean_rel_diff, color=color, linestyle=':', linewidth=10, alpha=0.9)
+    plt.xlabel('Index')
+    plt.ylabel(r'Relative Difference $|\lambda_i^{exact} - \lambda_i^{model}| / \lambda_i^{exact}$')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Rel_Diff_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Spectrum relative difference plot saved to {save_path}")
+    plt.close()
+
+
+def plot_spectrum_sectors(evals_exact, trained_results, save_dir, L):
+    plt.figure(figsize=(10, 7))
+    for result in trained_results:
+        color = _model_color(result['type'])
+        evals_model = result['evals']
+        min_len = min(len(evals_exact), len(evals_model))
+        if min_len > 0:
+            denominator = evals_exact[:min_len]
+            valid_indices = denominator > 1e-12
+            diff = np.abs(denominator - evals_model[:min_len])
+            relative_diff = np.full_like(diff, np.nan)
+            relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
+            plt.plot(relative_diff, 'o', markersize=10, alpha=0.2, color=color)
+            plt.ylim(0, 0.25)
+            #plt.semilogy(relative_diff, 'o', markersize=10, alpha=0.2, color=color)
+            n_sectors = 5
+            boundaries = [int(round(i * min_len / n_sectors)) for i in range(n_sectors + 1)]
+            sectors = [(boundaries[i], boundaries[i + 1]) for i in range(n_sectors)]
+            means = []
+            for start, end in sectors:
+                seg_mean = np.nanmean(relative_diff[start:end]) if start < end else np.nan
+                means.append(seg_mean)
+                if not np.isnan(seg_mean):
+                    plt.hlines(y=seg_mean, xmin=start, xmax=end-1, colors=color, linestyles='-', linewidth=4)
+            means_str = ", ".join(f"{m:.1e}" for m in means)
+            label = f"{result['type']}\nMeans: {means_str}"
+            plt.plot([], [], color=color)
+    plt.xlabel('Index')
+    plt.ylabel(r'Relative Difference')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Rel_Diff_Sectors_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Spectrum relative difference sectors plot saved to {save_path}")
+    plt.close()
+
+
+def plot_combined_spectrum(evals_exact, trained_results, save_dir, L):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
+    
+    # Top plot: trained models
+    ax1.semilogy(evals_exact, 'o-', label='Exact GS', markersize=14, alpha=0.6, color='red', zorder=1)
+    for result in trained_results:
+        color = _model_color(result['type'])
+        zorder = 3 if result['type'] == 'HFDS' else 2
+        label = f'{result["type"]}'
+        ax1.semilogy(result['evals'], '*-', label=label, markersize=10, alpha=0.8, color=color, zorder=zorder)
+
+    ax1.set_ylabel(r'Eigenvalues $\lambda_i$')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Bottom plot: spectrum sectors
+    for result in trained_results:
+        color = _model_color(result['type'])
+        evals_model = result['evals']
+        min_len = min(len(evals_exact), len(evals_model))
+        if min_len > 0:
+            denominator = evals_exact[:min_len]
+            valid_indices = denominator > 1e-12
+            diff = np.abs(denominator - evals_model[:min_len])
+            relative_diff = np.full_like(diff, np.nan)
+            relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
+            ax2.plot(relative_diff, 'o', markersize=10, alpha=0.2, color=color)
+            ax2.set_ylim(0, 0.25)
+            n_sectors = 5
+            boundaries = [int(round(i * min_len / n_sectors)) for i in range(n_sectors + 1)]
+            sectors = [(boundaries[i], boundaries[i + 1]) for i in range(n_sectors)]
+            for start, end in sectors:
+                seg_mean = np.nanmean(relative_diff[start:end]) if start < end else np.nan
+                if not np.isnan(seg_mean):
+                    ax2.hlines(y=seg_mean, xmin=start, xmax=end-1, colors=color, linestyles='-', linewidth=4)
+    
+    ax2.set_xlabel('Index')
+    ax2.set_ylabel(r'Relative Difference')
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    save_path = get_unique_path(save_dir, f"Entanglement_Spectrum_Combined_L{L}.png")
+    plt.savefig(save_path, dpi=300)
+    print(f"Combined spectrum plot saved to {save_path}")
+    plt.close()
+
+
+def _resolve_save_dir():
     save_dir = "/cluster/home/fconoscenti/Thesis_QSL/Entanglement/plots"
     if not os.path.exists(save_dir):
         save_dir = "/scratch/f/F.Conoscenti/Thesis_QSL/Entanglement/plots"
     os.makedirs(save_dir, exist_ok=True)
+    return save_dir
 
-    save_path_random = get_unique_path(save_dir, f"Entanglement_Spectrum_Random_L{L}.png")
-    plt.savefig(save_path_random, dpi=300)
-    print(f"Random init plot saved to {save_path_random}")
-    plt.close()
 
-    # --- PLOT 2: Trained Models vs Exact ---
-    if not trained_model_paths:
-        print("No trained model paths provided. Skipping second plot.")
-        return
+def _setup_hilbert(L, J2):
+    N = L * L
+    lattice = nk.graph.Hypercube(length=L, n_dim=2, pbc=True, max_neighbor_order=2)
+    hi_full = nk.hilbert.Spin(s=1/2, N=N)
+    hi_constrained = nk.hilbert.Spin(s=1/2, N=N, total_sz=0)
+    ha = nk.operator.Heisenberg(hilbert=hi_constrained, graph=lattice, J=[1.0, J2], sign_rule=[False, False])
+    all_states_constrained = hi_constrained.all_states()
+    full_indices_constrained = hi_full.states_to_numbers(all_states_constrained)
+    indices_A = [y * L + x for y in range(L) for x in range(L // 2)]
+    return N, hi_full, hi_constrained, ha, all_states_constrained, full_indices_constrained, indices_A
 
-    # 4. Trained Models
-    trained_results = []
-    if isinstance(trained_model_paths, str): # Handle single path for backward compatibility
+
+def _compute_exact_state(hi_full, hi_constrained, ha, full_indices_constrained, N, indices_A):
+    print("Computing Exact Ground State...")
+    _, ket_gs = nk.exact.lanczos_ed(ha, compute_eigenvectors=True)
+    ket_gs = ket_gs.flatten()
+    psi_exact = np.zeros(hi_full.n_states, dtype=ket_gs.dtype)
+    psi_exact[full_indices_constrained] = ket_gs
+    psi_exact /= np.linalg.norm(psi_exact)
+    _, evals_exact = compute_entanglement_spectrum_2d(N, indices_A, psi_exact)
+    return psi_exact, evals_exact
+
+
+def _compute_random_init_evals(L, N, hi_constrained, hi_full, all_states_constrained, full_indices_constrained, indices_A):
+    key = jax.random.PRNGKey(42)
+    dummy = jnp.zeros((1, N))
+
+    print("Computing ViT (Random Init)...")
+    vit_model = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=normal(stddev=10))
+    params_vit = vit_model.init(key, dummy)
+    psi_vit_c = np.array(jnp.exp(vit_model.apply(params_vit, all_states_constrained)))
+    psi_vit = np.zeros(hi_full.n_states, dtype=psi_vit_c.dtype)
+    psi_vit[full_indices_constrained] = psi_vit_c
+
+    print("Computing HFDS (Random Init)...")
+    hfds_model = HiddenFermion_ent(L=L, network="FFNN", n_hid=2, layers=1, features=32, MFinit="random", hilbert=hi_constrained, kernel_init=normal(stddev=10), dtype=jnp.complex128)
+    params_hfds = hfds_model.init(key, dummy)
+    psi_hfds_c = np.array(jnp.exp(hfds_model.apply(params_hfds, all_states_constrained)))
+    psi_hfds = np.zeros(hi_full.n_states, dtype=psi_hfds_c.dtype)
+    psi_hfds[full_indices_constrained] = psi_hfds_c
+
+    _, evals_vit = compute_entanglement_spectrum_2d(N, indices_A, psi_vit)
+    _, evals_hfds = compute_entanglement_spectrum_2d(N, indices_A, psi_hfds)
+    return evals_vit, evals_hfds
+
+
+def _load_trained_results(trained_model_paths, L, J2, hi_constrained, hi_full, all_states_constrained, full_indices_constrained, psi_exact, N, indices_A):
+    if isinstance(trained_model_paths, str):
         trained_model_paths = [trained_model_paths]
 
+    trained_results = []
     for path in trained_model_paths:
         print(f"--- Loading Trained Model from: {os.path.basename(path)} ---")
         model_trained, params_trained, model_type = load_trained_model(path, L, J2, hi_constrained, hi_full)
@@ -429,178 +566,49 @@ def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
             print(f"Skipping path {path} as model could not be loaded.")
             continue
 
-        # Calculate number of parameters
         n_params = nk.jax.tree_size(params_trained)
 
-        psi_trained = None
-        if model_type == "HFDS" or model_type == "ViT":
-            log_psi_trained = model_trained.apply(params_trained, all_states_constrained)
-            log_psi_trained = log_psi_trained - jnp.max(log_psi_trained.real)
-            psi_trained_c = np.array(jnp.exp(log_psi_trained))
-            psi_trained = np.zeros(hi_full.n_states, dtype=psi_trained_c.dtype)
-            psi_trained[full_indices_constrained] = psi_trained_c
-
-        if psi_trained is not None:
-            # Normalize trained state
-            psi_trained /= np.linalg.norm(psi_trained)
-            
-            # Calculate fidelity with exact ground state
-            fidelity_exact = np.abs(np.vdot(psi_exact, psi_trained))**2
-            
-            _, evals_trained = compute_entanglement_spectrum_2d(N, indices_A, psi_trained)
-            trained_results.append({'type': model_type, 'path': path, 'evals': evals_trained, 'n_params': n_params, 'fidelity': fidelity_exact, 'psi': psi_trained})
-        else:
+        if model_type not in ("HFDS", "ViT"):
             print(f"Could not evaluate wavefunction for model from {path}")
+            continue
 
-    # Plotting trained models
-    plt.figure(figsize=(10, 7))
-    plt.semilogy(evals_exact, 'o-', label='Exact GS', markersize=4, alpha=0.8, color='red', zorder=10)
+        log_psi = model_trained.apply(params_trained, all_states_constrained)
+        log_psi = log_psi - jnp.max(log_psi.real)
+        psi_c = np.array(jnp.exp(log_psi))
+        psi_trained = np.zeros(hi_full.n_states, dtype=psi_c.dtype)
+        psi_trained[full_indices_constrained] = psi_c
+        psi_trained /= np.linalg.norm(psi_trained)
 
-    # Plot trained models
-    if trained_results:
-        for i, result in enumerate(trained_results):
-            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
-            label = f'{result["type"]} ({result["n_params"]:,} params)'
-            plt.semilogy(result['evals'], '*-', label=label, markersize=5, alpha=0.8, color=color)
+        fidelity_exact = np.abs(np.vdot(psi_exact, psi_trained))**2
+        _, evals_trained = compute_entanglement_spectrum_2d(N, indices_A, psi_trained)
+        trained_results.append({'type': model_type, 'path': path, 'evals': evals_trained, 'n_params': n_params, 'fidelity': fidelity_exact, 'psi': psi_trained})
 
-    # Calculate fidelity between trained models if exactly 2
-    fidelity_between_models = None
-    if len(trained_results) == 2:
-        fidelity_between_models = np.abs(np.vdot(trained_results[0]['psi'], trained_results[1]['psi']))**2
+    return trained_results
 
-    # Add fidelity information to the plot
-    stats_text = []
-    for res in trained_results:
-        stats_text.append(f"F({res['type']}, Exact) = {res['fidelity']:.5f}")
-    if fidelity_between_models is not None:
-        stats_text.append(f"F({trained_results[0]['type']}, {trained_results[1]['type']}) = {fidelity_between_models:.5f}")
-    
-    if stats_text:
-        full_text = "\n".join(stats_text)
-        props = dict(boxstyle='round', facecolor='white', alpha=0.8)
-        plt.gca().text(0.05, 0.05, full_text, transform=plt.gca().transAxes, fontsize=10, verticalalignment='bottom', bbox=props)
 
-    plt.xlabel('Index')
-    plt.ylabel(r'Eigenvalues $\lambda_i$')
-    plt.title(f'Entanglement Eigenvalues (Trained Models) (L={L}, J2={J2})')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
+def run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=None):
+    print(f"--- Running Entanglement Spectrum Comparison (L={L}, J2={J2}) ---")
 
-    save_path_trained = get_unique_path(save_dir, f"Entanglement_Spectrum_Trained_L{L}.png")
-    plt.savefig(save_path_trained, dpi=300)
-    print(f"Trained models plot saved to {save_path_trained}")
-    plt.close()
+    save_dir = _resolve_save_dir()
+    N, hi_full, hi_constrained, ha, all_states_constrained, full_indices_constrained, indices_A = _setup_hilbert(L, J2)
+    psi_exact, evals_exact = _compute_exact_state(hi_full, hi_constrained, ha, full_indices_constrained, N, indices_A)
 
-    # --- PLOT 3: Spectrum Distance (Difference) ---
-    if trained_results:
-        plt.figure(figsize=(10, 7))
-        
-        for result in trained_results:
-            evals_model = result['evals']
-            min_len = min(len(evals_exact), len(evals_model))
-            
-            if min_len > 0:
-                diff = np.abs(evals_exact[:min_len] - evals_model[:min_len])
-                dist = np.linalg.norm(diff)
-                
-                color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
-                label = f"{result['type']} (Eucl. Dist: {dist:.3e})"
-                plt.semilogy(diff, 'o--', label=label, markersize=4, alpha=0.7, color=color)
-        
-        plt.xlabel('Index')
-        plt.ylabel(r'Absolute Difference $|\lambda_i^{exact} - \lambda_i^{model}|$')
-        plt.title(f'Entanglement Spectrum Error (L={L}, J2={J2})')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
+    evals_vit, evals_hfds = _compute_random_init_evals(L, N, hi_constrained, hi_full, all_states_constrained, full_indices_constrained, indices_A)
+    plot_random_init(evals_exact, evals_vit, evals_hfds, save_dir, L)
 
-        save_path_diff = get_unique_path(save_dir, f"Entanglement_Spectrum_Diff_L{L}.png")
-        plt.savefig(save_path_diff, dpi=300)
-        print(f"Spectrum difference plot saved to {save_path_diff}")
-        plt.close()
+    if not trained_model_paths:
+        print("No trained model paths provided. Skipping trained model plots.")
+        return
 
-    # --- PLOT 4: Spectrum Distance (Relative Difference) ---
-    if trained_results:
-        plt.figure(figsize=(10, 7))
-        
-        for i, result in enumerate(trained_results):
-            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
-            evals_model = result['evals']
-            min_len = min(len(evals_exact), len(evals_model))
-            
-            if min_len > 0:
-                denominator = evals_exact[:min_len]
-                valid_indices = denominator > 1e-12
-                
-                diff = np.abs(denominator - evals_model[:min_len])
-                relative_diff = np.full_like(diff, np.nan)
-                relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
+    trained_results = _load_trained_results(trained_model_paths, L, J2, hi_constrained, hi_full, all_states_constrained, full_indices_constrained, psi_exact, N, indices_A)
+    if not trained_results:
+        return
 
-                # Calculate mean and variance, ignoring NaNs
-                mean_rel_diff = np.nanmean(relative_diff)
-                var_rel_diff = np.nanvar(relative_diff)
-
-                # Update label to include mean and variance
-                label = f"{result['type']} (Mean: {mean_rel_diff:.3e}, Var: {var_rel_diff:.3e})"
-                
-                plt.semilogy(relative_diff, 'o--', label=label, markersize=4, alpha=0.7, color=color)
-                plt.axhline(y=mean_rel_diff, color=color, linestyle=':', linewidth=2, alpha=0.9)
-        
-        plt.xlabel('Index')
-        plt.ylabel(r'Relative Difference $|\lambda_i^{exact} - \lambda_i^{model}| / \lambda_i^{exact}$')
-        plt.title(f'Entanglement Spectrum Relative Error (L={L}, J2={J2})')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-
-        save_path_rel_diff = get_unique_path(save_dir, f"Entanglement_Spectrum_Rel_Diff_L{L}.png")
-        plt.savefig(save_path_rel_diff, dpi=300)
-        print(f"Spectrum relative difference plot saved to {save_path_rel_diff}")
-        plt.close()
-
-    # --- PLOT 5: Spectrum Distance (Relative Difference) with Sectors ---
-    if trained_results:
-        plt.figure(figsize=(10, 7))
-        
-        for i, result in enumerate(trained_results):
-            color = 'orange' if result['type'] == 'ViT' else 'blue' if result['type'] == 'HFDS' else 'black'
-            evals_model = result['evals']
-            min_len = min(len(evals_exact), len(evals_model))
-            
-            if min_len > 0:
-                denominator = evals_exact[:min_len]
-                valid_indices = denominator > 1e-12
-                
-                diff = np.abs(denominator - evals_model[:min_len])
-                relative_diff = np.full_like(diff, np.nan)
-                relative_diff[valid_indices] = diff[valid_indices] / denominator[valid_indices]
-
-                # Plot points
-                plt.semilogy(relative_diff, 'o', markersize=2, alpha=0.2, color=color)
-
-                # Sectors: High (0 to 1/3), Mid (1/3 to 2/3), Low (2/3 to 1)
-                s1 = min_len // 3
-                s2 = 2 * (min_len // 3)
-                sectors = [(0, s1), (s1, s2), (s2, min_len)]
-                
-                means = []
-                for start, end in sectors:
-                    seg_mean = np.nanmean(relative_diff[start:end]) if start < end else np.nan
-                    means.append(seg_mean)
-                    if not np.isnan(seg_mean):
-                        plt.hlines(y=seg_mean, xmin=start, xmax=end-1, colors=color, linestyles='-', linewidth=2)
-                
-                label = f"{result['type']}\nMeans: H={means[0]:.1e}, M={means[1]:.1e}, L={means[2]:.1e}"
-                plt.plot([], [], color=color, label=label)
-
-        plt.xlabel('Index')
-        plt.ylabel(r'Relative Difference')
-        plt.title(f'Entanglement Spectrum Relative Error by Sector (L={L}, J2={J2})')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-
-        save_path_sectors = get_unique_path(save_dir, f"Entanglement_Spectrum_Rel_Diff_Sectors_L{L}.png")
-        plt.savefig(save_path_sectors, dpi=300)
-        print(f"Spectrum relative difference sectors plot saved to {save_path_sectors}")
-        plt.close()
+    # plot_trained_models(evals_exact, trained_results, save_dir, L)
+    #plot_spectrum_diff(evals_exact, trained_results, save_dir, L)
+    #plot_spectrum_rel_diff(evals_exact, trained_results, save_dir, L)
+    # plot_spectrum_sectors(evals_exact, trained_results, save_dir, L)
+    plot_combined_spectrum(evals_exact, trained_results, save_dir, L)
 
 if __name__ == "__main__":
     """paths = [
@@ -608,7 +616,14 @@ if __name__ == "__main__":
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter4000_parityTrue_rotTrue_latest_model"
     ]"""
 
-    paths = ["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
+    """paths = ["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_latest_model",
              "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd4_feat32_sample1024_bcPBC_PBC_phi0.0_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex_phi"]    
-    
-    run_spectrum_comparison(L=4, J2=0.5, trained_model_paths=paths)
+    """
+
+    paths = ["/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d20_heads5_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT",
+            #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers1_d16_heads4_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT",
+            "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat32_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex",
+            #"/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers1_d16_heads4_patch2_sample1024_lr0.0075_iter2000_parityTrue_rotTrue_latest_model"
+    ]
+
+    run_spectrum_comparison(L=4, J2=0.55, trained_model_paths=paths)

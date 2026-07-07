@@ -9,6 +9,7 @@ def build_heisenberg_apbc(
     J2: float = 0.0,
     apbc_x: bool = True,
     apbc_y: bool = True,
+    hi: nk.hilbert.Spin = None
 ) -> nk.operator.LocalOperator:
     """
     Build the J1-J2 Heisenberg Hamiltonian on an Lx×Ly square lattice
@@ -29,7 +30,7 @@ def build_heisenberg_apbc(
         nk.operator.LocalOperator
     """
     N = Lx * Ly
-    hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)  # Spin-1/2 Hilbert space with zero total magnetization
+    #hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)  # Spin-1/2 Hilbert space with zero total magnetization
 
     def site(x, y):
         return x % Lx + (y % Ly) * Lx
@@ -103,6 +104,7 @@ def build_heisenberg_twisted(
     J2: float = 0.0,
     phi: float = 0.0,       # twist angle in units of pi; phi=1 reproduces APBC
     apbc_y: bool = False,
+    hi: nk.hilbert.Spin = None
 ) -> nk.operator.LocalOperator:
     """
     Build the J1-J2 Heisenberg Hamiltonian on an Lx×Ly square lattice
@@ -134,12 +136,12 @@ def build_heisenberg_twisted(
     """
     if phi == 0.0 and not apbc_y:
         N = Lx * Ly
-        hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
+        #hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
         lattice = nk.graph.Hypercube(length=Lx, n_dim=2, pbc=[True, True], max_neighbor_order=2)
         return nk.operator.Heisenberg(hilbert=hi, graph=lattice, J=[J1, J2], sign_rule=[False, False])
 
     N = Lx * Ly
-    hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
+    #hi = nk.hilbert.Spin(s=0.5, N=N, total_sz=0)
 
     def site(x, y):
         return (x % Lx) + (y % Ly) * Lx

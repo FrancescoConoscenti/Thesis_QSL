@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=HFsmall4
+#SBATCH --job-name=HFDS_S1
 #SBATCH --output=/scratch/f/F.Conoscenti/Thesis_QSL/slurm_out/slurm.%j.%N.out
 #SBATCH --ntasks=1
 
 ##SBATCH -p inter
 ##SBATCH --gres=gpu:h100nvl:1 
 
-##SBATCH -p inter
-##SBATCH --gres=gpu:v100:1
+#SBATCH -p inter
+#SBATCH --gres=gpu:v100:1
 
 ##SBATCH -p cip  
 ##SBATCH --gres=gpu:a40:1
@@ -19,7 +19,7 @@
 #SBATCH --mem=32G
 #SBATCH --time=2-00:00:00
 
-#SBATCH --array=0-14
+##SBATCH --array=0-3
 
 #SBATCH --export=ALL,XLA_PYTHON_CLIENT_PREALLOCATE=false,XLA_PYTHON_CLIENT_MEM_FRACTION=0.85
 
@@ -31,39 +31,35 @@ source /scratch/f/F.Conoscenti/netket_venv1/bin/activate
 
 #nvidia-smi 
 
-J_VALUES=(0.4 0.5 0.55 0.6 0.7)
-SEED_VALUES=(1 2 3)
+J_VALUES=(0.5)
+SEED_VALUES=(1)
 #BC_COMBINATIONS=("APC PBC" "APC APC" "PBC APC" "PBC PBC" )
 BC_COMBINATIONS=("PBC PBC" )
-PHI_VALUES=(0.0) 
-
 
 NUM_J=${#J_VALUES[@]}
 NUM_SEED=${#SEED_VALUES[@]}
 NUM_BC=${#BC_COMBINATIONS[@]}
-NUM_PHI=${#PHI_VALUES[@]}
 
-TOTAL_JOBS=$(( NUM_J * NUM_SEED * NUM_BC * NUM_PHI ))
+TOTAL_JOBS=$(( NUM_J * NUM_SEED * NUM_BC))
 
 
 BC_INDEX=$(( SLURM_ARRAY_TASK_ID % NUM_BC ))
 SEED_INDEX=$(( (SLURM_ARRAY_TASK_ID / NUM_BC) % NUM_SEED ))
 J_INDEX=$(( (SLURM_ARRAY_TASK_ID / (NUM_BC * NUM_SEED)) % NUM_J ))
-PHI_INDEX=$(( (SLURM_ARRAY_TASK_ID / (NUM_BC * NUM_SEED * NUM_J)) % NUM_PHI ))
 
 J=${J_VALUES[$J_INDEX]}
 SEED=${SEED_VALUES[$SEED_INDEX]}
 BC_PAIR=(${BC_COMBINATIONS[$BC_INDEX]})
 BC_X=${BC_PAIR[0]}
 BC_Y=${BC_PAIR[1]}
-PHI=${PHI_VALUES[$PHI_INDEX]}
 
 
-
-sleep 1
+#sleep 1
 #srun python -m ViT_Heisenberg.run_ViT --L 4 --seed "$SEED" --J2 "$J"
-srun python -m HFDS_Heisenberg.run_spin --L 4 --seed "$SEED" --J2 "$J"
-sleep 1
+#srun python -m HFDS_Heisenberg.run_spin --L 4 --seed "$SEED" --J2 "$J"
+#sleep 1
+
+#srun python -m 6x6_ED_Fidelity_quspin
 
 #srun python -m Entanglement.test_var_init
 #srun python -m Entanglement.test_var_init_no_bipartite
@@ -71,7 +67,7 @@ sleep 1
 #srun python -m Observables 
 #srun python -m Elaborate.Statistics.Degeneracy 
 
-#srun python -m HFDS_Heisenberg.run_spin_phi --L 10
+srun python -m HFDS_Heisenberg.run_spin_phi --L 10
 #python -m FreeFermions.MF_Becca
 #srun python -m MFDallaPiazza.Gutz_SF-N
 #srun python -m MFDallaPiazza1.maps

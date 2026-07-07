@@ -56,14 +56,14 @@ seed = int(args.seed)
 
 num_layers      = 2     # number of Tranformer layers
 d_model         = 20   # dimensionality of the embedding space
-n_heads         = 4   # number of heads
+n_heads         = 5   # number of heads
 patch_size      = 2     # lenght of the input sequence
-lr              = 0.0075
+lr              = 0.0075 
 parity = True
 rotation = True
 
 #n_samples = 8192   n_chains  = 256   chunk_size = 4096
-
+ 
 N_samples       = 1024   # number of MC samples
 n_chains        = 128     # number of Markov chains
 chunk_size      = N_samples      # chunk size for the MC samples

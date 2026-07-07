@@ -1,11 +1,14 @@
 # FONT SIZES
-font.size: 16
-axes.titlesize: 20
-axes.labelsize: 18
-xtick.labelsize: 14
-ytick.labelsize: 14
-legend.fontsize: 11
+font.size: 26
+axes.titlesize: 30
+axes.labelsize: 24
+xtick.labelsize: 20
+ytick.labelsize: 22
+legend.fontsize: 20
 figure.autolayout: True
+
+lines.markersize: 10
+lines.linewidth: 3.0  
 
 
 # STYLE SETTINGS (Optional bonus)

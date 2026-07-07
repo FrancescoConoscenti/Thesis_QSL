@@ -134,35 +134,50 @@ def calculate_relevant_eigenvalues(vstate, folder_path, hi, threshold_ratio_rest
     
     return all_eigenvalues, relevant_count_first, mean_rest_ratio, mean_rest_norm, mean_rest_norm_12
 
-def plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_relevant_eigenvalues, num_models):
+def plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, num_models):
     folder_save_QGT = folder_path+"/QGT_plot"
     os.makedirs(folder_save_QGT, exist_ok=True)
     
     plt.figure(figsize=(12, 7))
     
-    # Setup colormap for 'all' case
+    # Setup colormap for the 5 lines
     cmap = plt.get_cmap('viridis')
+    
+    # Force filtering to only look at iterations 0, 5, 10, 15, 20
+    target_indices = [0, 5, 10, 15, 20]
+    
+    # Custom labels mapping to the 5 targeted iterations
+    legend_labels = [
+        "iter 0", 
+        "iter 1000", 
+        "iter 2000", 
+        "iter 3000", 
+        "iter 4000"
+    ]
         
-    for i, model_idx in enumerate(indices_to_plot):
+    for i, model_idx in enumerate(target_indices):
+        # Safety check: ensure the iteration exists in your data before plotting
+        if f'iter_{model_idx}' not in all_eigenvalues:
+            continue
+            
         eigenvalues = all_eigenvalues[f'iter_{model_idx}']
         sorted_eigenval = np.sort(eigenvalues)[::-1]
         indices = np.arange(len(sorted_eigenval))
         
-        # Use color gradient
-        color = cmap(i / (len(indices_to_plot) - 1) if len(indices_to_plot) > 1 else 0)
-        plt.plot(indices, sorted_eigenval, lw=1.5, color=color, alpha=0.5)
+        # Color gradient based on the 5 target lines
+        color = cmap(i / (len(target_indices) - 1))
+        
+        # Plot with the custom label for the legend
+        plt.plot(indices, sorted_eigenval, lw=3.5, color=color, alpha=0.8, label=legend_labels[i])
             
-    plt.title(f"Eigenvalue Spectrum of S-matrix (Avg. Relevant Eigenvalues: {mean_relevant_eigenvalues:.2f})")
-    plt.xlabel("Eigenvalue Index (sorted descending)")
+    plt.xlabel("Eigenvalue Index")
     plt.ylabel("Eigenvalue Magnitude")
     plt.yscale("log")
     plt.grid(True, which="both", linestyle="--", alpha=0.5)
     
-    # Add colorbar for 'all'
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=num_models-1))
-    sm.set_array([])
-    cbar = plt.colorbar(sm, ax=plt.gca())
-    cbar.set_label('Model Iteration')
+    # REMOVED: Colorbar code
+    # ADDED: Standard Legend
+    plt.legend(loc="upper right")
 
     plt.tight_layout()
 
@@ -186,7 +201,7 @@ def plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_r
     save_plot_path = Path(folder_save_QGT) / f"S_matrix_spectrum_vs_iteration{suffix}.png"
         
     plt.savefig(save_plot_path, dpi=300)
-    #print(f"✅ Plot saved to {save_plot_path}")
+    print(f"✅ Plot saved to {save_plot_path}")
     plt.show()
 
 def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_rest=100):
@@ -209,7 +224,7 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_
     indices_to_plot = sorted([int(k.split('_')[1]) for k in all_eigenvalues.keys()])
     num_models = len(indices_to_plot)
     
-    plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, mean_rest_norm, num_models)
+    plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_path, num_models)
 
     # --- Save all computed eigenvalues ---
     os.makedirs(Path(folder_path) / "QGT_plot", exist_ok=True)
@@ -223,7 +238,7 @@ def plot_S_matrix_eigenvalues(vstate, folder_path, hi, one_avg, threshold_ratio_
 
 def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
 
-    #print("Plotting S-matrix eigenvalues...", eigenvalues.shape)
+    print("Plotting S-matrix eigenvalues...", eigenvalues.shape)
 
     sorted_eigenval = np.sort(eigenvalues)[::-1]
     indices = np.arange(len(sorted_eigenval))  # x-axis: eigenvalue index
@@ -247,7 +262,7 @@ def Plot_S_matrix_eigenvalues(eigenvalues, folder_path, one_avg):
         suffix += f"_{param_count}params"
 
     plt.figure(figsize=(8,4))
-    plt.plot(indices, sorted_eigenval, lw=1.5, color='darkgreen', marker='.', markersize=3, linestyle='-')
+    plt.plot(indices, sorted_eigenval, lw=4.0, color='darkgreen', marker='.', markersize=3, linestyle='-')
     
     plt.title("Eigenvalue Spectrum of the S-matrix (Final Model)")
     plt.xlabel("eigenvalues index")
@@ -325,3 +340,95 @@ def Plot_S_matrix_histogram(eigenvalues, folder_path, one_avg, bins=50):
         plt.savefig(f"{folder_path}/QGT_plot/S_matrix_histogram{suffix}.png")
 
     plt.show()
+
+def plot_S_matrix_spectrum_2(all_eigenvalues1, all_eigenvalues2, indices_to_plot1, indices_to_plot2, folder_path, num_models1, num_models2):
+    os.makedirs(folder_path, exist_ok=True)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
+    
+    cmap = plt.get_cmap('viridis')
+    target_indices = [0, 5, 10, 15, 20]
+    legend_labels = [
+        "iter 0", 
+        "iter 1000", 
+        "iter 2000", 
+        "iter 3000", 
+        "iter 4000"
+    ]
+
+    # Plot for Model 1
+    for i, model_idx in enumerate(target_indices):
+        if f'iter_{model_idx}' in all_eigenvalues1:
+            eigenvalues = all_eigenvalues1[f'iter_{model_idx}']
+            sorted_eigenval = np.sort(eigenvalues)[::-1]
+            indices = np.arange(len(sorted_eigenval))
+            color = cmap(i / (len(target_indices) - 1))
+            ax1.plot(indices, sorted_eigenval, lw=3.5, color=color, alpha=0.8, label=legend_labels[i])
+            
+    ax1.set_xlabel("Eigenvalue Index")
+    ax1.set_ylabel("Eigenvalue Magnitude")
+    ax1.set_yscale("log")
+    ax1.set_xlim(0,20000)
+    ax1.grid(True, which="both", linestyle="--", alpha=0.5)
+
+    # Plot for Model 2
+    for i, model_idx in enumerate(target_indices):
+        if f'iter_{model_idx}' in all_eigenvalues2:
+            eigenvalues = all_eigenvalues2[f'iter_{model_idx}']
+            sorted_eigenval = np.sort(eigenvalues)[::-1]
+            indices = np.arange(len(sorted_eigenval))
+            color = cmap(i / (len(target_indices) - 1))
+            ax2.plot(indices, sorted_eigenval, lw=3.5, color=color, alpha=0.8, label=legend_labels[i])
+
+    ax2.set_xlabel("Eigenvalue Index")
+    ax2.set_yscale("log")
+    ax2.set_xlim(0,20000)
+    ax2.grid(True, which="both", linestyle="--", alpha=0.5)
+
+    # Shared Legend
+    handles, labels = ax1.get_legend_handles_labels()
+    if not handles:
+        handles, labels = ax2.get_legend_handles_labels()
+    ax2.legend(handles, labels, loc='upper right', fontsize=16)
+
+    plt.tight_layout()
+    
+    save_plot_path = Path(folder_path) / "S_matrix_spectrum_comparison.png"
+    plt.savefig(save_plot_path, dpi=300, bbox_inches='tight')
+    print(f"✅ Plot saved to {save_plot_path}")
+    plt.show()
+
+
+def main():
+    # Example usage
+    folder_path1 = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd4_feat64_sample4096_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex/J=0.5/seed_1"
+    folder_path2 = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model/J=0.5/seed_1"
+    folder_save_QGT = "/scratch/f/F.Conoscenti/Thesis_QSL/Elaborate/plot/QGT"
+
+    #folder1
+    variables_path = Path(folder_path1) / "variables.pkl"
+    if variables_path.is_file():
+        print(f"Loading variables from {variables_path}")
+        with open(variables_path, 'rb') as f:
+            variables = pickle.load(f)
+    
+    all_eigenvalues1 = variables.get('eigenvalues_S', None)
+    indices_to_plot1 = sorted([int(k.split('_')[1]) for k in all_eigenvalues1.keys()])
+
+    # folder2
+    variables_path = Path(folder_path2) / "variables.pkl"
+    if variables_path.is_file():
+        print(f"Loading variables from {variables_path}")
+        with open(variables_path, 'rb') as f:
+            variables = pickle.load(f)
+    
+    all_eigenvalues2 = variables.get('eigenvalues_S', None)
+    indices_to_plot2 = sorted([int(k.split('_')[1]) for k in all_eigenvalues2.keys()])
+
+    
+    #plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder_save_QGT,  len(indices_to_plot))
+    plot_S_matrix_spectrum_2(all_eigenvalues1, all_eigenvalues2, indices_to_plot1, indices_to_plot2, folder_save_QGT, len(indices_to_plot1), len(indices_to_plot2))
+
+
+if __name__ == "__main__":
+    main()  

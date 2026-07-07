@@ -64,7 +64,10 @@ def parse_model_path(model_path):
     else:
         params['phi'] = 0.0
         params['is_phi_model'] = "_phi" in model_path
-    
+
+    match_sz = re.search(r"sz(\d+)", model_path)
+    params['total_sz'] = float(match_sz.group(1)) if match_sz else 0.0
+
     if "hidd" in model_path:
         params['model_type'] = 'HFDS'
         params['n_hid'] = int(re.search(r"hidd(\d+)", model_path).group(1))
@@ -108,8 +111,9 @@ def setup_system(L, J2, params=None):
     n_dim = 2
     # We must keep the graph periodic to have edges at the boundary
     lattice = nk.graph.Hypercube(length=L, n_dim=n_dim, pbc=[True, True], max_neighbor_order=2)
-    hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=0)
-    
+    total_sz = params.get("total_sz", 0.0) if params else 0.0
+    hilbert = nk.hilbert.Spin(s=1 / 2, N=lattice.n_nodes, total_sz=total_sz)
+
     bc_x = params.get("bc_x", "PBC") if params else "PBC"
     bc_y = params.get("bc_y", "PBC") if params else "PBC"
     phi = params.get("phi", 0.0) if params else 0.0
@@ -287,7 +291,7 @@ def compute_qgt(vstate, folder, hilbert):
         
         if all_eigenvalues:
             indices_to_plot = sorted([int(k.split('_')[1]) for k in all_eigenvalues.keys()])
-            plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder, mean_rest_norm, len(indices_to_plot))
+            plot_S_matrix_spectrum(all_eigenvalues, indices_to_plot, folder, len(indices_to_plot))
             
         print(f"QGT relevant eigenvalues - first: {relevant_count_first}, mean rest ratio: {mean_rest_ratio}, mean rest norm: {mean_rest_norm}")
         return {
@@ -343,14 +347,14 @@ def save_variables(folder, variables):
 
 
 
-def run_observables(log, folder):
+def run_observables(log, folder, hilbert, hamiltonian, lattice):
     folder_energy = setup_environment(folder)
     params = parse_model_path(folder)
     L = params['L']
     J2 = params['J2']
     print(f"Loaded params: {params}")
 
-    lattice, hilbert, hamiltonian = setup_system(L, J2, params)
+    #lattice, hilbert, hamiltonian = setup_system(L, J2, params)
     model = setup_model(params, hilbert, L)
     
     sampler = nk.sampler.MetropolisExchange(
@@ -440,19 +444,20 @@ def run_observables(log, folder):
 
 
     # 10. Correlations
-    vstate.n_samples = 4096*2
-    corr_r, err_r = compute_correlations(vstate, lattice, L, hilbert, folder)
-    variables['corr_r'] = corr_r
-    variables['err_r'] = err_r
-    xi_exp, xi_err, popt_exp, r_fit, c_fit = compute_correlation_length(vstate, lattice, hilbert, L, folder)
-    variables['correlation_length'] = (xi_exp, xi_err)
-    variables['correlation_length_fit_params'] = popt_exp
-    variables['correlation_length_fit'] = (r_fit, c_fit)
-    coords, C = compute_dimer_correlations(vstate, L, folder, direction="x")
-    variables['dimer_correlations_x'] = (coords, C)
-    coords, C = compute_dimer_correlations(vstate, L, folder, direction="y")
-    variables['dimer_correlations_y'] = (coords, C)
-    save_variables(folder, variables)
+    if L != 4:
+        vstate.n_samples = 4096*2
+        #corr_r, err_r = compute_correlations(vstate, lattice, L, hilbert, folder)
+        #variables['corr_r'] = corr_r
+        #variables['err_r'] = err_r
+        #xi_exp, xi_err, popt_exp, r_fit, c_fit = compute_correlation_length(vstate, lattice, hilbert, L, folder)
+        #variables['correlation_length'] = (xi_exp, xi_err)
+        #variables['correlation_length_fit_params'] = popt_exp
+        #variables['correlation_length_fit'] = (r_fit, c_fit)
+        #coords, C = compute_dimer_correlations(vstate, L, folder, direction="x")
+        #variables['dimer_correlations_x'] = (coords, C)
+        #coords, C = compute_dimer_correlations(vstate, L, folder, direction="y")
+        #variables['dimer_correlations_y'] = (coords, C)
+        save_variables(folder, variables)
         
     """
     # 9. QGT
@@ -478,8 +483,10 @@ if __name__ == "__main__":
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new/layers1_hidd2_feat64_sample4096_bcPBC_PBC_phi0.5_lr0.02_iter200_InitFermi_typecomplex_phi"
     #model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/phi_new"
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/4x4/layers2_d20_heads5_patch2_sample1024_lr0.0075_iter20000_parityTrue_rotTrue_QGT"
-    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat64_sample1024_lr0.02_iter30000_parityTrue_rotTrue_InitFermi_typecomplex"
     model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/10x10/layers1_hidd8_feat32_sample4096_lr0.02_iter2000_parityTrue_rotTrue_InitFermi_typecomplex_10"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat16_sample1024_bcPBC_PBC_lr0.02_iter20000_parityTrue_rotTrue_InitFermi_typecomplex"
+    model_path = "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/4x4/layers1_hidd2_feat64_sample1024_lr0.02_iter30000_parityTrue_rotTrue_InitFermi_typecomplex"
+
     if not os.path.exists(model_path):
         model_path = model_path.replace("/cluster/home/fconoscenti/Thesis_QSL", "/scratch/f/F.Conoscenti/Thesis_QSL")
 

@@ -186,7 +186,7 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
             base_label = Path(model_path).name
         
         if n_params is not None:
-            label = f"{base_label} ({n_params} params)"
+            label = f"{base_label} "
         else:
             label = base_label
 
@@ -208,9 +208,8 @@ def plot_qgt_rank_vs_js(model_paths, save_name="QGT_Rank_vs_J2.png"):
         save_name = f"{base}_{lattice_dim}{ext}"
 
 
-    plt.xlabel("$J_2$", fontsize=16)
-    plt.ylabel("QGT Rank", fontsize=16)
-    plt.title(f"QGT Rank vs $J_2$ {lattice_dim}", fontsize=16)
+    plt.xlabel("$J_2$")
+    plt.ylabel("QGT Rank")
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     
@@ -381,7 +380,7 @@ def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number
             base_label = Path(model_path).name
         
         if n_params is not None:
-            label = f"{base_label} ({n_params} params)"
+            label = f"{base_label}"
         else:
             label = base_label
 
@@ -402,9 +401,8 @@ def plot_qgt_condition_number_vs_js(model_paths, save_name="QGT_Condition_Number
         save_name = f"{base}_{lattice_dim}{ext}"
 
 
-    plt.xlabel("$J_2$", fontsize=16)
-    plt.ylabel("QGT Condition Number", fontsize=16)
-    plt.title(f"QGT Condition Number vs $J_2$ {lattice_dim}", fontsize=16)
+    plt.xlabel("$J_2$")
+    plt.ylabel("QGT Cond Number")
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend(loc='best')
     plt.yscale('log')
@@ -567,7 +565,7 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
                 base_label = Path(model_path).name
             
             if n_params is not None:
-                model_label = f"{base_label} ({n_params} params)"
+                model_label = f"{base_label}"
             else:
                 model_label = base_label
                 
@@ -586,11 +584,10 @@ def plot_qgt_condition_number_vs_iteration(model_paths, save_name="QGT_Condition
                     
                     plt.plot(iters, means, label=label, color=color, linestyle=ls, alpha=0.8)
 
-        plt.xlabel("Iterations", fontsize=16)
-        plt.ylabel("QGT Condition Number", fontsize=16)
-        plt.title(f"QGT Condition Number vs Iteration ({group_name})", fontsize=16)
+        plt.xlabel("Iterations")
+        plt.ylabel("QGT Condition Number")
         plt.grid(True, linestyle='--', alpha=0.6)
-        plt.legend(loc='best', fontsize='small')
+        plt.legend(loc='best')
         plt.yscale('log')
         
         lattice_dim = ""
@@ -623,19 +620,19 @@ if __name__ == "__main__":
     
 
     
-    """#6x6
+    #6x6
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/6x6/layers1_hidd4_feat64_sample4096_lr0.02_iter500_parityTrue_rotTrue_InitFermi_typecomplex",
         "/scratch/f/F.Conoscenti/Thesis_QSL/ViT_Heisenberg/plot/6x6/layers2_d24_heads6_patch2_sample4096_lr0.0075_iter1000_parityTrue_rotTrue_latest_model"
     
     ]
-    """
     
-    #8x8
+    
+    """#8x8
     models = [
         "/scratch/f/F.Conoscenti/Thesis_QSL/HFDS_Heisenberg/plot/8x8/QGT/layers1_hidd4_feat32_sample8192_bcPBC_PBC_phi0.0_lr0.02_iter200_parityTrue_rotTrue_InitFermi_typecomplex_phi",
         "ViT_Heisenberg/plot/8x8/QGT/layers2_d24_heads6_patch2_sample8192_lr0.0075_iter200_parityTrue_rotTrue_QGT"
-    ]
+    ]"""
 
 
     plot_qgt_rank_vs_js(models)

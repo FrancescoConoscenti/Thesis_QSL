@@ -87,7 +87,7 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
             for seed in range(n_seeds):
                 # Models
                 rbm = nk.models.RBM(alpha=1, param_dtype=complex, kernel_init=init_fun, hidden_bias_init=init_fun, visible_bias_init=init_fun)
-                vit = ViT_ent(num_layers=1, d_model=8, n_heads=4, patch_size=2, kernel_init=init_fun)
+                vit = ViT_ent(num_layers=3, d_model=24, n_heads=8, patch_size=2, kernel_init=init_fun)
                 hfds = HiddenFermion_ent(L=L, network="FFNN", n_hid=1, layers=1, features=16, MFinit="Fermi", hilbert=hi_constrained, kernel_init=init_fun, dtype=jax.numpy.complex128)
                 
                 all_models_list = [
@@ -129,7 +129,7 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
         if models_to_plot is None or "ViT" in models_to_plot:
             print(f"    ViT Xavier...")
             init_xavier = jax.nn.initializers.xavier_uniform()
-            vit_xavier = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=init_xavier)
+            vit_xavier = ViT_ent(num_layers=3, d_model=24, n_heads=8, patch_size=2, kernel_init=init_xavier)
             sampler_vit = nk.sampler.MetropolisLocal(hi_free)
             
             s2_vals_x = []
@@ -137,7 +137,7 @@ def plot_entropy_vs_partition_variance(L=6, n_seeds=10, n_samples=4096, models_t
             param_count_x = 0
             
             for seed in range(n_seeds):
-                 vit_xavier = ViT_ent(num_layers=2, d_model=16, n_heads=4, patch_size=2, kernel_init=init_xavier)
+                 vit_xavier = ViT_ent(num_layers=3, d_model=24, n_heads=8, patch_size=2, kernel_init=init_xavier)
                  sampler_vit = nk.sampler.MetropolisLocal(hi_free)
                  vstate = nk.vqs.MCState(sampler_vit, vit_xavier, n_samples=n_samples, seed=seed)
                  if param_count_x == 0:
@@ -813,7 +813,7 @@ def plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, 
 
 def main():
 
-    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536//2, models_to_plot=["ViT", "HFDS"], variances=[5e-4, 1e-3, 2.5e-3, 5e-3, 1e-2, 2.5e-2, 5e-2, 1e-1, 1, 10, 100], partition_type="Square")
+    plot_entropy_vs_partition_variance(L=10, n_seeds=10, n_samples=65536//2, models_to_plot=["ViT", "HFDS"], variances=[1e-3, 1e-2, 5e-2, 1e-1, 1, 10], partition_type="Strip")
     #plot_entropy_vs_partition_hidden_size(L=10, n_seeds=10, n_samples=65536, models_to_plot=[ "ViT", "HFDS", "HFDS Random"], var=10, partition_type="Square")
     
     #plot_entropy_vs_partition_hidden_size_map(L=6, n_seeds=10, n_samples=65536, models_to_plot=[ "ViTrandom", "ViTXavier", "HFDSFermi", "HFDSrandom"], var=10, partition_type="Strip")
